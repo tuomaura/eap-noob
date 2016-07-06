@@ -8,14 +8,13 @@
 
 
 /*Configuration file*/
-#define CONF_FILE "eapoob.conf"
+#define CONF_FILE 		"eapoob.conf"
 
 /* All the pre-processors of EAP-NOOB*/
 
 #define NUM_OF_VERSIONS  	1
 #define PEER_ID_DEFAULT_REALM 	"noob@eap-noob.net"
 #define PEER_ID_DEFAULT	 	"noob"
-#define MAX_PEER_ID_LEN 	60
 #define DOMAIN		    	"eap-noob.net"
 #define SERVER_INFO		"Believe_me_i_am_an_authenticated_server"
 #define PUBLIC_KEY      	"A Very secret public key"
@@ -25,10 +24,13 @@
 #define EAP_SHARED_SECRET_LEN   32
 #define ALGORITHM_ID		"EAP-NOOB"
 #define ALGORITHM_ID_LEN    	8
+
+/*MAX values for fields*/
 #define MAX_SUP_VER		1
 #define MAX_SUP_CSUITES		1
-
-#define MAX_CONF_LEN    200
+#define MAX_CONF_LEN    	500
+#define MAX_INFO_LEN		500
+#define MAX_PEER_ID_LEN 	60
 
 #define KDF_LEN			192
 #define MSK_LEN     		64
@@ -36,7 +38,7 @@
 #define KZ_LEN			32
 #define KMS_LEN			16
 #define KMP_LEN			16
-#define MAC_LEN			32
+#define MAC_LEN			16
 #define FIXED_LENGTH             6
 
 #define HASH_LEN     		32
@@ -49,12 +51,12 @@
 #define MAX_MSG_TYPES   	7
 
 /*OOB DIRECTIONS*/
-#define PEER_TO_SERV 	1
-#define SERV_TO_PEER	2
-#define BOTH		3
+#define PEER_TO_SERV 		1
+#define SERV_TO_PEER		2
+#define BOTH_DIR		3
 
-#define SUCCESS         1
-#define FAILURE         0
+#define SUCCESS         	1
+#define FAILURE         	0
 
 #define DONE			1
 #define NOT_DONE		0
@@ -64,37 +66,37 @@
 
 /*keywords for json encoding and decoding*/
 
-#define TYPE 		"Type"
-#define ERR_INFO	"ErrorInfo"
-#define ERR_CODE	"ErrorCode"
+#define TYPE 			"Type"
+#define ERR_INFO		"ErrorInfo"
+#define ERR_CODE		"ErrorCode"
 
-#define VERSION_SERV 	"Vers"
-#define CSUITES_SERV	"Cryptosuites"
-#define DIRECTION_SERV	"Dirs"
-#define NONCE_SERV	"Ns"
-#define MINSLEEP	"minsleep"
-#define PEERID		"PeerID"
-#define PUBLICKEY_SERV	"PKs"
-#define SERV_INFO	"ServerInfo"
-#define MACs		"MACs" 
+#define VERSION_SERV 		"Vers"
+#define CSUITES_SERV		"Cryptosuites"
+#define DIRECTION_SERV		"Dirs"
+#define NONCE_SERV		"Ns"
+#define MINSLEEP		"minsleep"
+#define PEERID			"PeerID"
+#define PUBLICKEY_SERV		"PKs"
+#define SERV_INFO		"ServerInfo"
+#define MACs			"MACs" 
 
-#define VERSION_PEER 	"Verp"
-#define CSUITES_PEER	"Cryptosuitep"
-#define DIRECTION_PEER	"Dirp"
-#define NONCE_PEER	"Np"
-#define PUBLICKEY_PEER	"PKp"
-#define PEER_INFO	"PeerInfo"
-#define PEERSTATE       "state"
-#define MACp		"MACp" 
-#define X_COORDINATE    "x"
-#define Y_COORDINATE    "y"
-#define JSON_WEB_KEY    "jwk"
-#define KEY_TYPE        "kty"
-#define CURVE           "crv"
-#define ECDH_KDF_MAX (1 << 30)
+#define VERSION_PEER 		"Verp"
+#define CSUITES_PEER		"Cryptosuitep"
+#define DIRECTION_PEER		"Dirp"
+#define NONCE_PEER		"Np"
+#define PUBLICKEY_PEER		"PKp"
+#define PEER_INFO		"PeerInfo"
+#define PEERSTATE       	"state"
+#define MACp			"MACp" 
+#define X_COORDINATE    	"x"
+#define Y_COORDINATE    	"y"
+#define JSON_WEB_KEY    	"jwk"
+#define KEY_TYPE        	"kty"
+#define CURVE           	"crv"
+#define ECDH_KDF_MAX 		(1 << 30)
 
-#define SERV_NAME	"ServName"
-#define SERV_URL	"ServUrl"
+#define SERV_NAME		"ServName"
+#define SERV_URL		"ServUrl"
 
 #define PEERID_RCVD 		0x0001
 #define DIRECTION_RCVD 		0x0002
@@ -148,9 +150,6 @@
 				pub_key_peer TEXT)" 
 
 
-typedef unsigned char uint8;
-typedef unsigned short int uint16;
-typedef unsigned int uint32;
 
 
 enum{COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW}; //Flag used during KDF and MAC generation
@@ -182,11 +181,11 @@ struct eap_oob_peer_data{
         u32 version; 
         char * peerID_rcvd;
         char * peerID_gen;
-        uint8 peer_state;
-        uint8 serv_state;
-        uint32 cryptosuite;
-        uint32 dir;
-        uint32 minsleep; 
+        u8 peer_state;
+        u8 serv_state;
+        u32 cryptosuite;
+        u32 dir;
+        u32 minsleep; 
 	Boolean record_present;
 	char * peer_info;
 	char *NAI;
@@ -198,45 +197,46 @@ struct eap_oob_peer_data{
 
 	char * mac;
 
-        unsigned char * nonce_peer;
+        u8 * nonce_peer;
         char * nonce_peer_b64;
         
-	unsigned char * peer_public_key;
+	u8 * peer_public_key;
         char * peer_public_key_b64;
 	size_t pub_key_peer_len; 
 
 
-        unsigned char * nonce_serv;
+        u8 * nonce_serv;
 	char * nonce_serv_b64;
 
 	EVP_PKEY *dh_key;
-        unsigned char * serv_public_key;
+        u8 * serv_public_key;
         char * serv_public_key_b64;
 	size_t pub_key_server_len;
-	unsigned char * priv_key;
+	u8 * priv_key;
 	size_t priv_key_len;
 
-	unsigned char * shared_key;
+	u8 * shared_key;
 	char * shared_key_b64;
 	size_t shared_key_b64_len;
 
 	char * noob_b64;
-	unsigned char * noob;
+	u8 * noob;
+
 	char * hoob_b64;
-	unsigned char * hoob;
+	u8 * hoob;
 	
 	enum oob_err_code err_code;
 	int oob_recv;
 
-	unsigned char * msk;
+	u8 * msk;
 	char * msk_b64;
-	unsigned char * emsk;
+	u8 * emsk;
 	char * emsk_b64;
-	unsigned char * kms;
+	u8 * kms;
 	char * kms_b64;
-	unsigned char * kmp;
+	u8 * kmp;
 	char * kmp_b64;
-	unsigned char * kz;
+	u8 * kz;
 	char * kz_b64;
 	u32 recv_msg;
 	u32 rcvd_params;
@@ -264,7 +264,7 @@ struct eap_oob_server_data{
         u32 dir;
 	char * serv_info;
 	
-	uint32 config_params;
+	u32 config_params;
         struct eap_oob_serv_config_params * serv_config_params;
 
 };

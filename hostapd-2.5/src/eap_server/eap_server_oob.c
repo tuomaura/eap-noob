@@ -736,7 +736,7 @@ static int eap_oob_handle_incomplete_conf(struct eap_oob_serv_context * data)
         //set default values
 	data->server_attr->version[0] = VERSION_ONE;
 	data->server_attr->cryptosuite[0] = SUITE_ONE;
-	data->server_attr->dir = BOTH;
+	data->server_attr->dir = BOTH_DIR;
 
         return SUCCESS;
 }
@@ -758,8 +758,11 @@ static int eap_oob_prepare_serv_info_obj(struct eap_oob_server_data * data)
                 json_object_set_new(info_obj,SERV_NAME,json_string(data->serv_config_params->Serv_name));
                 json_object_set_new(info_obj,SERV_URL,json_string(data->serv_config_params->Serv_URL));
 
-                if(NULL == (data->serv_info = json_dumps(info_obj,JSON_COMPACT)))
-                         return FAILURE;
+                if(NULL == (data->serv_info = json_dumps(info_obj,JSON_COMPACT)) || 
+						(strlen(data->serv_info) > MAX_INFO_LEN)){
+                	wpa_printf(MSG_ERROR, "EAP-NOOB: Incorrect or no server info");
+                        return FAILURE;
+		}
                 printf("PEER INFO = %s\n",data->serv_info);
         }
 
@@ -791,7 +794,19 @@ static int eap_oob_read_config(struct eap_oob_serv_context * data)
 
         free(buff);
 
-        if(data->server_attr->config_params != CONF_PARAMS &&
+	//TODO: version and csuites are compared for the first value inside the 
+	//respective array. This needs to changed when there is more than one value.
+	
+	if((data->server_attr->version[0] > MAX_SUP_VER) || 
+		(data->server_attr->cryptosuite[0] > MAX_SUP_CSUITES) || 
+		(data->server_attr->dir > BOTH_DIR)){
+
+                wpa_printf(MSG_ERROR, "EAP-NOOB: Incorrect confing value");	
+		return FAILURE;
+	}
+		 
+ 
+        if(data->server_attr->config_params != CONF_PARAMS && 
                 FAILURE == eap_oob_handle_incomplete_conf(data))
                 return FAILURE;
 
@@ -1730,39 +1745,6 @@ static u8 * eap_oob_gen_MAC(struct eap_oob_serv_context * data, int type, u8 * k
         	wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: MACp",mac,32);
 	}
 
-#if 0 
-        char * info = NULL;
-        int str_len = 0;
-        //const EVP_MD *md = EVP_sha256();
-        str_len = FIXED_LENGTH + strlen(data->peer_attr->peerID_gen) + strlen(data->peer_attr->peer_info) + 
-		strlen(SERVER_INFO) + strlen(data->peer_attr->serv_public_key_b64) + 
-		strlen(data->peer_attr->peer_public_key_b64)
-                + strlen(data->peer_attr->nonce_serv_b64) + strlen(data->peer_attr->nonce_peer_b64)+1;
-
-        if(NULL == (info = malloc(str_len)))
-                return NULL;
-
-	
-	char * mac_str = NULL;
-        	
-	if(NULL != (mac_str = eap_oob_prepare_mac_arr(data, MACP))){
-		printf("MAC_STR = %s\n", mac_str);
-		printf("LENGTH = %d\n",strlen(mac_str));
-	}
-	wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: kmp",data->peer_attr->kmp,KMP_LEN);
-	macp = HMAC(EVP_sha256(), data->peer_attr->kmp, KMP_LEN, (u8 *)mac_str, strlen(mac_str), NULL, NULL);
-        wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: MACp",macp,16);
-
-	if(NULL != (mac_str = eap_oob_prepare_mac_arr(data, MACS))){
-		printf("MAC_STR = %s\n", mac_str);
-		printf("LENGTH = %d\n",strlen(mac_str));
-	}
-
-	wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: kms",data->peer_attr->kms,KMS_LEN);
-	macs = HMAC(EVP_sha256(), data->peer_attr->kms, KMS_LEN, (u8 *)mac_str, strlen(mac_str), NULL, NULL);
-        wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: MACs",macs,16);
-
-#endif
         return mac;
 }
 
@@ -1783,7 +1765,7 @@ static struct wpabuf * eap_oob_req_type_seven(struct eap_oob_serv_context *data,
 
         /*generate MAC*/
         mac = eap_oob_gen_MAC(data,MACS,data->peer_attr->kms, KMS_LEN, RECONNECT_EXCHANGE);
-	Base64Encode(mac, MAC_LEN, &mac_b64);
+	Base64Encode(mac+16, MAC_LEN, &mac_b64);
 	
 	//TODO : calculate MAC for encoding 
 	if(NULL != (req_obj = json_object())){
@@ -1967,7 +1949,7 @@ static struct wpabuf * eap_oob_req_type_four(struct eap_oob_serv_context *data, 
         eap_oob_gen_KDF(data,COMPLETION_EXCHANGE);
         /*generate MAC*/
         mac = eap_oob_gen_MAC(data,MACS,data->peer_attr->kms, KMS_LEN,COMPLETION_EXCHANGE);
-	Base64Encode(mac, MAC_LEN, &mac_b64);
+	Base64Encode(mac+16, MAC_LEN, &mac_b64);
 
 	Base64Encode(data->peer_attr->kms, KMS_LEN, &data->peer_attr->kms_b64);
 	Base64Encode(data->peer_attr->kmp, KMP_LEN, &data->peer_attr->kmp_b64);
@@ -2195,6 +2177,7 @@ static struct wpabuf * eap_oob_req_type_one(struct eap_oob_serv_context *data, u
 			json_array_append(ver_arr,json_integer(data->server_attr->version[count]));
 		}
 
+		
 		if(NULL == (csuite_arr = json_array())){
 			free(req_obj);
 			return NULL;
@@ -2209,7 +2192,7 @@ static struct wpabuf * eap_oob_req_type_one(struct eap_oob_serv_context *data, u
 		json_object_set_new(req_obj,CSUITES_SERV,csuite_arr);
 		json_object_set_new(req_obj,DIRECTION_SERV,json_integer(data->server_attr->dir));
 		json_object_set_new(req_obj,SERV_INFO,json_string(data->server_attr->serv_info));
-
+		
 		req_json = json_dumps(req_obj,JSON_COMPACT|JSON_PRESERVE_ORDER);
 		printf("REQ Received = %s\n", req_json);
 		len = strlen(req_json);//check here
@@ -2338,13 +2321,58 @@ static Boolean eap_oob_check(struct eap_sm *sm, void *priv,
 
 }
 
-static void  eap_oob_decode_obj(struct eap_oob_peer_data * data ,json_t * resp_obj){
+static void eap_oob_verify_param_len(struct eap_oob_peer_data * data)
+{
+
+	u32 count  = 0;
+	u32 pos = 0x01;
+
+	if(NULL == data){
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
+		return ;		
+	}
+
+	
+	for(count  = 0; count < 32; count++){
+		
+		if(data->rcvd_params & pos){
+			switch(pos){
+	
+				case PEERID_RCVD:
+					if(strlen(data->peerID_rcvd) > MAX_PEER_ID_LEN){	
+						eap_oob_set_error(data,E1003);
+					}
+					break;
+				case NONCE_RCVD:
+					if(strlen((char *)data->nonce_peer) > EAP_NOOB_NONCE_LEN){
+						eap_oob_set_error(data,E1003);
+					}
+					break;
+				case MAC_RCVD:
+					if(strlen(data->mac) > MAC_LEN){
+						eap_oob_set_error(data,E1003);	
+					}					
+					break;
+				case INFO_RCVD:
+					if(strlen(data->peer_info) > MAX_INFO_LEN){
+						eap_oob_set_error(data,E1003);
+					}
+					break;					
+			}
+		}
+		pos = pos<<1;
+	}
+}
+
+static void  eap_oob_decode_obj(struct eap_oob_peer_data * data ,json_t * resp_obj)
+{
 
 	const char * key;
 	json_t * value;
 
 	//char * nonce_peer;
 	//char * peer_public_key;
+	size_t decode_length;
 	size_t decode_length_key;
 	size_t decode_length_nonce;
 	int retval_int = 0;
@@ -2416,7 +2444,8 @@ static void  eap_oob_decode_obj(struct eap_oob_peer_data * data ,json_t * resp_o
 					data->rcvd_params |= NONCE_RCVD;
 				}
 				else if(0 == strcmp(key, MACp)){
-					data->mac = os_strdup(retval_char);
+					//data->mac = os_strdup(retval_char);
+					Base64Decode((char *)retval_char, (u8**)&data->mac,&decode_length);
 					data->rcvd_params |= MAC_RCVD;
 				}
 			    else if(0 == strcmp(key, X_COORDINATE)){
@@ -2437,6 +2466,7 @@ static void  eap_oob_decode_obj(struct eap_oob_peer_data * data ,json_t * resp_o
 		}
 
 	}
+	eap_oob_verify_param_len(data);
 }
 
 static void eap_oob_rsp_type_seven(struct eap_sm *sm,
@@ -2472,7 +2502,8 @@ static void eap_oob_rsp_type_seven(struct eap_sm *sm,
         	mac = eap_oob_gen_MAC(data,MACP,data->peer_attr->kmp, KMP_LEN, RECONNECT_EXCHANGE);
 		Base64Encode(mac, MAC_LEN, &mac_b64);
 
-		if(0 != strcmp(data->peer_attr->mac,mac_b64)){
+		//if(0 != strcmp(data->peer_attr->mac,mac_b64)){
+		if(0 != strcmp(data->peer_attr->mac,(char *)mac+16)){
 			eap_oob_set_error(data->peer_attr,E4001);
 			set_done(data, NOT_DONE);
                  	return;
@@ -2608,7 +2639,8 @@ static void eap_oob_rsp_type_four(struct eap_sm *sm,
         	mac = eap_oob_gen_MAC(data,MACP,data->peer_attr->kmp, KMP_LEN, COMPLETION_EXCHANGE);
 		Base64Encode(mac, MAC_LEN, &mac_b64);
 
-		if(0 != strcmp(data->peer_attr->mac,mac_b64)){
+		//if(0 != strcmp(data->peer_attr->mac,mac_b64)){
+		if(0 != strcmp(data->peer_attr->mac,(char *)mac+16)){
 			eap_oob_set_error(data->peer_attr,E4001);
 			set_done(data, NOT_DONE);
                  	return;

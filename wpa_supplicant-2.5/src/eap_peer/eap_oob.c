@@ -899,6 +899,50 @@ static int get_key(struct eap_oob_serv_data *data)
 }
 
 
+static void eap_oob_verify_param_len(struct eap_oob_serv_data * data)
+{
+
+        u32 count  = 0;
+        u32 pos = 0x01;
+
+        if(NULL == data){
+                wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
+                return ;
+        }
+
+        for(count  = 0; count < 32; count++){
+
+                if(data->rcvd_params & pos){
+                        switch(pos){
+
+                                case PEERID_RCVD:
+                                        if(strlen(data->peerID) > MAX_PEER_ID_LEN){
+						data->err_code = E1003;
+                                        }
+                                        break;
+                                case NONCE_RCVD:
+                                        if(strlen((char *)data->nonce_serv) > EAP_NOOB_NONCE_LEN){
+						data->err_code = E1003;
+                                        }
+                                        break;
+                                case MAC_RCVD:
+                                        if(strlen(data->MAC) > MAC_LEN){
+						data->err_code = E1003;
+                                        }
+                                        break;
+                                case INFO_RCVD:
+                                        if(strlen(data->serv_info) > MAX_INFO_LEN){
+						data->err_code = E1003;
+                                        }
+                                        break;
+                        }
+                }
+                pos = pos<<1;
+        }
+}
+
+
+
 static void  eap_oob_decode_obj(struct eap_oob_serv_data * data ,json_t * req_obj){
 
 	const char * key;
@@ -906,6 +950,7 @@ static void  eap_oob_decode_obj(struct eap_oob_serv_data * data ,json_t * req_ob
 	size_t arr_index;
 	json_t *arr_value;
 
+	size_t decode_length;
 	size_t decode_length_key;
 	size_t decode_length_nonce;
 
@@ -976,7 +1021,8 @@ static void  eap_oob_decode_obj(struct eap_oob_serv_data * data ,json_t * req_ob
 					data->rcvd_params |= INFO_RCVD;
 				}
 				else if(0 == strcmp(key, MAC_SERVER)){
-					data->MAC = os_strdup(retval_char);
+					//data->MAC = os_strdup(retval_char);
+					Base64Decode((char *)retval_char, (u8**)&data->MAC,&decode_length);	
 					data->rcvd_params |= MAC_RCVD;
 				}
 				else if(0 == strcmp(key, X_COORDINATE)){
@@ -994,6 +1040,9 @@ static void  eap_oob_decode_obj(struct eap_oob_serv_data * data ,json_t * req_ob
 						if(json_is_integer(arr_value)){
 							data->version[arr_index] = json_integer_value(arr_value);
 							printf("ARRAY value = %d\n",data->version[arr_index]);
+						}else{
+							data->err_code = E1003;
+							return;		
 						}
 					}
 					data->rcvd_params |= VERSION_RCVD;
@@ -1003,6 +1052,9 @@ static void  eap_oob_decode_obj(struct eap_oob_serv_data * data ,json_t * req_ob
 						if(json_is_integer(arr_value)){
 							data->cryptosuite[arr_index] = json_integer_value(arr_value);
 							printf("ARRAY value = %d\n",data->cryptosuite[arr_index]);
+						}else{
+							data->err_code = E1003;
+							return;		
 						}
 					}
 					data->rcvd_params |= CSUITE_RCVD;
@@ -1016,6 +1068,7 @@ static void  eap_oob_decode_obj(struct eap_oob_serv_data * data ,json_t * req_ob
 				break;
 		}	
 	}
+	eap_oob_verify_param_len(data);
 }
 
 
@@ -1413,7 +1466,7 @@ static struct wpabuf * eap_oob_rsp_type_four(const struct eap_oob_peer_context *
 
 		mac = eap_oob_gen_MAC(data,MACP,data->serv_attr->kmp, KMP_LEN,COMPLETION_EXCHANGE);
 		//TODO: handle NULL return value
-		Base64Encode(mac, MAC_LEN, &mac_b64);
+		Base64Encode(mac+16, MAC_LEN, &mac_b64);
 
 		json_object_set_new(rsp_obj,TYPE,json_integer(EAP_NOOB_TYPE_4));
 		json_object_set_new(rsp_obj,PEERID,json_string(data->peer_attr->peerID));
@@ -1482,7 +1535,6 @@ static struct wpabuf * eap_oob_rsp_type_two(struct eap_oob_peer_context *data, u
 	char* base64_nonce;
 	size_t secret_len = EAP_SHARED_SECRET_LEN;
 
-	char query[MAX_QUERY_LEN] = {0};
 	/*unsigned char * out = os_zalloc(192);
 	  const EVP_MD *md;
 	  md = EVP_sha256();*/
@@ -1578,7 +1630,6 @@ static struct wpabuf * eap_oob_rsp_type_two(struct eap_oob_peer_context *data, u
 	  eap_oob_exec_query(query, NULL,NULL,data->peerDB);*/
 	//eap_oob_db_entry(sm,data);
 
-	printf("EAP-NOOB: QUERY = %s\n",query);
 	return resp;
 
 }
@@ -1734,7 +1785,7 @@ static struct wpabuf * eap_oob_rsp_type_seven(const struct eap_oob_peer_context 
 
 		mac = eap_oob_gen_MAC(data,MACP,data->serv_attr->kmp, KMP_LEN,RECONNECT_EXCHANGE);
 		//TODO: handle NULL return value
-		Base64Encode(mac, MAC_LEN, &mac_b64);
+		Base64Encode(mac+16, MAC_LEN, &mac_b64);
 
 		json_object_set_new(rsp_obj,TYPE,json_integer(EAP_NOOB_TYPE_7));
 		json_object_set_new(rsp_obj,PEERID,json_string(data->peer_attr->peerID));
@@ -1791,9 +1842,10 @@ static struct wpabuf * eap_oob_req_type_seven(struct eap_sm *sm, json_t * req_ob
 
 		/*generate MAC*/
 		mac = eap_oob_gen_MAC(data,MACS,data->serv_attr->kms, KMS_LEN,RECONNECT_EXCHANGE);
-		Base64Encode(mac, MAC_LEN, &mac_b64);
+		Base64Encode(mac+16, MAC_LEN, &mac_b64);
 
-		if(0 != strcmp(mac_b64,data->serv_attr->MAC)){
+		//if(0 != strcmp(mac_b64,data->serv_attr->MAC)){
+		if(0 != strcmp((char *)mac+16,data->serv_attr->MAC)){
 			data->serv_attr->err_code = E4001;
 			resp = eap_oob_err_msg(data,id);
 			return resp;	
@@ -1973,9 +2025,10 @@ static struct wpabuf * eap_oob_req_type_four(struct eap_sm *sm, json_t * req_obj
 
 		/*generate MAC*/
 		mac = eap_oob_gen_MAC(data,MACS,data->serv_attr->kms, KMS_LEN,COMPLETION_EXCHANGE);
-		Base64Encode(mac, MAC_LEN, &mac_b64);
+		Base64Encode(mac+16, MAC_LEN, &mac_b64);
 
-		if(0 != strcmp(mac_b64,data->serv_attr->MAC)){
+		//if(0 != strcmp(mac_b64,data->serv_attr->MAC)){
+		if(0 != strcmp((char *)mac+16,data->serv_attr->MAC)){
 			data->serv_attr->err_code = E4001;
 			resp = eap_oob_err_msg(data,id);
 			return resp;	
@@ -2103,6 +2156,7 @@ static struct wpabuf * eap_oob_req_type_two(struct eap_sm *sm, json_t * req_obj 
 		data->serv_attr->state = WAITING;
 		if(eap_oob_db_entry(sm,data)){
 			eap_oob_config_change(sm,data);
+			//TODO : handle when direction is BOTH_DIR
 			if((PEER_TO_SERV == (data->serv_attr->dir & data->peer_attr->dir)) && 
 					FAILURE == eap_oob_send_oob(data)){
 				//TODO: Reset supplicant in this case
@@ -2110,7 +2164,10 @@ static struct wpabuf * eap_oob_req_type_two(struct eap_sm *sm, json_t * req_obj 
 				return NULL;
 			}
 
-			snprintf(query,len,"UPDATE '%s' SET Noob='%s', Hoob='%s', show_OOB=%d WHERE PeerID='%s'", data->db_table_name, data->serv_attr->noob_b64, data->serv_attr->hoob_b64, 1, data->serv_attr->peerID);
+			snprintf(query,len,"UPDATE '%s' SET Noob='%s', Hoob='%s', show_OOB=%d WHERE PeerID='%s'", 
+			data->db_table_name, data->serv_attr->noob_b64, 
+			data->serv_attr->hoob_b64, 1, data->serv_attr->peerID);
+			printf("EAP-NOOB: QUERY = %s\n",query);
 			
 			if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->peerDB,SQLITE_OPEN_READWRITE,NULL)){
                                         wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
@@ -2500,8 +2557,11 @@ static int eap_oob_prepare_peer_info_obj(struct eap_oob_data * data)
                 json_object_set_new(info_obj,PEER_NAME,json_string(data->peer_config_params->Peer_name));
                 json_object_set_new(info_obj,PEER_SERIAL_NUM,json_string(data->peer_config_params->Peer_ID_Num));
 
-                if(NULL == (data->peer_info = json_dumps(info_obj,JSON_COMPACT)))       
-		         return FAILURE;
+                if(NULL == (data->peer_info = json_dumps(info_obj,JSON_COMPACT)) || 
+			(strlen(data->peer_info) > MAX_INFO_LEN)){
+				wpa_printf(MSG_ERROR, "EAP-NOOB: Incorrect or no server info");
+ 	                       	return FAILURE;
+			}       
 		printf("PEER INFO = %s\n",data->peer_info);
         }
 
@@ -2533,7 +2593,16 @@ static int eap_oob_read_config(struct eap_oob_peer_context * data)
 	
 	free(buff);
 
-	if(data->peer_attr->config_params != CONF_PARAMS && 
+
+	if((data->peer_attr->version >MAX_SUP_VER) || 
+		(data->peer_attr->cryptosuite > MAX_SUP_CSUITES) || 
+		(data->peer_attr->dir > BOTH_DIR)){
+		wpa_printf(MSG_ERROR, "EAP-NOOB: Incorrect confing value");    
+                return FAILURE;
+
+	}
+
+	if(data->peer_attr->config_params != CONF_PARAMS &&
 		FAILURE == eap_oob_handle_incomplete_conf(data))
 		return FAILURE;
 	
