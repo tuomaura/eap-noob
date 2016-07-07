@@ -41,7 +41,7 @@
 #include <unistd.h>
 #include <sqlite3.h>
 #include <jansson.h>
-
+#include <time.h>
 
 #include "includes.h"
 #include "common.h"
@@ -916,6 +916,8 @@ int get_id_peer(char *str, size_t size)
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: Generating PeerID");
 
 	const u8 charset[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";//!#$%&'*+-/=?^_`{|}~";
+	time_t t = 0;
+	srand((unsigned)time(&t));
 	//To-Do: Check whether the generated Peer ID is already in db
 	if (size) {
 		size_t n;
