@@ -1,0 +1,59 @@
+<!-- views/profile.ejs -->
+<!doctype html>
+<html>
+<head>
+    <title>User Authentication</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <style>
+        body        { padding-top:80px; word-wrap:break-word; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="page-header text-center">
+        <h1><span class="fa fa-anchor"></span> Profile Page</h1>
+        <a href="/logout" class="btn btn-default btn-sm">Logout</a>
+    </div>
+    <% if (message.length > 0) { %>
+        <div class="alert alert-danger" id ="message_div"><%= message %></div>
+    <% } %>
+    <div class="row">
+
+        <!-- LOCAL INFORMATION -->
+        <div class="col-sm-6">
+            <div class="well">
+                <h3><span class="fa fa-user"></span> User Information</h3>
+                    <p>
+                        <strong>Id</strong>: <%= user.id %><br>
+                        <strong>User Name</strong>: <%= user.username %><br>
+                    </p>
+
+            </div>
+	    <% for(var i=0; i < userInfo.length; i++) { %>
+            <div class="well">
+                <h3><span class="fa fa-user"></span> Attached Device Information</h3>
+                    <p>
+  			 <strong>Device Name</strong>: <%= userInfo[i].peer_name %><br>
+			 <strong>Device Mac </strong>: <%= userInfo[i].peer_num %><br>
+			 <strong>Device Status</strong>: <%= userInfo[i].state %><br>
+			
+                    </p>
+            </div>
+	    <% } %>
+        </div>
+
+    </div>
+
+</div>
+<script>
+function hideAlert(){
+var alert_div = document.getElementById('message_div');
+if(alert_div)
+alert_div.style.display='none';
+}
+setTimeout(hideAlert, 6000);
+</script>
+</body>
+</html>
