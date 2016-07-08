@@ -154,6 +154,24 @@ static void eap_oob_gen_KDF(struct eap_oob_peer_context * data, int state){
 	}
 }
 
+
+static json_t * eap_oob_prepare_peer_info_json(struct eap_oob_peer_config_params * data){
+
+	json_t * info_obj = NULL;
+
+        if(NULL == data){
+                wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
+                return NULL;
+        }
+
+        if(NULL != (info_obj = json_object())){
+
+                json_object_set_new(info_obj,PEER_NAME,json_string(data->Peer_name));
+                json_object_set_new(info_obj,PEER_SERIAL_NUM,json_string(data->Peer_ID_Num));
+	}
+	return info_obj;
+}
+
 static char * eap_oob_prepare_mac_arr(const struct eap_oob_peer_context * data, int type, int state){
 
 	json_t * mac_arr = NULL;
@@ -971,6 +989,11 @@ static void  eap_oob_decode_obj(struct eap_oob_serv_data * data ,json_t * req_ob
 					wpa_printf(MSG_DEBUG,"EAP-NOOB:Copy Verify %s",json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER));
 					data->jwk_serv = json_loads(json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER),JSON_COMPACT|JSON_PRESERVE_ORDER,&error);
 					wpa_printf(MSG_DEBUG,"EAP-NOOB:Copy Verify %s",json_dumps(data->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER));
+				}else if(0 == strcmp(key, SERV_INFO)){
+					data->rcvd_params |= INFO_RCVD;
+					data->serv_info = json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER);
+					wpa_printf(MSG_DEBUG,"EAP-NOOB:Serv Info %s",data->serv_info);
+
 				}
 				eap_oob_decode_obj(data,value);
 				break;
@@ -1016,10 +1039,6 @@ static void  eap_oob_decode_obj(struct eap_oob_serv_data * data ,json_t * req_ob
 
 				}
 
-				else if(0 == strcmp(key, SERV_INFO)){
-					data->serv_info = os_strdup(retval_char);
-					data->rcvd_params |= INFO_RCVD;
-				}
 				else if(0 == strcmp(key, MAC_SERVER)){
 					//data->MAC = os_strdup(retval_char);
 					Base64Decode((char *)retval_char, (u8**)&data->MAC,&decode_length);	
@@ -1653,7 +1672,7 @@ static struct wpabuf * eap_oob_rsp_type_one(const struct eap_oob_peer_context *d
 		json_object_set_new(rsp_obj,PEERID,json_string(data->serv_attr->peerID));
 		json_object_set_new(rsp_obj,CSUITES_PEER,json_integer(data->peer_attr->cryptosuite));
 		json_object_set_new(rsp_obj,DIRECTION_PEER,json_integer(data->peer_attr->dir));
-		json_object_set_new(rsp_obj,PEERINFO,json_string(data->peer_attr->peer_info));
+		json_object_set_new(rsp_obj,PEERINFO,eap_oob_prepare_peer_info_json(data->peer_attr->peer_config_params));
 
 		resp_json = json_dumps(rsp_obj,JSON_COMPACT|JSON_PRESERVE_ORDER);
 		len = strlen(resp_json)+1;
@@ -1691,7 +1710,7 @@ static struct wpabuf * eap_oob_rsp_type_five(const struct eap_oob_peer_context *
 		json_object_set_new(rsp_obj,TYPE,json_integer(EAP_NOOB_TYPE_5));
 		json_object_set_new(rsp_obj,PEERID,json_string(data->serv_attr->peerID));
 		json_object_set_new(rsp_obj,CSUITES_PEER,json_integer(data->peer_attr->cryptosuite));
-		json_object_set_new(rsp_obj,PEERINFO,json_string(data->peer_attr->peer_info));
+		json_object_set_new(rsp_obj,PEERINFO,eap_oob_prepare_peer_info_json(data->peer_attr->peer_config_params)); //Send this only if previous info has changed
 
 		resp_json = json_dumps(rsp_obj,JSON_COMPACT);
 		len = strlen(resp_json)+1;
@@ -2544,6 +2563,7 @@ static int eap_oob_handle_incomplete_conf(struct eap_oob_peer_context * data)
 
 static int eap_oob_prepare_peer_info_obj(struct eap_oob_data * data)
 {
+	//To-Do: Send Peer Info and Server Info during fast reconnect only if they have changed
 
 	json_t * info_obj = NULL;
 
@@ -2557,7 +2577,7 @@ static int eap_oob_prepare_peer_info_obj(struct eap_oob_data * data)
                 json_object_set_new(info_obj,PEER_NAME,json_string(data->peer_config_params->Peer_name));
                 json_object_set_new(info_obj,PEER_SERIAL_NUM,json_string(data->peer_config_params->Peer_ID_Num));
 
-                if(NULL == (data->peer_info = json_dumps(info_obj,JSON_COMPACT)) || 
+                if(NULL == (data->peer_info = json_dumps(info_obj,JSON_COMPACT|JSON_PRESERVE_ORDER)) || 
 			(strlen(data->peer_info) > MAX_INFO_LEN)){
 				wpa_printf(MSG_ERROR, "EAP-NOOB: Incorrect or no server info");
  	                       	return FAILURE;
