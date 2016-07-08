@@ -124,7 +124,7 @@ module.exports = function(app, passport) {
      	   db = new sqlite3.Database(conn_str);
      	
             db.serialize(function() {
-       		 var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, userName = ?, state = ? WHERE PeerID = ?");
+       		 var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, userName = ?, serv_state = ? WHERE PeerID = ?");
        		 stmt.run(1234,noob,hoob,req.user.username,2,peer_id);
 		 stmt.finalize();
 

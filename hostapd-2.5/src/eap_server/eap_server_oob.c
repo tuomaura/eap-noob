@@ -310,6 +310,16 @@ int eap_oob_callback(void * priv , int argc, char **argv, char **azColName)
 				data->peer_info = os_malloc(os_strlen(argv[count]));
 				strcpy(data->peer_info, argv[count]);
 			}
+
+			else if (os_strcmp(azColName[count], "deviceID") == 0) {
+				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB DeviceID");
+				if(NULL != data->peer_snum)
+					os_free(data->peer_snum);
+
+				data->peer_snum = os_malloc(os_strlen(argv[count]));
+				strcpy(data->peer_snum, argv[count]);
+			}
+
 			else if (os_strcmp(azColName[count], "ServInfo") == 0) {
 				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB ServInfo");
 				if(NULL != serv->server_attr->serv_info)
@@ -454,8 +464,8 @@ static int eap_oob_db_entry(struct eap_oob_serv_context *data)
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s",__func__);
 
 	snprintf(query,1500,"INSERT INTO %s ( PeerID, Verp,Vers, serv_state, PKp,PKs, Csuitep, Csuites,Dirp, Dirs,nonce_serv,nonce_peer, PeerInfo,ServInfo," 
-			"SharedSecret, Noob, Hoob, OOB_RECEIVED_FLAG,MINSLP_count, pub_key_serv, pub_key_peer, kms, kmp, kz)"
-			"VALUES ( '%s',%d ,%d, %d, '%s', '%s', %d, %d, %d, %d, '%s','%s', '%s','%s','%s','%s','%s', %d, %d, '%s', '%s', '%s', '%s', '%s')",
+			"SharedSecret, Noob, Hoob, OOB_RECEIVED_FLAG,MINSLP_count, pub_key_serv, pub_key_peer, kms, kmp, kz, deviceID)"
+			"VALUES ( '%s',%d ,%d, %d, '%s', '%s', %d, %d, %d, %d, '%s','%s', '%s','%s','%s','%s','%s', %d, %d, '%s', '%s', '%s', '%s', '%s', '%s')",
 			data->db_table_name, peer_attr->peerID_gen, peer_attr->version,data->server_attr->version[0],
 			peer_attr->serv_state, peer_attr->peer_public_key_b64,
 			peer_attr->serv_public_key_b64, peer_attr->cryptosuite,data->server_attr->cryptosuite[0],
@@ -464,7 +474,7 @@ static int eap_oob_db_entry(struct eap_oob_serv_context *data)
 			data->server_attr->serv_info, 
 			peer_attr->shared_key_b64," "," ",0,peer_attr->minslp_count,
 			(json_dumps(peer_attr->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER)), 
-			(json_dumps(peer_attr->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER))," "," "," ");
+			(json_dumps(peer_attr->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER))," "," "," ",peer_attr->peer_snum);
 
 	printf("QUERY = %s\n",query);
 	
@@ -741,7 +751,22 @@ static int eap_oob_handle_incomplete_conf(struct eap_oob_serv_context * data)
         return SUCCESS;
 }
 
+static json_t * eap_oob_prepare_serv_json_obj(struct eap_oob_serv_config_params * data){
 
+        json_t * info_obj = NULL;
+
+        if(NULL == data){
+                wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
+                return NULL;
+        }
+
+        if(NULL != (info_obj = json_object())){
+
+                json_object_set_new(info_obj,SERV_NAME,json_string(data->Serv_name));
+                json_object_set_new(info_obj,SERV_URL,json_string(data->Serv_URL));
+	}
+	return info_obj;
+}
 
 static int eap_oob_prepare_serv_info_obj(struct eap_oob_server_data * data)
 {
@@ -758,7 +783,7 @@ static int eap_oob_prepare_serv_info_obj(struct eap_oob_server_data * data)
                 json_object_set_new(info_obj,SERV_NAME,json_string(data->serv_config_params->Serv_name));
                 json_object_set_new(info_obj,SERV_URL,json_string(data->serv_config_params->Serv_URL));
 
-                if(NULL == (data->serv_info = json_dumps(info_obj,JSON_COMPACT)) || 
+                if(NULL == (data->serv_info = json_dumps(info_obj,JSON_COMPACT|JSON_PRESERVE_ORDER)) || 
 						(strlen(data->serv_info) > MAX_INFO_LEN)){
                 	wpa_printf(MSG_ERROR, "EAP-NOOB: Incorrect or no server info");
                         return FAILURE;
@@ -1902,7 +1927,7 @@ static struct wpabuf * eap_oob_req_type_five(struct eap_oob_serv_context *data, 
 		json_object_set_new(req_obj,TYPE,json_integer(EAP_NOOB_TYPE_5));
 		json_object_set_new(req_obj,PEERID,json_string(data->peer_attr->peerID_gen));
 		json_object_set_new(req_obj,CSUITES_SERV,csuite_arr);
-		json_object_set_new(req_obj,SERV_INFO,json_string(data->server_attr->serv_info));
+		json_object_set_new(req_obj,SERV_INFO,eap_oob_prepare_serv_json_obj(data->server_attr->serv_config_params));//To-Do send this only if changed (check even at peer side)
 
 		//free(csuite_arr);
 		req_json = json_dumps(req_obj,JSON_COMPACT);
@@ -2159,6 +2184,7 @@ static struct wpabuf * eap_oob_req_type_one(struct eap_oob_serv_context *data, u
 	json_t * ver_arr = NULL;
 	json_t * csuite_arr = NULL;
 
+
 	/* build PeerID */
 	if (get_id_peer(id_peer, MAX_PEER_ID_LEN)) {
 		wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to generate PeerID");
@@ -2193,7 +2219,7 @@ static struct wpabuf * eap_oob_req_type_one(struct eap_oob_serv_context *data, u
 		json_object_set_new(req_obj,PEERID,json_string(data->peer_attr->peerID_gen));
 		json_object_set_new(req_obj,CSUITES_SERV,csuite_arr);
 		json_object_set_new(req_obj,DIRECTION_SERV,json_integer(data->server_attr->dir));
-		json_object_set_new(req_obj,SERV_INFO,json_string(data->server_attr->serv_info));
+		json_object_set_new(req_obj,SERV_INFO,eap_oob_prepare_serv_json_obj(data->server_attr->serv_config_params));
 		
 		req_json = json_dumps(req_obj,JSON_COMPACT|JSON_PRESERVE_ORDER);
 		printf("REQ Received = %s\n", req_json);
@@ -2395,6 +2421,11 @@ static void  eap_oob_decode_obj(struct eap_oob_peer_data * data ,json_t * resp_o
 					wpa_printf(MSG_DEBUG,"EAP-NOOB: Copy verify: %s",json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER));
 					data->jwk_peer = json_loads(json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER),JSON_COMPACT|JSON_PRESERVE_ORDER,&error);	
 					wpa_printf(MSG_DEBUG,"EAP-NOOB: Copy verify1: %s",json_dumps(data->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER));
+					data->rcvd_params |= PKEY_RCVD;
+				}else if(0 == strcmp(key,PEER_INFO)){
+					data->peer_info = json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER);	
+					wpa_printf(MSG_DEBUG,"EAP-NOOB: Peer Info: %s",data->peer_info);
+					data->rcvd_params |= INFO_RCVD;	
 				}
 				eap_oob_decode_obj(data,value);
 				break;
@@ -2434,11 +2465,9 @@ static void  eap_oob_decode_obj(struct eap_oob_peer_data * data ,json_t * resp_o
 				else if(0 == strcmp(key, PUBLICKEY_PEER)){
 					data->peer_public_key_b64 = os_strdup(retval_char);
 					data->pub_key_peer_len = Base64Decode((char *)data->peer_public_key_b64, &data->peer_public_key, &decode_length_key);
-					data->rcvd_params |= PKEY_RCVD;
 				}
-				else if(0 == strcmp(key, PEER_INFO)){
-					data->peer_info = os_strdup(retval_char);
-					data->rcvd_params |= INFO_RCVD;
+				else if(0 == strcmp(key, PEER_SERIAL_NUM)){
+					data->peer_snum = os_strdup(retval_char);
 				}
 				else if(0 == strcmp(key, NONCE_PEER)){
 					data->nonce_peer_b64 = os_strdup(retval_char);

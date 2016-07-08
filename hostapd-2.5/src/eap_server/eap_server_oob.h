@@ -78,7 +78,11 @@
 #define PEERID			"PeerID"
 #define PUBLICKEY_SERV		"PKs"
 #define SERV_INFO		"ServerInfo"
-#define MACs			"MACs" 
+#define MACs			"MACs"
+
+#define PEER_NAME                       "PeerName"
+#define PEER_SERIAL_NUM                 "PeerSNum"
+ 
 
 #define VERSION_PEER 		"Verp"
 #define CSUITES_PEER		"Cryptosuitep"
@@ -147,7 +151,9 @@
 				kmp TEXT,\
 				kz TEXT,\
 				pub_key_serv TEXT,\
-				pub_key_peer TEXT)" 
+				pub_key_peer TEXT,\
+				userName,\
+				deviceID TEXT NOT NULL UNIQUE)" 
 
 
 
@@ -188,6 +194,7 @@ struct eap_oob_peer_data{
         u32 minsleep; 
 	Boolean record_present;
 	char * peer_info;
+	char * peer_snum;
 	char *NAI;
 	char *user_name_peer;
 	char *realm;
