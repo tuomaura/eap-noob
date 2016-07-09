@@ -126,7 +126,7 @@
 #define CONF_PARAMS             (DIRECTION_RCVD|CSUITE_RCVD|VERSION_RCVD|SERV_NAME_RCVD|SERV_URL_RCVD)
 
 /*SQL query to create peer connection database*/
-#define CREATE_CONNECTION_TABLE "CREATE TABLE peers_connected(\
+#define CREATE_CONNECTION_TABLE "CREATE TABLE IF NOT EXISTS peers_connected(\
                                 PeerID TEXT PRIMARY KEY,\
                                 Verp INTEGER,\
                                 Vers INTEGER,\

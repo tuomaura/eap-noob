@@ -631,11 +631,30 @@ static int eap_oob_create_db(struct eap_oob_serv_context * data)
 
 		/*check for the peer ID inside the DB*/	
 		/*TODO: handle condition where there are two tuples for same peer id*/
+		if(SQLITE_OK != sqlite3_open_v2(data->db_name, &data->servDB, SQLITE_OPEN_READWRITE,NULL)){
+			wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to open and Create Table");
+			//TODO: free data here.
+			return FAILURE;
+		}
+
+		if(FAILURE == eap_oob_exec_query(CREATE_CONNECTION_TABLE, NULL,NULL,data->servDB)){
+			//sqlite3_close(data->servDB);
+			wpa_printf(MSG_ERROR, "EAP-NOOB: connections Table creation failed");
+			//TODO: free data here.
+			return FAILURE;
+		}
 
 		if(data->peer_attr->peerID_rcvd){
 
 			os_snprintf(buff,200,"SELECT COUNT(*) from %s WHERE  PeerID = '%s'",
 					data->db_table_name,data->peer_attr->peerID_rcvd);
+
+			if(SQLITE_OK != sqlite3_open_v2(data->db_name, &data->servDB, SQLITE_OPEN_READWRITE,NULL)){
+				wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to open and Create Table");
+				//TODO: free data here.
+				return FAILURE;
+			}
+
 			if(FAILURE != eap_oob_exec_query(buff, eap_oob_db_entry_check,
 						data,data->servDB) && (data->peer_attr->record_present)){
 
