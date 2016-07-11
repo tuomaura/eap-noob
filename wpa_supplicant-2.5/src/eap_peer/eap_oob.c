@@ -512,6 +512,8 @@ static int eap_oob_get_hoob(struct eap_oob_peer_context *data,unsigned char *out
 	char buff[4] = {0};
 	u32 count = 0;
 
+	memset(ver_arr,0 , sizeof(sizeof(u32) * MAX_SUP_VER * 3));	
+	memset(csuite_arr,0 , sizeof(sizeof(u32) * MAX_SUP_CSUITES * 3));	
 
 	for(count = 0; count < MAX_SUP_VER; count ++){
                 snprintf(buff,4,"%d",data->serv_attr->version[count]);
@@ -535,7 +537,8 @@ static int eap_oob_get_hoob(struct eap_oob_peer_context *data,unsigned char *out
 			data->serv_attr->nonce_peer_b64,data->serv_attr->noob_b64);	
 
 	mac_str_len = os_strlen(mac_string);
-
+	
+	printf("HOOB string  = %s\n length = %d\n",mac_string,mac_str_len);
 	free(ver_arr);
 	free(csuite_arr);
 	wpa_printf(MSG_DEBUG,"EAP-NOOB: HOOB start ");
@@ -1149,7 +1152,7 @@ static void eap_oob_config_change(struct eap_sm *sm , struct eap_oob_peer_contex
 	struct wpa_supplicant *wpa_s = (struct wpa_supplicant *) sm->msg_ctx;
 
 	if(wpa_s){
-		snprintf(buff,120,"%s+%d@eap-noob.net",data->peer_attr->peerID, data->serv_attr->state);
+		snprintf(buff,120,"%s+s%d@eap-noob.net",data->peer_attr->peerID, data->serv_attr->state);
 		len = os_strlen(buff);
 
 		os_free(wpa_s->current_ssid->eap.identity);
@@ -2008,6 +2011,7 @@ static struct wpabuf * eap_oob_req_type_five(struct eap_sm *sm,json_t * req_obj 
 
 }
 
+
 static struct wpabuf * eap_oob_req_type_four(struct eap_sm *sm, json_t * req_obj , struct eap_oob_peer_context *data, u8 id){
 
 	struct wpabuf *resp = NULL;
@@ -2236,6 +2240,12 @@ static struct wpabuf * eap_oob_req_type_one(struct eap_sm *sm,json_t * req_obj ,
 
 	if(data->serv_attr->rcvd_params != TYPE_ONE_PARAMS){
 		data->serv_attr->err_code = E1002;
+		resp = eap_oob_err_msg(data,id);
+		return resp;
+	}
+
+	if(NULL == os_strstr(data->serv_attr->serv_info, "https://")){
+		data->serv_attr->err_code = E1003;
 		resp = eap_oob_err_msg(data,id);
 		return resp;
 	}
