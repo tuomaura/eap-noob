@@ -498,12 +498,86 @@ err:
 	return rv;
 }
 
+static char * eap_oob_prepare_hoob_arr(const struct eap_oob_peer_context * data){
+
+	json_t * hoob_arr = NULL;
+	json_t * ver_arr = NULL;
+	char * hoob_str = NULL;
+	json_error_t error;
+	json_t * csuite_arr = NULL;
+	u32 count  = 0;
+	int dir = (data->serv_attr->dir & data->peer_attr->dir);
+
+	wpa_printf(MSG_DEBUG, "EAP-NOOB: %s",__func__);
+	if(NULL != (hoob_arr = json_array())){
+		
+		json_array_append(hoob_arr,json_integer(dir));
+
+		if(NULL == (ver_arr = json_array())){
+			free(hoob_arr);
+			return NULL;
+		}
+
+		for(count = 0; count < MAX_SUP_VER ; count++){
+			json_array_append(ver_arr,json_integer(data->serv_attr->version[count]));
+		}
+
+		json_array_append(hoob_arr,ver_arr);
+		
+		json_array_append(hoob_arr,json_integer(data->peer_attr->version));
+
+		json_array_append(hoob_arr,json_string(data->serv_attr->peerID));
+
+	        if(NULL == (csuite_arr = json_array())){
+                        free(hoob_arr);
+                        return NULL;
+                }
+
+                for(count = 0; count < MAX_SUP_CSUITES ; count++){
+                        json_array_append(csuite_arr,json_integer(data->serv_attr->cryptosuite[count]));
+                }
+
+		json_array_append(hoob_arr,csuite_arr);
+
+		json_array_append(hoob_arr,json_integer(data->serv_attr->dir));
+
+		json_array_append(hoob_arr,json_string(data->serv_attr->serv_info));
+
+		json_array_append(hoob_arr,json_integer(data->peer_attr->cryptosuite));
+			
+		json_array_append(hoob_arr,json_integer(data->peer_attr->dir));
+		
+		json_array_append(hoob_arr,json_string(data->peer_attr->peer_info));
+			
+		json_array_append(hoob_arr,json_loads(json_dumps(data->serv_attr->jwk_serv,
+			JSON_COMPACT|JSON_PRESERVE_ORDER),JSON_COMPACT|JSON_PRESERVE_ORDER,&error));
+		
+		json_array_append(hoob_arr,json_string(data->serv_attr->nonce_serv_b64));
+			
+		json_array_append(hoob_arr,json_loads(json_dumps(data->serv_attr->jwk_peer,
+			JSON_COMPACT|JSON_PRESERVE_ORDER),JSON_COMPACT|JSON_PRESERVE_ORDER,&error));
+		
+		json_array_append(hoob_arr,json_string(data->serv_attr->nonce_peer_b64));
+
+		json_array_append(hoob_arr,json_string(data->serv_attr->noob_b64));
+
+		hoob_str = json_dumps(hoob_arr,JSON_COMPACT|JSON_PRESERVE_ORDER);
+	}
+
+	free(ver_arr);
+	free(csuite_arr);
+	return hoob_str;
+}
+
 static int eap_oob_get_hoob(struct eap_oob_peer_context *data,unsigned char *out, size_t outlen)
 {
 	const EVP_MD *md = EVP_sha256();
 	EVP_MD_CTX *mctx = NULL;
 	int rv = 0;
 	size_t mdlen;
+	char * mac_string = NULL; //TODO : allocate memory dynamically
+	int mac_str_len= 0;
+#if 0
 	char mac_string[1000] = {0}; //TODO : allocate memory dynamically
 	int mac_str_len= 0;
 
@@ -535,12 +609,13 @@ static int eap_oob_get_hoob(struct eap_oob_peer_context *data,unsigned char *out
 			data->serv_attr->serv_public_key_b64,
 			data->serv_attr->nonce_serv_b64,data->serv_attr->peer_public_key_b64,
 			data->serv_attr->nonce_peer_b64,data->serv_attr->noob_b64);	
-
+	free(ver_arr);
+	free(csuite_arr);
+#endif
+	mac_string = eap_oob_prepare_hoob_arr(data);
 	mac_str_len = os_strlen(mac_string);
 	
 	printf("HOOB string  = %s\n length = %d\n",mac_string,mac_str_len);
-	free(ver_arr);
-	free(csuite_arr);
 	wpa_printf(MSG_DEBUG,"EAP-NOOB: HOOB start ");
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-OOB: Value:",mac_string, mac_str_len);	
 
