@@ -575,7 +575,11 @@ static int eap_oob_parse_NAI(struct eap_oob_serv_context * data, int len)
 			token = strsep(&data->peer_attr->user_name_peer, "+");
 			data->peer_attr->peerID_rcvd = token;
 			token = strsep(&data->peer_attr->user_name_peer, "+");
-			data->peer_attr->peer_state = (int) strtol(token, NULL, 10);	
+			if(*token != 's'){
+				eap_oob_set_error(data->peer_attr,E1001);
+				return FAILURE;	
+			}
+			data->peer_attr->peer_state = (int) strtol(token+1, NULL, 10);	
 		}
 		else {
 			if(0 != strcmp("noob",data->peer_attr->user_name_peer)){
@@ -1637,6 +1641,9 @@ static int eap_oob_get_hoob(struct eap_oob_serv_context *data,unsigned char *out
 	char buff[4] = {0};
 	u32 count = 0;
 
+	memset(ver_arr , 0 , sizeof(u32) * MAX_SUP_VER * 3);
+	memset(csuite_arr, 0 , sizeof(u32) * MAX_SUP_CSUITES * 3);
+
 	for(count = 0; count < MAX_SUP_VER; count ++){
 		snprintf(buff,4,"%d",data->server_attr->version[count]);
 		strcat(ver_arr,buff);
@@ -1661,7 +1668,10 @@ static int eap_oob_get_hoob(struct eap_oob_serv_context *data,unsigned char *out
 	
         mac_str_len = os_strlen(mac_string);
 
+	printf("HOOB string  = %s\n length  = %d\n",mac_string,mac_str_len);		
+
 	free(ver_arr);
+	free(csuite_arr);
         wpa_printf(MSG_DEBUG,"EAP-NOOB: HOOB start ");
         wpa_hexdump_ascii(MSG_DEBUG,"EAP-OOB: Value:",mac_string, mac_str_len);
 
@@ -1989,7 +1999,11 @@ static struct wpabuf * eap_oob_req_type_four(struct eap_oob_serv_context *data, 
                 wpa_printf(MSG_DEBUG, "EAP-NOOB: Hoob Base64 %s", hoob_b64);
         }
 
-	 //TODO: compare HOOB
+	 	
+	if(0 != strcmp((char *)hoob, (char *)data->peer_attr->hoob)){
+		eap_oob_set_error(data->peer_attr,E4001);
+		return eap_oob_err_msg(data,id);
+	}
 	
 	 /*generate KDF*/
         eap_oob_gen_KDF(data,COMPLETION_EXCHANGE);
