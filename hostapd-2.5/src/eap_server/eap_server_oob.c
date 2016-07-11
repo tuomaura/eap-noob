@@ -311,15 +311,6 @@ int eap_oob_callback(void * priv , int argc, char **argv, char **azColName)
 				strcpy(data->peer_info, argv[count]);
 			}
 
-			else if (os_strcmp(azColName[count], "deviceID") == 0) {
-				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB DeviceID");
-				if(NULL != data->peer_snum)
-					os_free(data->peer_snum);
-
-				data->peer_snum = os_malloc(os_strlen(argv[count]));
-				strcpy(data->peer_snum, argv[count]);
-			}
-
 			else if (os_strcmp(azColName[count], "ServInfo") == 0) {
 				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB ServInfo");
 				if(NULL != serv->server_attr->serv_info)
@@ -464,8 +455,8 @@ static int eap_oob_db_entry(struct eap_oob_serv_context *data)
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s",__func__);
 
 	snprintf(query,1500,"INSERT INTO %s ( PeerID, Verp,Vers, serv_state, PKp,PKs, Csuitep, Csuites,Dirp, Dirs,nonce_serv,nonce_peer, PeerInfo,ServInfo," 
-			"SharedSecret, Noob, Hoob, OOB_RECEIVED_FLAG,MINSLP_count, pub_key_serv, pub_key_peer, kms, kmp, kz, deviceID)"
-			"VALUES ( '%s',%d ,%d, %d, '%s', '%s', %d, %d, %d, %d, '%s','%s', '%s','%s','%s','%s','%s', %d, %d, '%s', '%s', '%s', '%s', '%s', '%s')",
+			"SharedSecret, Noob, Hoob, OOB_RECEIVED_FLAG,MINSLP_count, pub_key_serv, pub_key_peer, kms, kmp, kz)"
+			"VALUES ( '%s',%d ,%d, %d, '%s', '%s', %d, %d, %d, %d, '%s','%s', '%s','%s','%s','%s','%s', %d, %d, '%s', '%s', '%s', '%s', '%s')",
 			data->db_table_name, peer_attr->peerID_gen, peer_attr->version,data->server_attr->version[0],
 			peer_attr->serv_state, peer_attr->peer_public_key_b64,
 			peer_attr->serv_public_key_b64, peer_attr->cryptosuite,data->server_attr->cryptosuite[0],
@@ -474,7 +465,7 @@ static int eap_oob_db_entry(struct eap_oob_serv_context *data)
 			data->server_attr->serv_info, 
 			peer_attr->shared_key_b64," "," ",0,peer_attr->minslp_count,
 			(json_dumps(peer_attr->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER)), 
-			(json_dumps(peer_attr->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER))," "," "," ",peer_attr->peer_snum);
+			(json_dumps(peer_attr->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER))," "," "," ");
 
 	printf("QUERY = %s\n",query);
 	
@@ -523,9 +514,14 @@ static int eap_oob_db_update(struct eap_oob_serv_context *data, u8 type)
 					data->peer_attr->peerID_gen);
 			break;
 
+		case UPDATE_STATE_ERROR:
+			snprintf(query,len,"UPDATE '%s' SET serv_state=%d, errorCode=%d  WHERE PeerID='%s'",data->db_table_name,data->peer_attr->serv_state,
+					data->peer_attr->err_code,data->peer_attr->peerID_gen);
+			break;
+
 		case UPDATE_STATE_MINSLP:
-			snprintf(query,len,"UPDATE '%s' SET serv_state=%d, MINSLP_count =%d  WHERE PeerID='%s'",data->db_table_name,data->peer_attr->serv_state,
-					data->peer_attr->minslp_count,data->peer_attr->peerID_gen);
+			snprintf(query,len,"UPDATE '%s' SET serv_state=%d, MINSLP_count =%d,sleepTime = %ld  WHERE PeerID='%s'",data->db_table_name,data->peer_attr->serv_state,
+					data->peer_attr->minslp_count,data->peer_attr->sleep_time.tv_sec,data->peer_attr->peerID_gen);
 			break;
 		case UPDATE_PERSISTENT_KEYS_SECRET:
 			snprintf(query,len,"UPDATE '%s' SET kms='%s', kmp='%s', kz='%s', serv_state=%d  WHERE PeerID='%s'",data->db_table_name,data->peer_attr->kms_b64,
@@ -1474,6 +1470,12 @@ static struct wpabuf * eap_oob_err_msg(struct eap_oob_serv_context *data, u8 id)
 			os_free(req_json);
 			return NULL;
 		}
+		
+		if(FAILURE == eap_oob_db_update(data,UPDATE_STATE_ERROR)){
+			//eap_oob_set_error(); //Internal error
+			//set_done(data, NOT_DONE);
+			wpa_printf(MSG_DEBUG,"Fail to Write Error to DB");
+		}
 
 		wpabuf_put_data(req,req_json,len);  
 		os_free(req_json);
@@ -2133,6 +2135,9 @@ static struct wpabuf * eap_oob_req_type_three(struct eap_oob_serv_context *data,
 		json_object_set_new(req_obj,TYPE,json_integer(EAP_NOOB_TYPE_3));
 		json_object_set_new(req_obj,PEERID,json_string(data->peer_attr->peerID_gen));	
 		json_object_set_new(req_obj,MINSLEEP,json_integer(data->peer_attr->minsleep));
+		clock_gettime(CLOCK_REALTIME, &data->peer_attr->sleep_time);
+		wpa_printf(MSG_DEBUG,"Current Time is %ld",data->peer_attr->sleep_time.tv_sec);
+		data->peer_attr->sleep_time.tv_sec = data->peer_attr->sleep_time.tv_sec + data->peer_attr->minsleep;
 
 		req_json = json_dumps(req_obj,JSON_COMPACT);
 		len = strlen(req_json)+1; 
@@ -2502,6 +2507,15 @@ static void eap_oob_verify_param_len(struct eap_oob_peer_data * data)
 	}
 }
 
+int eap_oob_FindIndex( int value )
+{
+    int index = 0;  
+
+    while ( index < 13 && error_code[index] != value ) ++index;
+
+    return index;
+}
+
 static void  eap_oob_decode_obj(struct eap_oob_peer_data * data ,json_t * resp_obj)
 {
 
@@ -2542,7 +2556,7 @@ static void  eap_oob_decode_obj(struct eap_oob_peer_data * data ,json_t * resp_o
 
 			case JSON_INTEGER:
 					
-				if(0 == (retval_int = json_integer_value(value))){
+				if(0 == (retval_int = json_integer_value(value)) && 0 != strcmp(key,TYPE) ){
 					eap_oob_set_error(data,E1003);
 					return;
 				}
@@ -2558,6 +2572,8 @@ static void  eap_oob_decode_obj(struct eap_oob_peer_data * data ,json_t * resp_o
 				else if(0 == strcmp(key, DIRECTION_PEER)){
 					data->dir = retval_int;
 					data->rcvd_params |= DIRECTION_RCVD;
+				}else if(0 == strcmp(key, ERR_CODE)){
+					eap_oob_set_error(data,eap_oob_FindIndex(retval_int));
 				}
 				break;
 
@@ -3027,7 +3043,12 @@ static void eap_oob_process(struct eap_sm *sm, void *priv, struct wpabuf *respDa
 			break;
 
 		case NONE: 
-			wpa_printf(MSG_DEBUG, "EAP-NOOB: ERROR received");			
+			wpa_printf(MSG_DEBUG, "EAP-NOOB: ERROR received");
+			eap_oob_decode_obj(data->peer_attr,resp_obj);
+			if(FAILURE == eap_oob_db_update(data,UPDATE_STATE_ERROR)){
+				wpa_printf(MSG_DEBUG,"Fail to Write Error to DB");
+			}
+				
 			set_done(data,DONE);
 			set_success(data,FAILURE);
 			break;

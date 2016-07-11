@@ -1,6 +1,7 @@
 #include <openssl/obj_mac.h>
 #include <openssl/evp.h>
 #include <openssl/ec.h>
+#include <time.h>
 
 
 #ifndef EAPOOB_H
@@ -153,7 +154,8 @@
 				pub_key_serv TEXT,\
 				pub_key_peer TEXT,\
 				userName,\
-				deviceID TEXT NOT NULL UNIQUE)" 
+				sleepTime UNSIGNED BIG INT,\
+				errorCode INTEGER)" 
 
 
 
@@ -161,7 +163,7 @@
 enum{COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW}; //Flag used during KDF and MAC generation
 enum {UNREG, WAITING, OOB, RECONNECT,REGISTERED};
 enum {NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7};
-enum {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET};
+enum {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,UPDATE_STATE_ERROR};
 enum oob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001}; 
 enum {HOOB,MACS,MACP};
 
@@ -260,6 +262,8 @@ struct eap_oob_peer_data{
 	
 	json_t * jwk_serv;
 	json_t * jwk_peer;	
+
+	struct timespec sleep_time;
 	
 };
 

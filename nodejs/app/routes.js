@@ -3,6 +3,20 @@ var sqlite3 = require('sqlite3').verbose();
 var db;
 var conn_str = '/home/cloud-user/7july_testing/eapnoobimplementation/hostapd-2.5/hostapd/peer_connection_db';
 var url = require('url');
+var state_array = ['Unregistered','OOB Waiting', 'OOB Received' ,'Reconnect Exchange', 'Registered'];
+var error_info = [ "No error",
+                             "Invalid NAI or peer state",
+                             "Invalid message structure",
+                             "Invalid data",
+                             "Unexpected message type",
+                             "Unexpected peer identifier",
+                             "Invalid ECDH key",
+                             "Unwanted peer",
+                             "State mismatch, user action required",
+                             "No mutually supported protocol version",
+                             "No mutually supported cryptosuite",
+                             "No mutually supported OOB direction",
+                             "MAC verification failure"];
 module.exports = function(app, passport) {
 
     // =====================================
@@ -47,11 +61,14 @@ module.exports = function(app, passport) {
     app.get('/profile', isLoggedIn, function(req, res) {
 	var userDetails = new Array();
 	var i;
-	var state = ['Unregistered','OOB Waiting', 'OOB Received' ,'Reconnect Exchange', 'Registered'];
 	var parseJson;
+	var d = new Date();
+	var seconds = Math.ceil(d.getTime() / 1000);
+	var val = 0;
+	console.log(seconds);
 	i = 0;
 	db = new sqlite3.Database(conn_str);
-	db.all('SELECT PeerID, PeerInfo, serv_state FROM peers_connected where userName = ?', req.user.username , function(err,rows){
+	db.all('SELECT PeerID, PeerInfo, serv_state,sleepTime,errorCode FROM peers_connected where userName = ?', req.user.username , function(err,rows){
 		if(!err){
 			rows.forEach(function(row) {
 				userDetails[i] = new Object();
@@ -59,7 +76,24 @@ module.exports = function(app, passport) {
 				parseJson= JSON.parse(row.PeerInfo);
         			userDetails[i].peer_name = parseJson['PeerName'];
 				userDetails[i].peer_num = parseJson['PeerSNum'];
-				userDetails[i].state = state[parseInt(row.serv_state,10)];
+				if(row.errorCode){
+					userDetails[i].state_num = '0';
+					userDetails[i].state = error_info[parseInt(row.errorCode)];
+				}
+				else{ 
+					userDetails[i].state = state_array[parseInt(row.serv_state,10)];
+					userDetails[i].state_num = row.serv_state;
+				}
+				if(row.sleepTime)
+				val = parseInt(row.sleepTime) - seconds; 
+				console.log(val);
+				if(row.sleepTime && parseInt(row.serv_state) != 4 && parseInt(val) > 0){
+					val = parseInt(val) + 60;
+					userDetails[i].sTime = val;
+				}else{
+					userDetails[i].sTime = '0';
+				}	
+				
 				i++;
 			});
 		
@@ -138,7 +172,33 @@ module.exports = function(app, passport) {
      	res.redirect('/profile');
     }
 });
+    app.get('/stateUpdate', function(req, res) {
+    	//console.log(req);
+        var peer_id = req.query.PeerId;
+        var state = req.query.State;
+        var queryObject = url.parse(req.url,true).query;
+        var len = Object.keys(queryObject).length;
+	
+        if(len != 2 || peer_id == undefined || state == undefined)
+        {
+    	   console.log("Its wrong Query");
+	   res.json({"error":"Wrong Query."});
+	   //res.json({message: 'Wrong query String! Please try again with proper Query!!'});
+        }else{
+    	   console.log('req received');
+	    db = new sqlite3.Database(conn_str);
+            db.get('SELECT serv_state,errorCode FROM peers_connected WHERE PeerID = ?', peer_id, function(err, row) {
+
+            	db.close();
+                if (!row){res.json({"state": "No record found.","state_num":"0"});}
+		else if(row.errorCode) { res.json({"state":error_info[parseInt(row.errorCode)], "state_num":"0"}); console.log(row.errorCode) }
+                else if(parseInt(row.serv_state) == parseInt(state)) {res.json({"state":""});}
+		else {res.json({"state": state_array[parseInt(row.serv_state)], "state_num": row.serv_state});}
+            });
+	}
+    });
 };
+
 
 // route middleware to make sure a user is logged in
 function isLoggedIn(req, res, next) {
