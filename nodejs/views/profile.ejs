@@ -5,6 +5,7 @@
     <title>User Authentication</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
     <style>
         body        { padding-top:80px; word-wrap:break-word; }
     </style>
@@ -13,7 +14,7 @@
 <div class="container">
 
     <div class="page-header text-center">
-        <h1><span class="fa fa-anchor"></span> Profile Page</h1>
+        <h1><span class="fa fa-anchor"></span> Aalto University Profile Page</h1>
         <a href="/logout" class="btn btn-default btn-sm">Logout</a>
     </div>
     <% if (message.length > 0) { %>
@@ -38,8 +39,10 @@
                     <p>
   			 <strong>Device Name</strong>: <%= userInfo[i].peer_name %><br>
 			 <strong>Device Mac </strong>: <%= userInfo[i].peer_num %><br>
-			 <strong>Device Status</strong>: <%= userInfo[i].state %><br>
-			
+			 <%var id_val = 'Dcountdown' + i %>
+			 <strong id = <%=id_val%> value1 = <%=userInfo[i].peer_id%> value2 = <%=userInfo[i].state_num%> >Device Status: <%= userInfo[i].state %></strong><br>
+			 <%var id_val = 'countdown' + i %>
+          		 <div id= <%=id_val%> value = <%=userInfo[i].sTime%> ></div>
                     </p>
             </div>
 	    <% } %>
@@ -49,13 +52,106 @@
     </div>
 
 </div>
+
 <script>
-function hideAlert(){
-var alert_div = document.getElementById('message_div');
-if(alert_div)
-alert_div.style.display='none';
+
+function postItem(element,post_interval,interval,div_element) {
+	var el = document.getElementById(element);
+	var peer_id = el.getAttribute("value1");
+	var peer_state = el.getAttribute("value2");
+	var div = document.getElementById(div_element);
+	var url_str = "https://86.50.169.56:8080/stateUpdate/?PeerId=" + peer_id + "&State=" + peer_state; 
+	console.log(url_str);
+        var xhttp = new XMLHttpRequest();
+  	xhttp.onreadystatechange = function() {
+    		if (xhttp.readyState == 4 && xhttp.status == 200) {
+			var obj = JSON.parse(xhttp.responseText)
+			if(obj.state == ""){
+      				console.log("No State change");
+			}
+			else{
+				clearInterval(post_interval);
+				clearInterval(interval);
+				div.style.display='none';
+				el.innerHTML = "Device Status: " + obj.state;
+				el.setAttribute("value2",obj.state_num);
+			}
+			
+    		}
+  	};
+  	xhttp.open("GET", url_str, true);
+  	xhttp.send();
+
+}//postItem()
+
+function hideAlert(){	
+	var alert_div = document.getElementById('message_div');
+	if(alert_div)
+	alert_div.style.display='none';
 }
+
 setTimeout(hideAlert, 6000);
+
+function countdown(element, minutes, seconds) {
+    // Fetch the display element
+    var el = document.getElementById(element);
+    var eld = 'D' + element; 
+    // Set the timer
+    var post_interval = setInterval(function() {
+        postItem(eld,post_interval, interval,element);
+    }, 5000);
+
+    var interval = setInterval(function() {
+        if(seconds == 0) {
+            if(minutes == 0) {
+                (el.innerHTML = "Authenticating Please Wait... ");     
+		//clearInterval(post_interval);
+                clearInterval(interval);
+		
+                return;
+            } else {
+                minutes--;
+                seconds = 60;
+            }
+        }
+
+        if(minutes > 0) {
+            var minute_text = minutes + (minutes > 1 ? ' minutes' : ' minute');
+        } else {
+            var minute_text = '';
+        }
+
+        var second_text = seconds > 1 ? '' : '';
+        el.innerHTML = minute_text + ' ' + seconds + ' ' + second_text + '';
+        seconds--;
+    }, 1000);
+
+   
+
+}
+
+function callTimers(){
+	var element;
+	var elm;	
+	for(i=0;;i++){
+		element = 'countdown' + i;
+		elm = 'Dcountdown' + i;
+		console.log(element);
+		var el = document.getElementById(element);
+		if(el){
+			var sec = el.getAttribute("value");
+			console.log(sec + ':' + parseInt(sec));
+			var state = document.getElementById(elm).getAttribute("value2");
+			if(parseInt(state) != 4 && parseInt(state) != 0) 
+			countdown(element,0,parseInt(sec));
+		}
+		else
+		break;	
+	}
+}
+
+callTimers();
 </script>
+
 </body>
 </html>
