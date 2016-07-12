@@ -19,6 +19,8 @@
     </div>
     <% if (message.length > 0) { %>
         <div class="alert alert-danger" id ="message_div"><%= message %></div>
+    <% }else { %>
+	<div class="alert alert-danger" id ="message_div" style = "display:none"></div>
     <% } %>
     <div class="row">
 
@@ -34,7 +36,7 @@
             </div>
     <% if (userInfo && userInfo.length > 0) { %>
 	    <% for(var i=0; i < userInfo.length; i++) { %>
-            <div class="well">
+            <div class="well" id = <%=userInfo[i].peer_id%>>
                 <h3> Attached Device Information</h3>
                     <p>
   			 <strong>Device Name</strong>: <%= userInfo[i].peer_name %><br>
@@ -43,6 +45,7 @@
 			 <strong id = <%=id_val%> value1 = <%=userInfo[i].peer_id%> value2 = <%=userInfo[i].state_num%> >Device Status: <%= userInfo[i].state %></strong><br>
 			 <%var id_val = 'countdown' + i %>
           		 <div id= <%=id_val%> value = <%=userInfo[i].sTime%> ></div>
+			 <button onclick="deleteDevice(this)" value = <%=userInfo[i].peer_id%>>Delete</button> 
                     </p>
             </div>
 	    <% } %>
@@ -54,6 +57,44 @@
 </div>
 
 <script>
+function deletePost(peer_id){
+
+	var url_str = "https://130.233.193.68:8080/deleteDevice/?PeerId=" + peer_id; 
+	console.log(url_str);
+        var xhttp = new XMLHttpRequest();
+  	xhttp.onreadystatechange = function() {
+    		if (xhttp.readyState == 4 && xhttp.status == 200) {
+			var obj = JSON.parse(xhttp.responseText)
+			if(obj.status == "success"){
+				document.getElementById(peer_id).remove();
+				var div_alert = document.getElementById('message_div');
+				div_alert.innerHTML = "Device Deleted Successfully";
+				div_alert.style.display='block';
+				setTimeout(hideAlert, 6000);
+			}
+			else{
+				document.getElementById('message_div').innerHTML = "Device Delete Unsuccessful";
+				div_alert.style.display='block';
+				setTimeout(hideAlert, 6000);				
+			}
+			
+    		}
+  	};
+  	xhttp.open("GET", url_str, true);
+  	xhttp.send();
+
+}
+
+
+function deleteDevice(button){
+ 
+   var retVal = confirm("Are you sure you want to delete this device permanently ?");
+   if (retVal == true) {
+    	deletePost(button.getAttribute("value"))
+   } else {
+    	
+   }	
+}
 
 function postItem(element,post_interval,interval,div_element) {
 	var el = document.getElementById(element);
@@ -121,8 +162,8 @@ function countdown(element, minutes, seconds) {
             var minute_text = '';
         }
 
-        var second_text = seconds > 1 ? '' : '';
-        el.innerHTML = minute_text + ' ' + seconds + ' ' + second_text + '';
+        var second_text = seconds > 1 ? 'seconds' : 'second';
+        el.innerHTML = 'Please wait for:' + minute_text + ' ' + seconds + ' ' + second_text + '';
         seconds--;
     }, 1000);
 

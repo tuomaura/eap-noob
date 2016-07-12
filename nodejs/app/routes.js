@@ -197,6 +197,29 @@ module.exports = function(app, passport) {
             });
 	}
     });
+
+    app.get('/deleteDevice', function(req, res) {
+    	//console.log(req);
+        var peer_id = req.query.PeerId;
+        var queryObject = url.parse(req.url,true).query;
+        var len = Object.keys(queryObject).length;
+	
+        if(len != 1 || peer_id == undefined)
+        {
+    	   console.log("Its wrong Query");
+	   res.json({"status":"failed"});
+	   //res.json({message: 'Wrong query String! Please try again with proper Query!!'});
+        }else{
+    	   console.log('req received');
+	    db = new sqlite3.Database(conn_str);
+            db.get('DELETE FROM peers_connected WHERE PeerID = ?', peer_id, function(err, row) {
+
+            	db.close();
+                if (err){res.json({"status": "failed"});}
+		else {res.json({"status": "success"});}
+            });
+	}
+    });
 };
 
 
