@@ -45,7 +45,7 @@
 #define MAC_LEN				16
 #define FIXED_LENGTH             	6
 
-#define HASH_LEN     			32
+#define HASH_LEN     			16
 #define NUM_OF_STATES           	5
 #define MAX_MSG_TYPES           	8
 
