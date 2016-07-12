@@ -1,7 +1,7 @@
 // app/routes.js
 var sqlite3 = require('sqlite3').verbose();
 var db;
-var conn_str = '/home/cloud-user/7july_testing/eapnoobimplementation/hostapd-2.5/hostapd/peer_connection_db';
+var conn_str = '/home/kserver/Desktop/temp1/eapnoobimplementation/hostapd-2.5/hostapd/peer_connection_db';
 var url = require('url');
 var state_array = ['Unregistered','OOB Waiting', 'OOB Received' ,'Reconnect Exchange', 'Registered'];
 var error_info = [ "No error",
@@ -194,6 +194,29 @@ module.exports = function(app, passport) {
 		else if(row.errorCode) { res.json({"state":error_info[parseInt(row.errorCode)], "state_num":"0"}); console.log(row.errorCode) }
                 else if(parseInt(row.serv_state) == parseInt(state)) {res.json({"state":""});}
 		else {res.json({"state": state_array[parseInt(row.serv_state)], "state_num": row.serv_state});}
+            });
+	}
+    });
+
+    app.get('/deleteDevice', function(req, res) {
+    	//console.log(req);
+        var peer_id = req.query.PeerId;
+        var queryObject = url.parse(req.url,true).query;
+        var len = Object.keys(queryObject).length;
+	
+        if(len != 1 || peer_id == undefined)
+        {
+    	   console.log("Its wrong Query");
+	   res.json({"status":"failed"});
+	   //res.json({message: 'Wrong query String! Please try again with proper Query!!'});
+        }else{
+    	   console.log('req received');
+	    db = new sqlite3.Database(conn_str);
+            db.get('DELETE FROM peers_connected WHERE PeerID = ?', peer_id, function(err, row) {
+
+            	db.close();
+                if (err){res.json({"status": "failed"});}
+		else {res.json({"status": "success"});}
             });
 	}
     });

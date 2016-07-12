@@ -42,7 +42,7 @@
 #define MAC_LEN			16
 #define FIXED_LENGTH             6
 
-#define HASH_LEN     		32
+#define HASH_LEN     		16
 
 /* Valid or Invalid states*/
 	
