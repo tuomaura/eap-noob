@@ -2347,7 +2347,7 @@ static struct wpabuf * eap_oob_process (struct eap_sm *sm, void *priv,
 		const struct wpabuf *reqData)
 {
 	struct eap_oob_peer_context *data = priv;
-	struct wpabuf *resp; //TODO:free
+	struct wpabuf *resp = NULL; //TODO:free
 	const u8 *pos; //TODO: free
 	size_t len;
 	json_t * req_obj = NULL;  //TODO: free
@@ -2399,7 +2399,7 @@ static struct wpabuf * eap_oob_process (struct eap_sm *sm, void *priv,
 
 
 	printf("State :%d, mtype = %d\n",data->serv_attr->state,msgtype);
-	if(VALID != state_message_check[data->serv_attr->state][msgtype-1]){
+	if(VALID != state_message_check[data->serv_attr->state][msgtype]){
 		data->serv_attr->err_code = E2002;
 		resp = eap_oob_err_msg(data,id);
 		wpa_printf(MSG_DEBUG, "EAP-NOOB: State mismatch");
@@ -2408,7 +2408,11 @@ static struct wpabuf * eap_oob_process (struct eap_sm *sm, void *priv,
 	}
 
 	switch(msgtype){
+	
 
+		case NONE:
+			wpa_printf(MSG_DEBUG, "EAP-NOOB: Error message received");
+			break;
 		case EAP_NOOB_TYPE_1:
 			resp = eap_oob_req_type_one(sm,req_obj ,data,id);
 			break;
