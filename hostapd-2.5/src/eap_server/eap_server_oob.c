@@ -1433,7 +1433,8 @@ static int eap_oob_cal_pow(u32 num, u32 pow)
 static int eap_oob_get_minsleep(struct eap_oob_serv_context *data)
 {
 	//TODO:  Include actual implementation for calculating the waiting time.
-	return ((int)(eap_oob_cal_pow(2,data->peer_attr->minslp_count)))% 3600;
+	//return ((int)(eap_oob_cal_pow(2,data->peer_attr->minslp_count)))% 3600;
+	return 80;
 }
 
 static struct wpabuf * eap_oob_err_msg(struct eap_oob_serv_context *data, u8 id)
@@ -2449,14 +2450,14 @@ static Boolean eap_oob_check(struct eap_sm *sm, void *priv,
 		return FALSE;		
 	}
 
-	wpa_printf(MSG_DEBUG, "EAP-NOOB: Received frame: opcode=%d", data->peer_attr->recv_msg-1);
+	wpa_printf(MSG_DEBUG, "EAP-NOOB: Received frame: opcode=%d", data->peer_attr->recv_msg);
 	printf("STATE = %d\n",data->peer_attr->serv_state);
 
 	printf("VERIFY STATE SERV = %d PEER = %d\n", data->peer_attr->serv_state,
 				data->peer_attr->peer_state);
 	if((NONE != data->peer_attr->recv_msg) && ((state >= NUM_OF_STATES) || 
 			(data->peer_attr->recv_msg > MAX_MSG_TYPES) || 
-			(VALID != state_message_check[state][data->peer_attr->recv_msg-1]))){
+			(VALID != state_message_check[state][data->peer_attr->recv_msg]))){
 		eap_oob_set_error(data->peer_attr,E1004);	
 		return FALSE;
 	}		
@@ -3221,7 +3222,7 @@ static int eap_oob_getTimeout(struct eap_sm *sm, void *priv)
         /* Recommended retransmit times: retransmit timeout 5 seconds,
          * per-message timeout 15 seconds, i.e., 3 tries. */
         sm->MaxRetrans = 0; /* total 3 attempts */
-        return 0;
+        return 1;
 }
 
 
