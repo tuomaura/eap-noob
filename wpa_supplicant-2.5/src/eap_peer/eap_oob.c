@@ -1078,7 +1078,7 @@ static void  eap_oob_decode_obj(struct eap_oob_serv_data * data ,json_t * req_ob
 
 			case JSON_INTEGER:
 
-				if(0 == (retval_int = json_integer_value(value))){
+				if(0 == (retval_int = json_integer_value(value)) && 0 != strcmp(key,TYPE)){
 					data->err_code = E1003;
 					return;
 				}
