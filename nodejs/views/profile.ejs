@@ -59,7 +59,7 @@
 <script>
 function deletePost(peer_id){
 
-	var url_str = <%=url%>;
+	var url_str = "<%=url%>";
 	url_str = url_str + "/deleteDevice/?PeerId=" + peer_id; 
 	console.log(url_str);
         var xhttp = new XMLHttpRequest();
@@ -91,7 +91,7 @@ function deleteDevice(button){
  
    var retVal = confirm("Are you sure you want to delete this device permanently ?");
    if (retVal == true) {
-    	deletePost(button.getAttribute("value"))
+    	deletePost(button.getAttribute("value"));
    } else {
     	
    }	
@@ -102,13 +102,13 @@ function postItem(element,post_interval,interval,div_element) {
 	var peer_id = el.getAttribute("value1");
 	var peer_state = el.getAttribute("value2");
 	var div = document.getElementById(div_element);
-	var url_str = <%=url%>;
+	var url_str = "<%=url%>";
 	url_str = url_str + "/stateUpdate/?PeerId=" + peer_id + "&State=" + peer_state; 
 	//console.log(url_str);
         var xhttp = new XMLHttpRequest();
   	xhttp.onreadystatechange = function() {
     		if (xhttp.readyState == 4 && xhttp.status == 200) {
-			var obj = JSON.parse(xhttp.responseText)
+			var obj = JSON.parse(xhttp.responseText);
 			if(obj.state == ""){
       				console.log("No State change");
 			}
