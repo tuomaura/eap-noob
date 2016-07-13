@@ -229,13 +229,18 @@ struct eap_oob_peer_data{
 	size_t shared_key_b64_len;
 
 	char * noob_b64;
+	size_t noob_len;
 	u8 * noob;
 
 	char * hoob_b64;
+	size_t hoob_len;
 	u8 * hoob;
 	
 	enum oob_err_code err_code;
 	int oob_recv;
+
+	json_t * jwk_serv;
+	json_t * jwk_peer;	
 
 	u8 * msk;
 	char * msk_b64;
@@ -260,8 +265,6 @@ struct eap_oob_peer_data{
 	char * y_b64;
 	size_t y_len;
 	
-	json_t * jwk_serv;
-	json_t * jwk_peer;	
 
 	struct timespec sleep_time;
 	

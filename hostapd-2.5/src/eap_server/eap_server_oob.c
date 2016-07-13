@@ -122,13 +122,13 @@ int Base64Decode(char* b64message, unsigned char** buffer, size_t* length) { //D
 	
 	switch (len % 4) // Pad with trailing '='s
 	{
-		case 0: break; // No pad chars in this case
+		case 0: temp = os_zalloc(len + 1);strcpy(temp,b64message); break; // No pad chars in this case
 		case 2: temp = os_zalloc(len + 3);strcpy(temp,b64message); strcat(temp,"==");break; // Two pad chars
 		case 3: temp = os_zalloc(len +2);strcpy(temp,b64message); strcat(temp,"=");break; // One pad char
 		default: return 0;
 	}
 
-	for(i=0;i<=len;i++){
+	for(i=0;i<len;i++){
 		if(temp[i] == '-'){
 			temp[i] = '+';
 		}else if(temp[i] == '_'){
@@ -138,7 +138,6 @@ int Base64Decode(char* b64message, unsigned char** buffer, size_t* length) { //D
 	}
 
 	decodeLen = calcDecodeLength(temp);
-
 	*buffer = (unsigned char*)os_zalloc(decodeLen + 1);
 	(*buffer)[decodeLen] = '\0';
 
@@ -222,6 +221,30 @@ int eap_oob_db_entry_check(void * priv , int argc, char **argv, char **azColName
 	return 0;
 }
 
+int eap_oob_verify_oob_msg_len(struct eap_oob_peer_data *data)
+{
+
+
+	if(data){
+		if(data->noob){
+			if(data->noob_len > EAP_NOOB_NONCE_LEN){
+				eap_oob_set_error(data,E1003);
+				return FAILURE;	
+			}
+		}
+		
+		if(data->hoob){
+			if(data->hoob_len > HASH_LEN){
+				eap_oob_set_error(data,E1003);
+				return FAILURE;		
+			}
+		}
+
+	}
+
+	return SUCCESS;	
+}
+
 int eap_oob_callback(void * priv , int argc, char **argv, char **azColName)
 {
 
@@ -238,7 +261,7 @@ int eap_oob_callback(void * priv , int argc, char **argv, char **azColName)
 	for (count =0; count <argc; count++) {
 
 		if (argv[count]) {
-
+			//printf("#################%s \n",azColName[count]);
 			if (os_strcmp(azColName[count], "PeerID") == 0) {
 				if(NULL != data->peerID_rcvd)
 					os_free(data->peerID_gen);
@@ -335,7 +358,7 @@ int eap_oob_callback(void * priv , int argc, char **argv, char **azColName)
 				data->noob_b64 = os_malloc(os_strlen(argv[count]));
 				strcpy(data->noob_b64, argv[count]);
 				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB noob %d",(int)os_strlen(argv[count]));
-				Base64Decode(data->noob_b64, &data->noob, &len);
+				data->noob_len = Base64Decode(data->noob_b64, &data->noob, &len);
 			}	
 			else if (os_strcmp(azColName[count], "Hoob") == 0  && os_strlen(argv[count]) > 0) {
 				if(NULL != data->hoob_b64)
@@ -343,8 +366,8 @@ int eap_oob_callback(void * priv , int argc, char **argv, char **azColName)
 
 				data->hoob_b64 = os_malloc(os_strlen(argv[count]));
 				strcpy(data->hoob_b64, argv[count]);
-				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB hoob");
-				Base64Decode(data->hoob_b64, &data->hoob, &len);
+				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB hoob %s",data->hoob_b64);
+				data->hoob_len = Base64Decode(data->hoob_b64, &data->hoob, &len);
 			}
 			else if (os_strcmp(azColName[count], "OOB_RECEIVED_FLAG") == 0 && (data->peer_state != RECONNECT && data->serv_state != RECONNECT )) { 
 				//To-Do This has to be properly checked and not only oob received flag
@@ -364,7 +387,7 @@ int eap_oob_callback(void * priv , int argc, char **argv, char **azColName)
 			else if (os_strcmp(azColName[count], "MINSLP_count") == 0) {
 				data->minslp_count = (int )strtol(argv[count],NULL,10);
 			}else if (os_strcmp(azColName[count], "pub_key_serv") == 0){
-				data->jwk_serv = json_loads(argv[count], JSON_COMPACT|JSON_PRESERVE_ORDER, &error); //ToDo: check and free this before assigning if required
+				data->jwk_serv = json_loads(argv[count], JSON_COMPACT, &error); //ToDo: check and free this before assigning if required
 				wpa_printf(MSG_DEBUG,"EAP-NOOB:Serv_Key: %s",json_dumps(data->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER));
 			
 			}else if (os_strcmp(azColName[count], "pub_key_peer") == 0){
@@ -463,9 +486,9 @@ static int eap_oob_db_entry(struct eap_oob_serv_context *data)
 			peer_attr->dir,data->server_attr->dir,
 			peer_attr->nonce_serv_b64,peer_attr->nonce_peer_b64, peer_attr->peer_info,
 			data->server_attr->serv_info, 
-			peer_attr->shared_key_b64," "," ",0,peer_attr->minslp_count,
+			peer_attr->shared_key_b64,"","",0,peer_attr->minslp_count,
 			(json_dumps(peer_attr->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER)), 
-			(json_dumps(peer_attr->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER))," "," "," ");
+			(json_dumps(peer_attr->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER)),"","","");
 
 	printf("QUERY = %s\n",query);
 	
@@ -897,11 +920,17 @@ static int eap_oob_serv_ctxt_init( struct eap_oob_serv_context * data, struct ea
 		}
 
 		if(SUCCESS == (retval = eap_oob_parse_NAI(data,len))){			
-			retval = eap_oob_create_db(data);
+			if(!(retval = eap_oob_create_db(data))) return retval;
+			
 			if(data->peer_attr->peerID_gen){
 				if(eap_oob_verify_peerID(data) && 
 				   eap_oob_verify_state(data));
+
+				if((data->peer_attr->serv_state == WAITING || 
+					data->peer_attr->serv_state == OOB) && 
+					eap_oob_verify_oob_msg_len(data->peer_attr));		
 			}
+
 			if(data->peer_attr->err_code == NO_ERROR){
 				data->peer_attr->next_req = 
 				eap_oob_get_next_req(data->peer_attr);		
@@ -911,7 +940,7 @@ static int eap_oob_serv_ctxt_init( struct eap_oob_serv_context * data, struct ea
                         data->peer_attr->serv_state == RECONNECT){
 
                         if(FAILURE == eap_oob_read_config(data)){
-                                wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to initialize context");
+                                wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to initialize context");
                                 return FAILURE;
                         }
                 }
@@ -1433,8 +1462,7 @@ static int eap_oob_cal_pow(u32 num, u32 pow)
 static int eap_oob_get_minsleep(struct eap_oob_serv_context *data)
 {
 	//TODO:  Include actual implementation for calculating the waiting time.
-	//return ((int)(eap_oob_cal_pow(2,data->peer_attr->minslp_count)))% 3600;
-	return 80;
+	return (int)((eap_oob_cal_pow(2,data->peer_attr->minslp_count))* (rand()%8) + 1) % 3600 ;
 }
 
 static struct wpabuf * eap_oob_err_msg(struct eap_oob_serv_context *data, u8 id)
@@ -3134,6 +3162,10 @@ static void eap_oob_free_ctx(struct eap_oob_serv_context * data)
 			os_free(peer->shared_key);
 		if(peer->shared_key_b64)
 			os_free(peer->shared_key_b64);
+		if(peer->jwk_serv)
+			os_free(peer->jwk_serv);
+		if(peer->jwk_peer)
+			os_free(peer->jwk_peer);
 		os_free(peer);
 	}
 
