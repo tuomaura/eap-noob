@@ -59,7 +59,8 @@
 <script>
 function deletePost(peer_id){
 
-	var url_str = "https://130.233.193.68:8080/deleteDevice/?PeerId=" + peer_id; 
+	var url_str = <%=url%>;
+	url_str = url_str + "/deleteDevice/?PeerId=" + peer_id; 
 	console.log(url_str);
         var xhttp = new XMLHttpRequest();
   	xhttp.onreadystatechange = function() {
@@ -101,7 +102,8 @@ function postItem(element,post_interval,interval,div_element) {
 	var peer_id = el.getAttribute("value1");
 	var peer_state = el.getAttribute("value2");
 	var div = document.getElementById(div_element);
-	var url_str = "https://130.233.193.68:8080/stateUpdate/?PeerId=" + peer_id + "&State=" + peer_state; 
+	var url_str = <%=url%>;
+	url_str = url_str + "/stateUpdate/?PeerId=" + peer_id + "&State=" + peer_state; 
 	//console.log(url_str);
         var xhttp = new XMLHttpRequest();
   	xhttp.onreadystatechange = function() {

@@ -13,10 +13,11 @@ var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var session      = require('express-session');
 
-var configDB = require('./config/database.js');
 var sqlite3 = require('sqlite3').verbose();
 var db;
-var conn_str = '/home/cloud-user/7july_testing/eapnoobimplementation/hostapd-2.5/hostapd/peer_connection_db';
+
+var configDB = require('./config/database.js');
+var conn_str = configDB.dbPath;
 
 var fs = require('fs');
 var https = require('https');

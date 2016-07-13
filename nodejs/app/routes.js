@@ -1,7 +1,10 @@
 // app/routes.js
 var sqlite3 = require('sqlite3').verbose();
 var db;
-var conn_str = '/home/kserver/Desktop/temp1/eapnoobimplementation/hostapd-2.5/hostapd/peer_connection_db';
+
+var configDB = require('../config/database.js');
+var conn_str = configDB.dbPath;
+
 var url = require('url');
 var state_array = ['Unregistered','OOB Waiting', 'OOB Received' ,'Reconnect Exchange', 'Registered'];
 var error_info = [ "No error",
@@ -98,11 +101,11 @@ module.exports = function(app, passport) {
 			});
 		
 		 	res.render('profile.ejs', {
-            			user : req.user, userInfo : userDetails, message: req.flash('profileMessage') // get the user out of session and pass to template
+            			user : req.user, userInfo : userDetails, url : configDB.url, message: req.flash('profileMessage') // get the user out of session and pass to template
         		});
 		}else{
 		 	res.render('profile.ejs', {
-            			user : req.user,userInfo :'',  message: req.flash('profileMessage') // get the user out of session and pass to template
+            			user : req.user,userInfo :'', url : configDB.url,  message: req.flash('profileMessage') // get the user out of session and pass to template
         		});
 			
 		}

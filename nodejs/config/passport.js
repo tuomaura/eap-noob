@@ -7,7 +7,10 @@ var bcrypt = require('bcrypt-nodejs');
 
 // load up the user model
 var db;
-var conn_str = '/home/cloud-user/7july_testing/eapnoobimplementation/hostapd-2.5/hostapd/peer_connection_db';
+
+var configDB = require('./database.js');
+var conn_str = configDB.dbPath;
+
 
 function hashPassword(password) {
 	return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
