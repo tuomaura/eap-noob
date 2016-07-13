@@ -343,23 +343,18 @@ int Base64Decode(char* b64message, unsigned char** buffer, size_t* length) { //D
 	BIO *bio, *b64;
 
 	int decodeLen,i;
-
+	
 	int len = strlen(b64message);
 	char * temp =NULL;
 
-
-
-
 	switch (len % 4) // Pad with trailing '='s
 	{
-		case 0: break; // No pad chars in this case
+		case 0: temp = os_zalloc(len + 1);temp = strcpy(temp,b64message);break; // No pad chars in this case
 		case 2: temp = os_zalloc(len + 3);strcpy(temp,b64message); strcat(temp,"==");break; // Two pad chars
 		case 3: temp = os_zalloc(len +2);strcpy(temp,b64message); strcat(temp,"=");break; // One pad char
 		default: return 0;
 	}
-
-
-	for(i=0;i<=len;i++){
+	for(i=0;i< len;i++){
 		if(temp[i] == '-'){
 			temp[i] = '+';
 		}else if(temp[i] == '_'){
@@ -369,7 +364,6 @@ int Base64Decode(char* b64message, unsigned char** buffer, size_t* length) { //D
 	}
 
 	decodeLen = calcDecodeLength(temp);
-
 	*buffer = (unsigned char*)os_zalloc(decodeLen + 1);
 	(*buffer)[decodeLen] = '\0';
 
@@ -1267,7 +1261,7 @@ int eap_oob_callback(void * priv , int argc, char **argv, char **azColName){
 
 	for (count =0; count <argc; count++) {
 
-		if (argv[count]) {
+		if (argv[count] && azColName[count]) {
 			//printf("TOKEN = %s COLUMN = %s\n ", argv[count], azColName[count]);
 			if (os_strcmp(azColName[count], "ssid") == 0) {
 				if(NULL != data->ssid)
@@ -1377,6 +1371,7 @@ int eap_oob_callback(void * priv , int argc, char **argv, char **azColName){
 
 				data->hoob_b64 = os_malloc(os_strlen(argv[count]));
 				strcpy(data->hoob_b64, argv[count]);
+				wpa_printf(MSG_DEBUG,"EAP-NOOB: HOOB: %s",argv[count]);
 
 				Base64Decode(data->hoob_b64, &data->hoob, &len);
 			}else if (os_strcmp(azColName[count], "pub_key_serv") == 0){
@@ -1413,7 +1408,10 @@ int eap_oob_callback(void * priv , int argc, char **argv, char **azColName){
 				strcpy(data->kz_b64, argv[count]);
 				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB kz");
 				Base64Decode(data->kz_b64, &data->kz, &len);
-			}
+			}/*else if(os_strcmp(azColName[count], "show_OOB") == 0){
+				printf("SHOW OOB RECEIVED\n");
+			}*/
+		
 		}
 	}
 
@@ -1467,7 +1465,7 @@ static int eap_oob_db_entry(struct eap_sm *sm,struct eap_oob_peer_context *data)
 			data->serv_attr->nonce_peer_b64, data->serv_attr->nonce_serv_b64, 
 			data->serv_attr->minsleep, data->serv_attr->serv_info, 
 			data->peer_attr->peer_info,data->serv_attr->shared_key_b64,
-			" "," ",0,(json_dumps(data->serv_attr->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER)),
+			"","",0,(json_dumps(data->serv_attr->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER)),
 			(json_dumps(data->serv_attr->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER)));
 
 
@@ -2550,6 +2548,7 @@ static int eap_oob_create_db(struct eap_sm *sm,struct eap_oob_peer_context * dat
 
 			if(FAILURE !=  eap_oob_exec_query(buff, eap_oob_callback,data,
 						data->peerDB)){
+				//printf("AFTER DB CALLBACK \n");
 				data->peer_attr->peerID = os_malloc(strlen(data->serv_attr->peerID)+1);
 				os_memcpy(data->peer_attr->peerID,data->serv_attr->peerID,
 						strlen(data->serv_attr->peerID)+1);
@@ -2740,7 +2739,8 @@ static int eap_oob_peer_ctxt_init(struct eap_sm *sm,  struct eap_oob_peer_contex
 		/* DB Table name */
 		data->db_table_name = os_strdup(TABLE_NAME);
 
-		retval = eap_oob_create_db(sm , data);		
+		if(FAILURE == (retval = eap_oob_create_db(sm , data)))
+			return retval;		
 		
 		if(data->serv_attr->state == UNREG || 
 			data->serv_attr->state == RECONNECT){	
