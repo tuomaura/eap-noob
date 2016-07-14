@@ -154,6 +154,25 @@ module.exports = function(app, passport) {
 	   req.flash('profileMessage','Wrong query String! Please try again with proper Query!!' );
 	   res.redirect('/profile');
 	   //res.json({message: 'Wrong query String! Please try again with proper Query!!'});
+        }else if(noob.length != 22 || hoob.length != 22){
+
+     	   console.log("Updating Error!!!" + peer_id);
+     	   db = new sqlite3.Database(conn_str);
+     	
+            db.serialize(function() {
+       		 var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, errorCode = ?, userName = ?, serv_state = ? WHERE PeerID = ?");
+       		 stmt.run(1234,"","",3,req.user.username,2,peer_id);
+		 stmt.finalize();
+
+       		  /*db.each("SELECT PeerID, OOB_RECEIVED_FLAG FROM peers_connected", function(err, row) {
+       			console.log(row.PeerID + ": " + row.OOB_RECEIVED_FLAG);     
+                  });*/
+    	    });
+
+	db.close();
+	req.flash('profileMessage','Invalid Data');
+     	res.redirect('/profile');
+
         }else{
 
      	   //console.log("Get Called!!!" + peer_id +" "+ noob +" "+ hoob);
@@ -173,8 +192,8 @@ module.exports = function(app, passport) {
 	db.close();
 	req.flash('profileMessage','Received Successfully');
      	res.redirect('/profile');
-    }
-});
+       }
+    });
     app.get('/stateUpdate', function(req, res) {
     	//console.log(req);
         var peer_id = req.query.PeerId;

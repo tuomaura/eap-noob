@@ -372,8 +372,8 @@ int eap_oob_callback(void * priv , int argc, char **argv, char **azColName)
 			else if (os_strcmp(azColName[count], "OOB_RECEIVED_FLAG") == 0 && (data->peer_state != RECONNECT && data->serv_state != RECONNECT )) { 
 				//To-Do This has to be properly checked and not only oob received flag
 				data->oob_recv = (int) strtol(argv[count],NULL,10);
-
-				if(data->oob_recv == 1234){				
+				
+				 if(data->oob_recv == 1234){				
 					wpa_printf(MSG_DEBUG,"EAP-NOOB: Received oob!!");
 					data->serv_state = OOB;
 					data->peer_state = OOB;
@@ -381,7 +381,7 @@ int eap_oob_callback(void * priv , int argc, char **argv, char **azColName)
 					wpa_printf(MSG_DEBUG,"EAP-NOOB: Still waiting stage");
 					data->peer_state = WAITING;
 				}
-
+			
 
 			}
 			else if (os_strcmp(azColName[count], "MINSLP_count") == 0) {
@@ -421,10 +421,32 @@ int eap_oob_callback(void * priv , int argc, char **argv, char **azColName)
 				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB kz");
 				Base64Decode(data->kz_b64, &data->kz, &len);
 			}	
+			else if (os_strcmp(azColName[count], "errorCode") == 0 && os_strlen(argv[count]) > 0) {
+
+				data->err_code = (int) strtol(argv[count],NULL,10);
+				eap_oob_set_error(data,data->err_code);
+				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB Error during OOB");
+			}	
 				
 
 		}
 	}
+/*	
+	 if(data->oob_recv == 1234){				
+		wpa_printf(MSG_DEBUG,"EAP-NOOB: Received oob!!");
+		data->serv_state = OOB;
+		data->peer_state = OOB;
+
+		if(data->error_code && !data->noob_b64 && !data->hoob_b64){
+			wpa_printf(MSG_DEBUG,"EAP-NOOB: Received oob with Error!!");
+			eap_oob_set_error(data,E1003);
+			
+		}
+	}else if (data->serv_state == WAITING){
+		wpa_printf(MSG_DEBUG,"EAP-NOOB: Still waiting stage");
+		data->peer_state = WAITING;
+	}
+*/
 
 	return 0;
 }
@@ -690,6 +712,7 @@ static int eap_oob_create_db(struct eap_oob_serv_context * data)
 					return FAILURE;
 				}	
 				eap_oob_exec_query(buff, eap_oob_callback,data,data->servDB);
+				
 			}else{
 
 				wpa_printf(MSG_ERROR, "EAP-NOOB: No record found ");
