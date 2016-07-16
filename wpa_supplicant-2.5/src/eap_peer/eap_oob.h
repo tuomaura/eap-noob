@@ -146,7 +146,8 @@
 					kz TEXT,\
 					pub_key_serv TEXT,\
 					pub_key_peer TEXT,\
-					show_OOB INTEGER)"  
+					show_OOB INTEGER,\
+					err_code INTEGER)"  
 
 /*SQL Query to check peerID data*/
 

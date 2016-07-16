@@ -1538,7 +1538,8 @@ static struct wpabuf * eap_oob_verify_peerID(struct eap_oob_peer_context * data,
 		resp = eap_oob_err_msg(data,id);
 
 	}
-	return resp;
+	//return resp;
+	return NULL;
 }
 
 
@@ -2404,10 +2405,10 @@ static struct wpabuf * eap_oob_process (struct eap_sm *sm, void *priv,
 		os_free(req_obj);
 		return resp;
 	}
-
-	switch(msgtype){
+	data->serv_attr->msgtype;
+	/*switch(msgtype){
 	
-
+			
 		case NONE:
 			wpa_printf(MSG_DEBUG, "EAP-NOOB: Error message received");
 			break;
@@ -2438,7 +2439,7 @@ static struct wpabuf * eap_oob_process (struct eap_sm *sm, void *priv,
 		default:
 			wpa_printf(MSG_DEBUG, "EAP-NOOB: Unknown EAP-NOOB request received");
 			return NULL;
-	}
+	}*/
 
 	return resp;
 }
