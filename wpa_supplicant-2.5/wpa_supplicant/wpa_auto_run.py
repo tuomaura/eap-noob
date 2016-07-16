@@ -18,13 +18,13 @@ def update_file(signum, frame):
     c = con.cursor()
 
     file = open("file.txt", "w")
-
-    for row in c.execute('select ssid,ServInfo,PeerID,Noob,Hoob from connections where show_OOB = 1'):
+    
+    for row in c.execute('select ssid,ServInfo,PeerID,Noob,Hoob,err_code from connections where show_OOB = 1'):
         print (row[0] + '\n')
         servinfo = json.loads(row[1])
+        if(row[6]!=0):
+             file.write("Error code: "+str(row[6]))
         file.write(row[0] + ',' + servinfo['ServName'] + ',' + servinfo['ServUrl'] +'/?PeerId='+row [2] + '&Noob=' + row[3] + '&Hoob=' + row[4] + '\n')
-
-
     file.close()
     con.close()
     return
@@ -145,7 +145,6 @@ def check_result():
 
 	
 def main():
-
 	interface_list = []
 
 	file = open("file.txt", "w")
@@ -155,7 +154,7 @@ def main():
     	webbrowser.open(url,new=1,autoraise=True)
     	signal.signal(signal.SIGUSR1, update_file)
 
-	if True != check_wpa():
+	if not(check_wpa()):
 		print "WPA_Supplicant not found"
 		return
 
@@ -171,19 +170,19 @@ def main():
 	
 	print "Interface found"
 	prepare(interface_list)
-        network_scan()
+	network_scan()
 	
 	while True:
 		ssid_list = get_result()
 		if len(ssid_list) > 0:
-			print ssid_list
+			print ssid_listgh
 			break
 		time.sleep(2)
 	
 	reconfigure_peer()	
 
 	while True:
-		if True == check_result():
+		if check_result():
 			break
 		time.sleep(5)
 
@@ -192,5 +191,4 @@ def main():
 	webbrowser.open_new_tab('https://www.youtube.com')
 	
 if __name__=='__main__':
-        main()
-
+    main()
