@@ -2405,10 +2405,11 @@ static struct wpabuf * eap_oob_process (struct eap_sm *sm, void *priv,
 		os_free(req_obj);
 		return resp;
 	}
-	data->serv_attr->msgtype;
+
+	data->serv_attr->err_code = msgtype;
 	/*switch(msgtype){
 	
-			
+			data->serv_attr->err_code = msgtype;
 		case NONE:
 			wpa_printf(MSG_DEBUG, "EAP-NOOB: Error message received");
 			break;
