@@ -59,7 +59,7 @@
 # Default to EAP-SIM and EAP-AKA based on fixed identity prefixes
 
 # Wildcard for all other identities
-*		OOB
+*		NOOB
 
 # Phase 2 (tunnelled within EAP-PEAP or EAP-TTLS) users
 

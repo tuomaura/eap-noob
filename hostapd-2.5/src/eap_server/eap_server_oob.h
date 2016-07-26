@@ -133,8 +133,6 @@
                                 Vers INTEGER,\
                                 peer_state INTEGER,\
                                 serv_state INTEGER,\
-                                PKp TEXT,\
-                                PKs TEXT,\
                                 Csuites INTEGER,\
                                 Csuitep INTEGER,\
                                 Dirp INTEGER,\
@@ -167,24 +165,24 @@ enum {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET
 enum oob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001}; 
 enum {HOOB,MACS,MACP};
 
-struct eap_oob_serv_config_params{
+struct eap_noob_serv_config_params{
 
         char * Serv_name;
         char * Serv_URL;
 
 };
 
-struct eap_oob_serv_context{
+struct eap_noob_serv_context{
 
-        struct eap_oob_peer_data *peer_attr;
-	struct eap_oob_server_data *server_attr;
+        struct eap_noob_peer_data *peer_attr;
+	struct eap_noob_server_data *server_attr;
         char * db_name;
         char * db_table_name;
 	sqlite3 * servDB;
 };
 
 
-struct eap_oob_peer_data{
+struct eap_noob_peer_data{
 
         u32 version; 
         char * peerID_rcvd;
@@ -218,12 +216,13 @@ struct eap_oob_peer_data{
 	char * nonce_serv_b64;
 
 	EVP_PKEY *dh_key;
+/*
         u8 * serv_public_key;
         char * serv_public_key_b64;
 	size_t pub_key_server_len;
 	u8 * priv_key;
 	size_t priv_key_len;
-
+*/
 	u8 * shared_key;
 	char * shared_key_b64;
 	size_t shared_key_b64_len;
@@ -271,7 +270,7 @@ struct eap_oob_peer_data{
 };
 
 
-struct eap_oob_server_data{
+struct eap_noob_server_data{
 
         u32 version[MAX_SUP_VER];
         u32 cryptosuite[MAX_SUP_CSUITES];
@@ -279,7 +278,7 @@ struct eap_oob_server_data{
 	char * serv_info;
 	
 	u32 config_params;
-        struct eap_oob_serv_config_params * serv_config_params;
+        struct eap_noob_serv_config_params * serv_config_params;
 
 };
 
@@ -327,7 +326,7 @@ const int state_message_check[NUM_OF_STATES][MAX_MSG_TYPES] = {
 };
 /*Function prototypes*/
 
-static void set_done(struct eap_oob_serv_context *,u8 );
-static void set_success(struct eap_oob_serv_context *, u8);
+static void eap_noob_set_done(struct eap_noob_serv_context *,u8 );
+static void eap_noob_set_success(struct eap_noob_serv_context *, u8);
 
 #endif 

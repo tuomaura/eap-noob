@@ -25,7 +25,7 @@ int eap_server_register_methods(void)
 	int ret = 0;
 #ifdef EAP_SERVER_OOB
 	if (ret == 0)
-		ret = eap_server_oob_register();
+		ret = eap_server_noob_register();
 #endif /* EAP_SERVER_OOB */
 
 #ifdef EAP_SERVER_IDENTITY

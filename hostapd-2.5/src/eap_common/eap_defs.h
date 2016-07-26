@@ -93,7 +93,7 @@ typedef enum {
 	EAP_TYPE_PWD = 52 /* RFC 5931 */,
 	EAP_TYPE_EKE = 53 /* RFC 6124 */,
 	EAP_TYPE_EXPANDED = 254 /* RFC 3748 */,
-	EAP_TYPE_OOB = 90
+	EAP_TYPE_NOOB = 90
 } EapType;
 
 

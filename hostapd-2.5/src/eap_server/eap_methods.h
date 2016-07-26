@@ -47,5 +47,5 @@ int eap_server_ikev2_register(void);
 int eap_server_tnc_register(void);
 int eap_server_pwd_register(void);
 int eap_server_eke_register(void);
-int eap_server_oob_register(void);
+int eap_server_noob_register(void);
 #endif /* EAP_SERVER_METHODS_H */
