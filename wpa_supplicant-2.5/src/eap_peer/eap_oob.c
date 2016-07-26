@@ -1084,6 +1084,9 @@ static void  eap_oob_decode_obj(struct eap_oob_serv_data * data ,json_t * req_ob
 					data->minsleep = retval_int;
 					data->rcvd_params |= MINSLP_RCVD;
 				}
+				else if(0 == strcmp(key, ERR_CODE)){
+					data->err_code = retval_int;
+				}
 				break;
 
 			case JSON_STRING:
@@ -1454,9 +1457,9 @@ static int eap_oob_db_entry(struct eap_sm *sm,struct eap_oob_peer_context *data)
 
 	snprintf(query,1500,"INSERT INTO %s (ssid, PeerID, Vers,Verp, state, PKs, PKp, Csuites,Csuitep,Dirs,Dirp, "
 			"nonce_peer, nonce_serv, minsleep,ServInfo, PeerInfo,SharedSecret, Noob, Hoob," 
-			" OOB_RECEIVED_FLAG,pub_key_serv,pub_key_peer)"
+			" OOB_RECEIVED_FLAG,pub_key_serv,pub_key_peer,err_code)"
 			"VALUES ('%s','%s', %d, %d, %d, '%s', '%s',%d, %d, %d ,%d,'%s','%s', %d, '%s', '%s','%s',"
-			" '%s', '%s', %d, '%s', '%s')", data->db_table_name,
+			" '%s', '%s', %d, '%s', '%s',%d)", data->db_table_name,
 			wpa_s->current_ssid->ssid,data->serv_attr->peerID, data->serv_attr->version[0],
 			data->peer_attr->version,data->serv_attr->state, 
 			data->serv_attr->serv_public_key_b64, data->serv_attr->peer_public_key_b64, 
@@ -1466,7 +1469,7 @@ static int eap_oob_db_entry(struct eap_sm *sm,struct eap_oob_peer_context *data)
 			data->serv_attr->minsleep, data->serv_attr->serv_info, 
 			data->peer_attr->peer_info,data->serv_attr->shared_key_b64,
 			"","",0,(json_dumps(data->serv_attr->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER)),
-			(json_dumps(data->serv_attr->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER)));
+			(json_dumps(data->serv_attr->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER)),data->serv_attr->err_code);
 
 
 	printf("QUERY = %s\n",query);
@@ -1538,8 +1541,8 @@ static struct wpabuf * eap_oob_verify_peerID(struct eap_oob_peer_context * data,
 		resp = eap_oob_err_msg(data,id);
 
 	}
-	//return resp;
-	return NULL;
+	
+	return resp;
 }
 
 
@@ -2341,6 +2344,24 @@ static struct wpabuf * eap_oob_req_type_one(struct eap_sm *sm,json_t * req_obj ,
 }
 
 
+static void eap_oob_req_err_handling(struct eap_sm *sm,json_t * req_obj , struct eap_oob_peer_context *data,
+		u8 id){
+	
+
+	char query[200] = {0}; //TODO : replace it with dynamic allocation
+	int len = 200;
+
+	if(!data->serv_attr->err_code){
+		
+		snprintf(query,len,"UPDATE '%s' SET err_code=%d WHERE PeerID='%s'", 
+			data->db_table_name, data->serv_attr->err_code, data->serv_attr->peerID);
+
+			if(FAILURE == eap_oob_exec_query(query, NULL,NULL,data->peerDB)){
+				wpa_printf(MSG_ERROR, "EAP-NOOB: updating Noob failed");
+		}
+	}	
+}
+
 static struct wpabuf * eap_oob_process (struct eap_sm *sm, void *priv,
 		struct eap_method_ret *ret,
 		const struct wpabuf *reqData)
@@ -2406,12 +2427,11 @@ static struct wpabuf * eap_oob_process (struct eap_sm *sm, void *priv,
 		return resp;
 	}
 
-	data->serv_attr->err_code = msgtype;
-	/*switch(msgtype){
+	switch(msgtype){
 	
-			data->serv_attr->err_code = msgtype;
 		case NONE:
 			wpa_printf(MSG_DEBUG, "EAP-NOOB: Error message received");
+			eap_oob_req_err_handling(sm,req_obj,data, id);
 			break;
 		case EAP_NOOB_TYPE_1:
 			resp = eap_oob_req_type_one(sm,req_obj ,data,id);
@@ -2440,7 +2460,7 @@ static struct wpabuf * eap_oob_process (struct eap_sm *sm, void *priv,
 		default:
 			wpa_printf(MSG_DEBUG, "EAP-NOOB: Unknown EAP-NOOB request received");
 			return NULL;
-	}*/
+	}
 
 	return resp;
 }
@@ -2733,7 +2753,8 @@ static int eap_oob_peer_ctxt_init(struct eap_sm *sm,  struct eap_oob_peer_contex
 
 	
 		data->serv_attr->state = UNREG;
-		data->serv_attr->rcvd_params = 0;	
+		data->serv_attr->rcvd_params = 0;
+		data->serv_attr->err_code = 0;	
 		/* Setup DB */
 		/* DB file name for the client */
 		data->db_name = os_strdup(DB_NAME);
