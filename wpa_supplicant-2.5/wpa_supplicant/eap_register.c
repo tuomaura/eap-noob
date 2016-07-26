@@ -27,7 +27,7 @@ int eap_register_methods(void)
 
 #ifdef EAP_OOB
         if (ret == 0)
-                ret = eap_peer_oob_register();
+                ret = eap_peer_noob_register();
 #endif /* EAP_OOB */
 
 #ifdef EAP_MD5

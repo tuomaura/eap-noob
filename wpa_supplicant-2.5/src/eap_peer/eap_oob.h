@@ -126,8 +126,6 @@
 					Vers INTEGER,\
 					Verp INTEGER,\
 					state INTEGER,\
-					PKs TEXT,\
-					PKp TEXT,\
 					Csuites INTEGER,\
 					Csuitep INTEGER,\
 					Dirs INTEGER,\
@@ -170,27 +168,27 @@ const int state_message_check[NUM_OF_STATES][MAX_MSG_TYPES] = {
 enum	{COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW}; //Flag used during KDF and MAC generation
 enum 	{UNREG, WAITING, OOB, RECONNECT,REGISTERED};
 enum	{NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7};
-enum 	oob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001};
+enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001};
 enum 	{HOOB,MACS,MACP};
 
-struct eap_oob_peer_config_params{	
+struct eap_noob_peer_config_params{	
 
 	char * Peer_name;
 	char * Peer_ID_Num;
 
 };
 
-struct eap_oob_peer_context{
+struct eap_noob_peer_context{
 
-        struct eap_oob_data *peer_attr;
-	struct eap_oob_serv_data *serv_attr;
+        struct eap_noob_data *peer_attr;
+	struct eap_noob_serv_data *serv_attr;
         char * db_name;
         char * db_table_name;
 	sqlite3 * peerDB;
 };
 
 
-struct eap_oob_data{
+struct eap_noob_data{
 
         u32 version;
         char * peerID;
@@ -202,12 +200,12 @@ struct eap_oob_data{
 	char * MAC;
 	
 	u32 config_params;
-	struct eap_oob_peer_config_params * peer_config_params;
+	struct eap_noob_peer_config_params * peer_config_params;
 	
 };
 
 
-struct eap_oob_serv_data{
+struct eap_noob_serv_data{
 
         u32 version[MAX_SUP_VER];
         char * ssid;
@@ -229,6 +227,7 @@ struct eap_oob_serv_data{
 	char * nonce_peer_b64;
 
 	EVP_PKEY *dh_key;
+/*
 	u8 * peer_public_key;
 	char * peer_public_key_b64;
 	size_t pub_key_peer_len;
@@ -239,7 +238,7 @@ struct eap_oob_serv_data{
 	u8 * serv_public_key;
 	char * serv_public_key_b64;
 	size_t pub_key_serv_len;
-
+*/
 	u8 * shared_key;
 	char * shared_key_b64;
 	size_t shared_key_b64_len;
@@ -261,7 +260,7 @@ struct eap_oob_serv_data{
 	u8 * kz;
 	char * kz_b64;
 
-   	enum oob_err_code err_code; 
+   	enum eap_noob_err_code err_code; 
 	u32 rcvd_params;
 
 	char * x_serv_b64;
@@ -296,15 +295,15 @@ const char *error_info[] = { "No error",
 
 /*Function prototypes*/
 
-int ECDH_KDF_X9_63(u8 * , size_t ,
+int eap_noob_ECDH_KDF_X9_63(u8 * , size_t ,
                 const u8 * , size_t ,
                 const u8 * , size_t ,
                 const u8 * , size_t ,
                 const u8 * , size_t ,
                 const u8 * , size_t ,
                 const  EVP_MD *);
-int Base64Encode(const u8* , size_t, char** );
-static int eap_oob_get_hoob(struct eap_oob_peer_context *,u8 *, size_t );
+int eap_noob_Base64Encode(const u8* , size_t, char** );
+static int eap_noob_get_hoob(struct eap_noob_peer_context *,u8 *, size_t );
 
 
 #endif 
