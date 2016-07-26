@@ -162,7 +162,7 @@ enum{COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW}; //Flag us
 enum {UNREG, WAITING, OOB, RECONNECT,REGISTERED};
 enum {NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7};
 enum {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,UPDATE_STATE_ERROR};
-enum oob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001}; 
+enum eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001}; 
 enum {HOOB,MACS,MACP};
 
 struct eap_noob_serv_config_params{
@@ -235,7 +235,7 @@ struct eap_noob_peer_data{
 	size_t hoob_len;
 	u8 * hoob;
 	
-	enum oob_err_code err_code;
+	enum eap_noob_err_code err_code;
 	int oob_recv;
 
 	json_t * jwk_serv;
