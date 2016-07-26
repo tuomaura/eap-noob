@@ -1058,6 +1058,7 @@ static void  eap_oob_decode_obj(struct eap_oob_serv_data * data ,json_t * req_ob
 		switch(json_typeof(value)){
 			case JSON_OBJECT:
 				if(0 == strcmp(key,JSON_WEB_KEY)){
+					data->rcvd_params |= PKEY_RCVD;
 					wpa_printf(MSG_DEBUG,"EAP-NOOB:Copy Verify %s",json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER));
 					data->jwk_serv = json_loads(json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER),JSON_COMPACT|JSON_PRESERVE_ORDER,&error);
 					wpa_printf(MSG_DEBUG,"EAP-NOOB:Copy Verify %s",json_dumps(data->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER));
