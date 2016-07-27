@@ -190,7 +190,7 @@ struct eap_noob_peer_config_params{
 
 struct eap_noob_peer_context{
 
-        struct eap_noob_data *peer_attr;
+        struct eap_noob_peer_data *peer_attr;
 	struct eap_noob_serv_data *serv_attr;
         char * db_name;
         char * db_table_name;
@@ -198,55 +198,33 @@ struct eap_noob_peer_context{
 };
 
 
-struct eap_noob_data{
+struct eap_noob_peer_data{
 
         u32 version;
-        char * peerID;
         u32 state;
         u32 cryptosuite;
         u32 dir;
         u32 minsleep;
+	u32 config_params;
+
+        char * peerID;
 	char * peer_info;
 	char * MAC;
-	
-	u32 config_params;
+
 	struct eap_noob_peer_config_params * peer_config_params;
 	
 };
 
-
-struct eap_noob_serv_data{
-
-        u32 version[MAX_SUP_VER];
-        char * ssid;
-        char * peerID;
-        u32 state;
-        u32 cryptosuite[MAX_SUP_CSUITES];
-        u32 dir;
-        u32 minsleep;
-	Boolean record_present;
-	char * serv_info;
-	char * NAI;
-	char * MAC;
-	
-	//u8 * public_key;
+struct eap_noob_ecdh_kdf_nonce{
 
 	u8 * nonce_serv;
 	char * nonce_serv_b64;
 	u8 * nonce_peer;
 	char * nonce_peer_b64;
 
-	EVP_PKEY *dh_key;
+};
 
-	u8 * shared_key;
-	char * shared_key_b64;
-	size_t shared_key_b64_len;
-
-	
-	char * noob_b64;
-	u8 * noob;
-	char * hoob_b64;
-	u8 * hoob;
+struct eap_noob_ecdh_kdf_out{
 
 	u8 * msk;
 	char * msk_b64;
@@ -258,9 +236,11 @@ struct eap_noob_serv_data{
 	char * kmp_b64;
 	u8 * kz;
 	char * kz_b64;
+};
 
-   	enum eap_noob_err_code err_code; 
-	u32 rcvd_params;
+struct eap_noob_ecdh_key_exchange{
+
+	EVP_PKEY *dh_key;
 
 	char * x_serv_b64;
 	char * y_serv_b64;
@@ -272,6 +252,45 @@ struct eap_noob_serv_data{
 
 	json_t * jwk_serv;
 	json_t * jwk_peer;
+
+	u8 * shared_key;
+	char * shared_key_b64;
+	size_t shared_key_b64_len;
+
+};
+
+struct eap_noob_oob_data{
+
+	char * noob_b64;
+	u8 * noob;
+	char * hoob_b64;
+	u8 * hoob;
+};
+
+
+struct eap_noob_serv_data{
+
+        u32 version[MAX_SUP_VER];
+        u32 state;
+        u32 cryptosuite[MAX_SUP_CSUITES];
+        u32 dir;
+        u32 minsleep;
+	u32 rcvd_params;
+
+	char * serv_info;
+	char * NAI;
+	char * MAC;
+        char * ssid;
+        char * peerID;
+
+   	enum eap_noob_err_code err_code; 
+	Boolean record_present;
+	
+	struct eap_noob_ecdh_key_exchange * ecdh_exchange_data;
+	struct eap_noob_oob_data * oob_data;
+	struct eap_noob_ecdh_kdf_nonce * kdf_nonce_data;
+	struct eap_noob_ecdh_kdf_out * kdf_out;
+
 		
 };
 

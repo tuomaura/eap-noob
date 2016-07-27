@@ -131,44 +131,44 @@ static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state){
 	unsigned char * out = os_zalloc(192);
 
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Algorith ID:",ALGORITHM_ID,ALGORITHM_ID_LEN);
-	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Nonce_Peer",data->serv_attr->nonce_peer,EAP_NOOB_NONCE_LEN);
-	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Nonce_Serv",data->serv_attr->nonce_serv,EAP_NOOB_NONCE_LEN);
+	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Nonce_Peer",data->serv_attr->kdf_nonce_data->nonce_peer,EAP_NOOB_NONCE_LEN);
+	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Nonce_Serv",data->serv_attr->kdf_nonce_data->nonce_serv,EAP_NOOB_NONCE_LEN);
 	if(state == COMPLETION_EXCHANGE){
-		wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Noob",data->serv_attr->noob,EAP_NOOB_NONCE_LEN);
+		wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Noob",data->serv_attr->oob_data->noob,EAP_NOOB_NONCE_LEN);
 		eap_noob_ECDH_KDF_X9_63(out, KDF_LEN,
-				data->serv_attr->shared_key, EAP_SHARED_SECRET_LEN,
+				data->serv_attr->ecdh_exchange_data->shared_key, EAP_SHARED_SECRET_LEN,
 				(unsigned char *)ALGORITHM_ID, ALGORITHM_ID_LEN,
-				data->serv_attr->nonce_peer, EAP_NOOB_NONCE_LEN,
-				data->serv_attr->nonce_serv, EAP_NOOB_NONCE_LEN,
-				data->serv_attr->noob, EAP_NOOB_NONCE_LEN, md);
+				data->serv_attr->kdf_nonce_data->nonce_peer, EAP_NOOB_NONCE_LEN,
+				data->serv_attr->kdf_nonce_data->nonce_serv, EAP_NOOB_NONCE_LEN,
+				data->serv_attr->oob_data->noob, EAP_NOOB_NONCE_LEN, md);
 	}else{
 		
-		wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: kz",data->serv_attr->kz,KZ_LEN);
+		wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: kz",data->serv_attr->kdf_out->kz,KZ_LEN);
 		eap_noob_ECDH_KDF_X9_63(out, KDF_LEN,
-				data->serv_attr->kz, KZ_LEN,
+				data->serv_attr->kdf_out->kz, KZ_LEN,
 				(unsigned char *)ALGORITHM_ID, ALGORITHM_ID_LEN,
-				data->serv_attr->nonce_peer, EAP_NOOB_NONCE_LEN,
-				data->serv_attr->nonce_serv, EAP_NOOB_NONCE_LEN,
+				data->serv_attr->kdf_nonce_data->nonce_peer, EAP_NOOB_NONCE_LEN,
+				data->serv_attr->kdf_nonce_data->nonce_serv, EAP_NOOB_NONCE_LEN,
 				NULL, 0, md);
 	}	
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: KDF",out,KDF_LEN);
 
 	if(out != NULL){
-		data->serv_attr->msk = os_zalloc(MSK_LEN);
-		data->serv_attr->emsk = os_zalloc(EMSK_LEN);
-		data->serv_attr->kms = os_zalloc(KMS_LEN);
-		data->serv_attr->kmp = os_zalloc(KMP_LEN);
-		data->serv_attr->kz = os_zalloc(KZ_LEN);
+		data->serv_attr->kdf_out->msk = os_zalloc(MSK_LEN);
+		data->serv_attr->kdf_out->emsk = os_zalloc(EMSK_LEN);
+		data->serv_attr->kdf_out->kms = os_zalloc(KMS_LEN);
+		data->serv_attr->kdf_out->kmp = os_zalloc(KMP_LEN);
+		data->serv_attr->kdf_out->kz = os_zalloc(KZ_LEN);
 
-		memcpy(data->serv_attr->msk,out,MSK_LEN);
+		memcpy(data->serv_attr->kdf_out->msk,out,MSK_LEN);
 		counter += MSK_LEN;
-		memcpy(data->serv_attr->emsk, out + counter, EMSK_LEN);
+		memcpy(data->serv_attr->kdf_out->emsk, out + counter, EMSK_LEN);
 		counter += EMSK_LEN;
-		memcpy(data->serv_attr->kms, out + counter, KMS_LEN);
+		memcpy(data->serv_attr->kdf_out->kms, out + counter, KMS_LEN);
 		counter += KMS_LEN;
-		memcpy(data->serv_attr->kmp, out + counter, KMP_LEN);
+		memcpy(data->serv_attr->kdf_out->kmp, out + counter, KMP_LEN);
 		counter += KMP_LEN;
-		memcpy(data->serv_attr->kz, out + counter, KZ_LEN);
+		memcpy(data->serv_attr->kdf_out->kz, out + counter, KZ_LEN);
 		counter += KZ_LEN;
 	}
 }
@@ -253,19 +253,19 @@ static char * eap_noob_prepare_mac_arr(const struct eap_noob_peer_context * data
 			eap_noob_json_array_append(mac_arr,eap_noob_json_string(""));
 
 		}else{
-			eap_noob_json_array_append(mac_arr,eap_noob_json_loads(eap_noob_json_dumps(data->serv_attr->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER),
+			eap_noob_json_array_append(mac_arr,eap_noob_json_loads(eap_noob_json_dumps(data->serv_attr->ecdh_exchange_data->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER),
 					JSON_COMPACT|JSON_PRESERVE_ORDER,&error));
 		}
-		eap_noob_json_array_append(mac_arr,eap_noob_json_string(data->serv_attr->nonce_serv_b64));
+		eap_noob_json_array_append(mac_arr,eap_noob_json_string(data->serv_attr->kdf_nonce_data->nonce_serv_b64));
 		if(state == RECONNECT_EXCHANGE){
 			eap_noob_json_array_append(mac_arr,eap_noob_json_string(""));
 
 		}else{
-			eap_noob_json_array_append(mac_arr,eap_noob_json_loads(eap_noob_json_dumps(data->serv_attr->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER),
+			eap_noob_json_array_append(mac_arr,eap_noob_json_loads(eap_noob_json_dumps(data->serv_attr->ecdh_exchange_data->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER),
 						JSON_COMPACT|JSON_PRESERVE_ORDER,&error));
 		}
-		eap_noob_json_array_append(mac_arr,eap_noob_json_string(data->serv_attr->nonce_peer_b64));
-		eap_noob_json_array_append(mac_arr,eap_noob_json_string(data->serv_attr->noob_b64));
+		eap_noob_json_array_append(mac_arr,eap_noob_json_string(data->serv_attr->kdf_nonce_data->nonce_peer_b64));
+		eap_noob_json_array_append(mac_arr,eap_noob_json_string(data->serv_attr->oob_data->noob_b64));
 
 
 		wpa_printf(MSG_DEBUG, "EAP-NOOB: %s",__func__);
@@ -302,18 +302,18 @@ static int eap_noob_get_noob(struct eap_noob_peer_context *data){
 
 	int rc = 0;
 	unsigned long err = 0;
-	if(NULL == (data->serv_attr->noob = os_zalloc(EAP_NOOB_NONCE_LEN)))
+	if(NULL == (data->serv_attr->oob_data->noob = os_zalloc(EAP_NOOB_NONCE_LEN)))
 		return FAILURE;
 
-	if(1 != (rc = RAND_bytes(data->serv_attr->noob, EAP_NOOB_NONCE_LEN))){
+	if(1 != (rc = RAND_bytes(data->serv_attr->oob_data->noob, EAP_NOOB_NONCE_LEN))){
 		err = ERR_get_error();
 		wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to generate nonce Error Code = %lu",err);
 		return FAILURE;
 	}	
 
-	wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Noob",data->serv_attr->noob,16);
-	eap_noob_Base64Encode(data->serv_attr->noob, 16, &data->serv_attr->noob_b64);
-	wpa_printf(MSG_DEBUG, "EAP-NOOB: Noob Base64 %s", data->serv_attr->noob_b64);	
+	wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Noob",data->serv_attr->oob_data->noob,16);
+	eap_noob_Base64Encode(data->serv_attr->oob_data->noob, 16, &data->serv_attr->oob_data->noob_b64);
+	wpa_printf(MSG_DEBUG, "EAP-NOOB: Noob Base64 %s", data->serv_attr->oob_data->noob_b64);
 
 	return SUCCESS;
 }
@@ -330,10 +330,10 @@ static int eap_noob_send_oob(struct eap_noob_peer_context *data){
 		wpa_printf(MSG_DEBUG,"EAP-NOOB: ERROR in HOOB");
 	}
 	else{
-		data->serv_attr->hoob = hoob_out;
-		wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: HOOB",data->serv_attr->hoob,HASH_LEN);
-		eap_noob_Base64Encode(data->serv_attr->hoob, HASH_LEN, &data->serv_attr->hoob_b64);
-		wpa_printf(MSG_DEBUG, "EAP-NOOB: Hoob Base64 %s", data->serv_attr->hoob_b64);
+		data->serv_attr->oob_data->hoob = hoob_out;
+		wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: HOOB",data->serv_attr->oob_data->hoob,HASH_LEN);
+		eap_noob_Base64Encode(data->serv_attr->oob_data->hoob, HASH_LEN, &data->serv_attr->oob_data->hoob_b64);
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: Hoob Base64 %s", data->serv_attr->oob_data->hoob_b64);
 	}
 	return SUCCESS;
 }
@@ -556,17 +556,17 @@ static char * eap_noob_prepare_hoob_arr(const struct eap_noob_peer_context * dat
 		
 		eap_noob_json_array_append(hoob_arr,eap_noob_json_string(data->peer_attr->peer_info));
 			
-		eap_noob_json_array_append(hoob_arr,eap_noob_json_loads(eap_noob_json_dumps(data->serv_attr->jwk_serv,
+		eap_noob_json_array_append(hoob_arr,eap_noob_json_loads(eap_noob_json_dumps(data->serv_attr->ecdh_exchange_data->jwk_serv,
 			JSON_COMPACT|JSON_PRESERVE_ORDER),JSON_COMPACT|JSON_PRESERVE_ORDER,&error));
 		
-		eap_noob_json_array_append(hoob_arr,eap_noob_json_string(data->serv_attr->nonce_serv_b64));
+		eap_noob_json_array_append(hoob_arr,eap_noob_json_string(data->serv_attr->kdf_nonce_data->nonce_serv_b64));
 			
-		eap_noob_json_array_append(hoob_arr,eap_noob_json_loads(eap_noob_json_dumps(data->serv_attr->jwk_peer,
+		eap_noob_json_array_append(hoob_arr,eap_noob_json_loads(eap_noob_json_dumps(data->serv_attr->ecdh_exchange_data->jwk_peer,
 			JSON_COMPACT|JSON_PRESERVE_ORDER),JSON_COMPACT|JSON_PRESERVE_ORDER,&error));
 		
-		eap_noob_json_array_append(hoob_arr,eap_noob_json_string(data->serv_attr->nonce_peer_b64));
+		eap_noob_json_array_append(hoob_arr,eap_noob_json_string(data->serv_attr->kdf_nonce_data->nonce_peer_b64));
 
-		eap_noob_json_array_append(hoob_arr,eap_noob_json_string(data->serv_attr->noob_b64));
+		eap_noob_json_array_append(hoob_arr,eap_noob_json_string(data->serv_attr->oob_data->noob_b64));
 
 		hoob_str = eap_noob_json_dumps(hoob_arr,JSON_COMPACT|JSON_PRESERVE_ORDER);
 	}
@@ -635,8 +635,8 @@ static int eap_noob_derive_secret(struct eap_noob_peer_context *data, size_t *se
 	size_t len;
 	BIGNUM * x_big;
 	BIGNUM * y_big; 
-	x_len = eap_noob_Base64Decode(data->serv_attr->x_serv_b64, &x, &len);	
-	y_len = eap_noob_Base64Decode(data->serv_attr->y_serv_b64, &y, &len);
+	x_len = eap_noob_Base64Decode(data->serv_attr->ecdh_exchange_data->x_serv_b64, &x, &len);
+	y_len = eap_noob_Base64Decode(data->serv_attr->ecdh_exchange_data->y_serv_b64, &y, &len);
 
 	
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: deriving NID_secp256k1.");
@@ -711,7 +711,7 @@ static int eap_noob_derive_secret(struct eap_noob_peer_context *data, size_t *se
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: Deriving the secret! 1.");
 
 	/* Create the context for the shared secret derivation */
-	if(NULL == (ctx = EVP_PKEY_CTX_new(data->serv_attr->dh_key, NULL))) {
+	if(NULL == (ctx = EVP_PKEY_CTX_new(data->serv_attr->ecdh_exchange_data->dh_key, NULL))) {
 		wpa_printf(MSG_DEBUG, "EAP-NOOB:Fail to create EVP_PKEY_CTX_new.");
 		return 1;
 	}
@@ -740,7 +740,7 @@ static int eap_noob_derive_secret(struct eap_noob_peer_context *data, size_t *se
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: Deriving the secret! 5.");
 
 	/* Create the buffer */
-	if(NULL == (data->serv_attr->shared_key = OPENSSL_malloc(*secret_len))) {
+	if(NULL == (data->serv_attr->ecdh_exchange_data->shared_key = OPENSSL_malloc(*secret_len))) {
 		wpa_printf(MSG_DEBUG, "EAP-NOOB:Fail to create buffer OPENSSL_malloc.");
 		return 1;
 	}
@@ -748,11 +748,11 @@ static int eap_noob_derive_secret(struct eap_noob_peer_context *data, size_t *se
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: Deriving the secret! 6.");
 
 	/* Derive the shared secret */
-	if(1 != (EVP_PKEY_derive(ctx, data->serv_attr->shared_key, secret_len))) {
+	if(1 != (EVP_PKEY_derive(ctx, data->serv_attr->ecdh_exchange_data->shared_key, secret_len))) {
 		wpa_printf(MSG_DEBUG, "EAP-NOOB:Fail to derive key EVP_PKEY_derive.");
 		return 1;
 	}
-	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Secret Derived",data->serv_attr->shared_key,*secret_len);
+	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Secret Derived",data->serv_attr->ecdh_exchange_data->shared_key,*secret_len);
 	EVP_PKEY_CTX_free(ctx);
 	EVP_PKEY_free(evp_server);
 
@@ -822,12 +822,12 @@ static int eap_noob_get_key(struct eap_noob_serv_data *data)
 		wpa_printf(MSG_DEBUG, "EAP-NOOB: Fail to initialize to generate keys.");
 		return 0;
 	}
-	if (1 != EVP_PKEY_keygen(kctx, &data->dh_key)){
+	if (1 != EVP_PKEY_keygen(kctx, &data->ecdh_exchange_data->dh_key)){
 		wpa_printf(MSG_DEBUG, "EAP-NOOB: Fail to generate keys.");
 		return 0;
 	}
 
-	key = EVP_PKEY_get1_EC_KEY(data->dh_key);
+	key = EVP_PKEY_get1_EC_KEY(data->ecdh_exchange_data->dh_key);
 
 	if(key == NULL)
 	{		
@@ -868,9 +868,9 @@ static int eap_noob_get_key(struct eap_noob_serv_data *data)
 	if(BN_bn2bin(x,x_val) == 0 || BN_bn2bin(y,y_val) == 0)
 		wpa_printf(MSG_DEBUG, "EAP-NOOB: Error converting to Bin");
 
-	eap_noob_Base64Encode(x_val,x_len, &data->x_b64);	
-	eap_noob_Base64Encode(y_val,y_len, &data->y_b64);
-	wpa_printf(MSG_DEBUG, "EAP-NOOB: X and Y %s,%s",data->x_b64, data->y_b64);	
+	eap_noob_Base64Encode(x_val,x_len, &data->ecdh_exchange_data->x_b64);
+	eap_noob_Base64Encode(y_val,y_len, &data->ecdh_exchange_data->y_b64);
+	wpa_printf(MSG_DEBUG, "EAP-NOOB: X and Y %s,%s",data->ecdh_exchange_data->x_b64, data->ecdh_exchange_data->y_b64);
 
 	wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: X coordinate", x_val, x_len);	
 	wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Y coordinate", y_val, y_len);
@@ -901,7 +901,7 @@ static void eap_noob_verify_param_len(struct eap_noob_serv_data * data)
                                         }
                                         break;
                                 case NONCE_RCVD:
-                                        if(strlen((char *)data->nonce_serv) > EAP_NOOB_NONCE_LEN){
+                                        if(strlen((char *)data->kdf_nonce_data->nonce_serv) > EAP_NOOB_NONCE_LEN){
 						data->err_code = E1003;
                                         }
                                         break;
@@ -949,9 +949,9 @@ static void  eap_noob_decode_obj(struct eap_noob_serv_data * data ,noob_json_t *
 				if(0 == strcmp(key,JSON_WEB_KEY)){
 					data->rcvd_params |= PKEY_RCVD;
 					wpa_printf(MSG_DEBUG,"EAP-NOOB:Copy Verify %s",eap_noob_json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER));
-					data->jwk_serv = eap_noob_json_loads(eap_noob_json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER),
+					data->ecdh_exchange_data->jwk_serv = eap_noob_json_loads(eap_noob_json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER),
 								JSON_COMPACT|JSON_PRESERVE_ORDER,&error);
-					wpa_printf(MSG_DEBUG,"EAP-NOOB:Copy Verify %s",eap_noob_json_dumps(data->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER));
+					wpa_printf(MSG_DEBUG,"EAP-NOOB:Copy Verify %s",eap_noob_json_dumps(data->ecdh_exchange_data->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER));
 				}else if(0 == strcmp(key, SERV_INFO)){
 					data->rcvd_params |= INFO_RCVD;
 					data->serv_info = eap_noob_json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER);
@@ -994,8 +994,8 @@ static void  eap_noob_decode_obj(struct eap_noob_serv_data * data ,noob_json_t *
 				}
 
 				else if(0 == strcmp(key, NONCE_SERV)){ 
-					data->nonce_serv_b64 = os_strdup(retval_char);
-					eap_noob_Base64Decode(data->nonce_serv_b64, &data->nonce_serv, &decode_length_nonce);
+					data->kdf_nonce_data->nonce_serv_b64 = os_strdup(retval_char);
+					eap_noob_Base64Decode(data->kdf_nonce_data->nonce_serv_b64, &data->kdf_nonce_data->nonce_serv, &decode_length_nonce);
 					data->rcvd_params |= NONCE_RCVD;
 
 				}
@@ -1005,11 +1005,11 @@ static void  eap_noob_decode_obj(struct eap_noob_serv_data * data ,noob_json_t *
 					data->rcvd_params |= MAC_RCVD;
 				}
 				else if(0 == strcmp(key, X_COORDINATE)){
-					data->x_serv_b64 = os_strdup(eap_noob_json_string_value(value));
-					wpa_printf(MSG_DEBUG, "X coordinate %s", data->x_serv_b64);
+					data->ecdh_exchange_data->x_serv_b64 = os_strdup(eap_noob_json_string_value(value));
+					wpa_printf(MSG_DEBUG, "X coordinate %s", data->ecdh_exchange_data->x_serv_b64);
 				}else if(0 == strcmp(key, Y_COORDINATE)){
-					data->y_serv_b64 = os_strdup(eap_noob_json_string_value(value));
-					wpa_printf(MSG_DEBUG, "Y coordinate %s", data->y_serv_b64);
+					data->ecdh_exchange_data->y_serv_b64 = os_strdup(eap_noob_json_string_value(value));
+					wpa_printf(MSG_DEBUG, "Y coordinate %s", data->ecdh_exchange_data->y_serv_b64);
 				}
 				break;
 
@@ -1185,23 +1185,23 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName){
 				peer->peer_attr->dir = (int) strtol(argv[count], NULL, 10);
 			}
 			else if (os_strcmp(azColName[count], "nonce_peer") == 0) {
-				if(NULL != data->nonce_peer_b64)
-					os_free(data->nonce_peer_b64);
+				if(NULL != data->kdf_nonce_data->nonce_peer_b64)
+					os_free(data->kdf_nonce_data->nonce_peer_b64);
 
-				data->nonce_peer_b64 = os_malloc(os_strlen(argv[count]));
-				strcpy(data->nonce_peer_b64, argv[count]);
+				data->kdf_nonce_data->nonce_peer_b64 = os_malloc(os_strlen(argv[count]));
+				strcpy(data->kdf_nonce_data->nonce_peer_b64, argv[count]);
 
-				eap_noob_Base64Decode(data->nonce_peer_b64, &data->nonce_peer, &len); //To-Do check for length
+				eap_noob_Base64Decode(data->kdf_nonce_data->nonce_peer_b64, &data->kdf_nonce_data->nonce_peer, &len); //To-Do check for length
 
 			}	
 			else if (os_strcmp(azColName[count], "nonce_serv") == 0) {
-				if(NULL != data->nonce_serv_b64)
-					os_free(data->nonce_serv_b64);
+				if(NULL != data->kdf_nonce_data->nonce_serv_b64)
+					os_free(data->kdf_nonce_data->nonce_serv_b64);
 
-				data->nonce_serv_b64 = os_malloc(os_strlen(argv[count]));
-				strcpy(data->nonce_serv_b64, argv[count]);
+				data->kdf_nonce_data->nonce_serv_b64 = os_malloc(os_strlen(argv[count]));
+				strcpy(data->kdf_nonce_data->nonce_serv_b64, argv[count]);
 
-				eap_noob_Base64Decode(data->nonce_serv_b64, &data->nonce_serv, &len); //To-Do check for length
+				eap_noob_Base64Decode(data->kdf_nonce_data->nonce_serv_b64, &data->kdf_nonce_data->nonce_serv, &len); //To-Do check for length
 
 			}
 			else if (os_strcmp(azColName[count], "minsleep") == 0) {
@@ -1222,65 +1222,65 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName){
 				strcpy(peer->peer_attr->peer_info, argv[count]);
 			}
 			else if (os_strcmp(azColName[count], "SharedSecret") == 0 && os_strlen(argv[count]) > 0) {
-				if(NULL != data->shared_key_b64)
-					os_free(data->shared_key_b64);
+				if(NULL != data->ecdh_exchange_data->shared_key_b64)
+					os_free(data->ecdh_exchange_data->shared_key_b64);
 
-				data->shared_key_b64 = os_malloc(os_strlen(argv[count]));
-				strcpy(data->shared_key_b64, argv[count]);
-				eap_noob_Base64Decode(data->shared_key_b64, &data->shared_key, &len);
+				data->ecdh_exchange_data->shared_key_b64 = os_malloc(os_strlen(argv[count]));
+				strcpy(data->ecdh_exchange_data->shared_key_b64, argv[count]);
+				eap_noob_Base64Decode(data->ecdh_exchange_data->shared_key_b64, &data->ecdh_exchange_data->shared_key, &len);
 			}
 			else if (os_strcmp(azColName[count], "Noob") == 0 && os_strlen(argv[count]) > 0) {
-				if(NULL != data->noob_b64)
-					os_free(data->noob_b64);
+				if(NULL != data->oob_data->noob_b64)
+					os_free(data->oob_data->noob_b64);
 
-				data->noob_b64 = os_malloc(os_strlen(argv[count]));
-				strcpy(data->noob_b64, argv[count]);
+				data->oob_data->noob_b64 = os_malloc(os_strlen(argv[count]));
+				strcpy(data->oob_data->noob_b64, argv[count]);
 
-				eap_noob_Base64Decode(data->noob_b64, &data->noob, &len);
+				eap_noob_Base64Decode(data->oob_data->noob_b64, &data->oob_data->noob, &len);
 			}	
 			else if (os_strcmp(azColName[count], "Hoob") == 0 && os_strlen(argv[count]) > 0) {
-				if(NULL != data->hoob_b64)
-					os_free(data->hoob_b64);
+				if(NULL != data->oob_data->hoob_b64)
+					os_free(data->oob_data->hoob_b64);
 
-				data->hoob_b64 = os_malloc(os_strlen(argv[count]));
-				strcpy(data->hoob_b64, argv[count]);
+				data->oob_data->hoob_b64 = os_malloc(os_strlen(argv[count]));
+				strcpy(data->oob_data->hoob_b64, argv[count]);
 				wpa_printf(MSG_DEBUG,"EAP-NOOB: HOOB: %s",argv[count]);
 
-				eap_noob_Base64Decode(data->hoob_b64, &data->hoob, &len);
+				eap_noob_Base64Decode(data->oob_data->hoob_b64, &data->oob_data->hoob, &len);
 			}else if (os_strcmp(azColName[count], "pub_key_serv") == 0){
-				data->jwk_serv = eap_noob_json_loads(argv[count], JSON_COMPACT|JSON_PRESERVE_ORDER, &error); //ToDo: check and free this before assigning if required
+				data->ecdh_exchange_data->jwk_serv = eap_noob_json_loads(argv[count], JSON_COMPACT|JSON_PRESERVE_ORDER, &error); //ToDo: check and free this before assigning if required
 				wpa_printf(MSG_DEBUG,"EAP-NOOB:Serv_KEY: %s",argv[count]);
 
 			}else if (os_strcmp(azColName[count], "pub_key_peer") == 0){
-				data->jwk_peer = eap_noob_json_loads(argv[count], JSON_COMPACT|JSON_PRESERVE_ORDER, &error); //ToDo: check and free this before assigning if required	
+				data->ecdh_exchange_data->jwk_peer = eap_noob_json_loads(argv[count], JSON_COMPACT|JSON_PRESERVE_ORDER, &error); //ToDo: check and free this before assigning if required
 				wpa_printf(MSG_DEBUG,"EAP-NOOB:Peer_KEY: %s",argv[count]);
 			}
 			else if (os_strcmp(azColName[count], "kms") == 0 && os_strlen(argv[count]) > 0) {
-				if(NULL != data->kms_b64)
-					os_free(data->kms_b64);
+				if(NULL != data->kdf_out->kms_b64)
+					os_free(data->kdf_out->kms_b64);
 
-				data->kms_b64 = os_malloc(os_strlen(argv[count]));
-				strcpy(data->kms_b64, argv[count]);
+				data->kdf_out->kms_b64 = os_malloc(os_strlen(argv[count]));
+				strcpy(data->kdf_out->kms_b64, argv[count]);
 				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB kms");
-				eap_noob_Base64Decode(data->kms_b64, &data->kms, &len);
+				eap_noob_Base64Decode(data->kdf_out->kms_b64, &data->kdf_out->kms, &len);
 			}	
 			else if (os_strcmp(azColName[count], "kmp") == 0 && os_strlen(argv[count]) > 0) {
-				if(NULL != data->kmp_b64)
-					os_free(data->kmp_b64);
+				if(NULL != data->kdf_out->kmp_b64)
+					os_free(data->kdf_out->kmp_b64);
 
-				data->kmp_b64 = os_malloc(os_strlen(argv[count]));
-				strcpy(data->kmp_b64, argv[count]);
+				data->kdf_out->kmp_b64 = os_malloc(os_strlen(argv[count]));
+				strcpy(data->kdf_out->kmp_b64, argv[count]);
 				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB kmp");
-				eap_noob_Base64Decode(data->kmp_b64, &data->kmp, &len);
+				eap_noob_Base64Decode(data->kdf_out->kmp_b64, &data->kdf_out->kmp, &len);
 			}	
 			else if (os_strcmp(azColName[count], "kz") == 0 && os_strlen(argv[count]) > 0) {
-				if(NULL != data->kz_b64)
-					os_free(data->kz_b64);
+				if(NULL != data->kdf_out->kz_b64)
+					os_free(data->kdf_out->kz_b64);
 
-				data->kz_b64 = os_malloc(os_strlen(argv[count]));
-				strcpy(data->kz_b64, argv[count]);
+				data->kdf_out->kz_b64 = os_malloc(os_strlen(argv[count]));
+				strcpy(data->kdf_out->kz_b64, argv[count]);
 				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB kz");
-				eap_noob_Base64Decode(data->kz_b64, &data->kz, &len);
+				eap_noob_Base64Decode(data->kdf_out->kz_b64, &data->kdf_out->kz, &len);
 			}		
 		}
 	}
@@ -1331,11 +1331,11 @@ static int eap_noob_db_entry(struct eap_sm *sm,struct eap_noob_peer_context *dat
 			data->peer_attr->version,data->serv_attr->state,  
 			data->serv_attr->cryptosuite[0] , data->peer_attr->cryptosuite,
 			data->serv_attr->dir,data->peer_attr->dir,
-			data->serv_attr->nonce_peer_b64, data->serv_attr->nonce_serv_b64, 
+			data->serv_attr->kdf_nonce_data->nonce_peer_b64, data->serv_attr->kdf_nonce_data->nonce_serv_b64,
 			data->serv_attr->minsleep, data->serv_attr->serv_info, 
-			data->peer_attr->peer_info,data->serv_attr->shared_key_b64,
-			"","",0,(eap_noob_json_dumps(data->serv_attr->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER)),
-			(eap_noob_json_dumps(data->serv_attr->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER)),data->serv_attr->err_code);
+			data->peer_attr->peer_info,data->serv_attr->ecdh_exchange_data->shared_key_b64,
+			"","",0,(eap_noob_json_dumps(data->serv_attr->ecdh_exchange_data->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER)),
+			(eap_noob_json_dumps(data->serv_attr->ecdh_exchange_data->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER)),data->serv_attr->err_code);
 
 
 	printf("QUERY = %s\n",query);
@@ -1429,7 +1429,7 @@ static struct wpabuf * eap_noob_rsp_type_four(const struct eap_noob_peer_context
 
 	if(NULL != (rsp_obj = eap_noob_json_object())){
 
-		mac = eap_noob_gen_MAC(data,MACP,data->serv_attr->kmp, KMP_LEN,COMPLETION_EXCHANGE);
+		mac = eap_noob_gen_MAC(data,MACP,data->serv_attr->kdf_out->kmp, KMP_LEN,COMPLETION_EXCHANGE);
 		//TODO: handle NULL return value
 		eap_noob_Base64Encode(mac+16, MAC_LEN, &mac_b64);
 
@@ -1500,9 +1500,9 @@ static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data,
 	char* base64_nonce;
 	size_t secret_len = EAP_SHARED_SECRET_LEN;
 
-	if(NULL != (data->serv_attr->jwk_peer = eap_noob_json_object())){ 
-		eap_noob_json_object_set_new(data->serv_attr->jwk_peer,KEY_TYPE,eap_noob_json_string("EC"));	
-		eap_noob_json_object_set_new(data->serv_attr->jwk_peer,CURVE,eap_noob_json_string("P-256"));	
+	if(NULL != (data->serv_attr->ecdh_exchange_data->jwk_peer = eap_noob_json_object())){
+		eap_noob_json_object_set_new(data->serv_attr->ecdh_exchange_data->jwk_peer,KEY_TYPE,eap_noob_json_string("EC"));
+		eap_noob_json_object_set_new(data->serv_attr->ecdh_exchange_data->jwk_peer,CURVE,eap_noob_json_string("P-256"));
 	}else{
 		wpa_printf(MSG_DEBUG,"EAP-NOOB: Error in JWK");
 	}
@@ -1513,9 +1513,9 @@ static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data,
 		return NULL;		
 	}
 
-	data->serv_attr->nonce_peer = os_zalloc(EAP_NOOB_NONCE_LEN);
+	data->serv_attr->kdf_nonce_data->nonce_peer = os_zalloc(EAP_NOOB_NONCE_LEN);
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB BUILD RESP TYPE 2 here 1");
-	int rc = RAND_bytes(data->serv_attr->nonce_peer, EAP_NOOB_NONCE_LEN);
+	int rc = RAND_bytes(data->serv_attr->kdf_nonce_data->nonce_peer, EAP_NOOB_NONCE_LEN);
 	unsigned long err = ERR_get_error();	
 
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB BUILD RESP TYPE 2 here 2");
@@ -1525,7 +1525,7 @@ static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data,
 	}
 
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB BUILD RESP TYPE 2 here 3");
-	wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Nonce", data->serv_attr->nonce_peer, EAP_NOOB_NONCE_LEN);
+	wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Nonce", data->serv_attr->kdf_nonce_data->nonce_peer, EAP_NOOB_NONCE_LEN);
 
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB BUILD RESP TYPE 2 here 4");
 	/* Generate Key material */
@@ -1534,13 +1534,13 @@ static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data,
 		return NULL;
 	}
 
-	eap_noob_json_object_set_new(data->serv_attr->jwk_peer,X_COORDINATE,eap_noob_json_string(data->serv_attr->x_b64));
-	eap_noob_json_object_set_new(data->serv_attr->jwk_peer,Y_COORDINATE,eap_noob_json_string(data->serv_attr->y_b64));
+	eap_noob_json_object_set_new(data->serv_attr->ecdh_exchange_data->jwk_peer,X_COORDINATE,eap_noob_json_string(data->serv_attr->ecdh_exchange_data->x_b64));
+	eap_noob_json_object_set_new(data->serv_attr->ecdh_exchange_data->jwk_peer,Y_COORDINATE,eap_noob_json_string(data->serv_attr->ecdh_exchange_data->y_b64));
 
-	eap_noob_Base64Encode(data->serv_attr->nonce_peer,EAP_NOOB_NONCE_LEN, &base64_nonce);
+	eap_noob_Base64Encode(data->serv_attr->kdf_nonce_data->nonce_peer,EAP_NOOB_NONCE_LEN, &base64_nonce);
 	wpa_printf(MSG_DEBUG,"EAP-NOOB: Nonce %s",base64_nonce);
 
-	data->serv_attr->nonce_peer_b64 = base64_nonce;
+	data->serv_attr->kdf_nonce_data->nonce_peer_b64 = base64_nonce;
 
 	//TODO: generate a fresh nonce here
 	if(NULL != (rsp_obj = eap_noob_json_object())){
@@ -1548,7 +1548,7 @@ static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data,
 		eap_noob_json_object_set_new(rsp_obj,TYPE,eap_noob_json_integer(EAP_NOOB_TYPE_2));
 		eap_noob_json_object_set_new(rsp_obj,PEERID,eap_noob_json_string(data->peer_attr->peerID));
 		eap_noob_json_object_set_new(rsp_obj,NONCE_PEER,eap_noob_json_string(base64_nonce));
-		eap_noob_json_object_set_new(rsp_obj,JSON_WEB_KEY,data->serv_attr->jwk_peer);
+		eap_noob_json_object_set_new(rsp_obj,JSON_WEB_KEY,data->serv_attr->ecdh_exchange_data->jwk_peer);
 
 		resp_json = eap_noob_json_dumps(rsp_obj,JSON_COMPACT|JSON_PRESERVE_ORDER);
 		len = strlen(resp_json)+1;
@@ -1564,7 +1564,7 @@ static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data,
 	}
 
 	eap_noob_derive_secret(data,&secret_len);
-	data->serv_attr->shared_key_b64_len = eap_noob_Base64Encode(data->serv_attr->shared_key, EAP_SHARED_SECRET_LEN, &data->serv_attr->shared_key_b64);
+	data->serv_attr->ecdh_exchange_data->shared_key_b64_len = eap_noob_Base64Encode(data->serv_attr->ecdh_exchange_data->shared_key, EAP_SHARED_SECRET_LEN, &data->serv_attr->ecdh_exchange_data->shared_key_b64);
 
 	return resp;
 
@@ -1663,8 +1663,8 @@ static struct wpabuf * eap_noob_rsp_type_six(struct eap_noob_peer_context *data,
 		return NULL;		
 	}
 
-	data->serv_attr->nonce_peer = os_zalloc(EAP_NOOB_NONCE_LEN);
-	int rc = RAND_bytes(data->serv_attr->nonce_peer, EAP_NOOB_NONCE_LEN);
+	data->serv_attr->kdf_nonce_data->nonce_peer = os_zalloc(EAP_NOOB_NONCE_LEN);
+	int rc = RAND_bytes(data->serv_attr->kdf_nonce_data->nonce_peer, EAP_NOOB_NONCE_LEN);
 	unsigned long err = ERR_get_error();	
 
 	if(rc != 1) {
@@ -1672,12 +1672,12 @@ static struct wpabuf * eap_noob_rsp_type_six(struct eap_noob_peer_context *data,
 		wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to generate nonce Error Code = %lu",err);	
 	}
 
-	wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Nonce", data->serv_attr->nonce_peer, EAP_NOOB_NONCE_LEN);
+	wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Nonce", data->serv_attr->kdf_nonce_data->nonce_peer, EAP_NOOB_NONCE_LEN);
 
-	eap_noob_Base64Encode(data->serv_attr->nonce_peer,EAP_NOOB_NONCE_LEN, &base64_nonce);
+	eap_noob_Base64Encode(data->serv_attr->kdf_nonce_data->nonce_peer,EAP_NOOB_NONCE_LEN, &base64_nonce);
 	wpa_printf(MSG_DEBUG,"EAP-NOOB: Nonce %s",base64_nonce);
 
-	data->serv_attr->nonce_peer_b64 = base64_nonce;
+	data->serv_attr->kdf_nonce_data->nonce_peer_b64 = base64_nonce;
 
 	if(NULL != (rsp_obj = eap_noob_json_object())){
 
@@ -1719,7 +1719,7 @@ static struct wpabuf * eap_noob_rsp_type_seven(const struct eap_noob_peer_contex
 
 	if(NULL != (rsp_obj = eap_noob_json_object())){
 
-		mac = eap_noob_gen_MAC(data,MACP,data->serv_attr->kmp, KMP_LEN,RECONNECT_EXCHANGE);
+		mac = eap_noob_gen_MAC(data,MACP,data->serv_attr->kdf_out->kmp, KMP_LEN,RECONNECT_EXCHANGE);
 		//TODO: handle NULL return value
 		eap_noob_Base64Encode(mac+16, MAC_LEN, &mac_b64);
 
@@ -1777,7 +1777,7 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_sm *sm, noob_json_t * 
 	if(NULL == (resp = eap_noob_verify_peerID(data,id))){
 
 		/*generate MAC*/
-		mac = eap_noob_gen_MAC(data,MACS,data->serv_attr->kms, KMS_LEN,RECONNECT_EXCHANGE);
+		mac = eap_noob_gen_MAC(data,MACS,data->serv_attr->kdf_out->kms, KMS_LEN,RECONNECT_EXCHANGE);
 		eap_noob_Base64Encode(mac+16, MAC_LEN, &mac_b64);
 
 		//if(0 != strcmp(mac_b64,data->serv_attr->MAC)){
@@ -1923,7 +1923,7 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_sm *sm, noob_json_t * r
 	if(NULL == (resp = eap_noob_verify_peerID(data,id))){
 
 		/*generate MAC*/
-		mac = eap_noob_gen_MAC(data,MACS,data->serv_attr->kms, KMS_LEN,COMPLETION_EXCHANGE);
+		mac = eap_noob_gen_MAC(data,MACS,data->serv_attr->kdf_out->kms, KMS_LEN,COMPLETION_EXCHANGE);
 		eap_noob_Base64Encode(mac+16, MAC_LEN, &mac_b64);
 
 		//if(0 != strcmp(mac_b64,data->serv_attr->MAC)){
@@ -1937,13 +1937,13 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_sm *sm, noob_json_t * r
 		data->serv_attr->state = REGISTERED;
 		eap_noob_config_change(sm,data);
 
-		eap_noob_Base64Encode(data->serv_attr->kmp, KMP_LEN, &data->serv_attr->kmp_b64);
-		eap_noob_Base64Encode(data->serv_attr->kms, KMS_LEN, &data->serv_attr->kms_b64);
-		eap_noob_Base64Encode(data->serv_attr->kz, KZ_LEN, &data->serv_attr->kz_b64);
+		eap_noob_Base64Encode(data->serv_attr->kdf_out->kmp, KMP_LEN, &data->serv_attr->kdf_out->kmp_b64);
+		eap_noob_Base64Encode(data->serv_attr->kdf_out->kms, KMS_LEN, &data->serv_attr->kdf_out->kms_b64);
+		eap_noob_Base64Encode(data->serv_attr->kdf_out->kz, KZ_LEN, &data->serv_attr->kdf_out->kz_b64);
 		
 
 		snprintf(query,len,"UPDATE '%s' SET kms='%s', kmp='%s', kz='%s', state=%d WHERE PeerID='%s'", 
-			data->db_table_name, data->serv_attr->kms_b64,data->serv_attr->kmp_b64,data->serv_attr->kz_b64, 
+			data->db_table_name, data->serv_attr->kdf_out->kms_b64,data->serv_attr->kdf_out->kmp_b64,data->serv_attr->kdf_out->kz_b64,
 			data->serv_attr->state, data->serv_attr->peerID);
 
 
@@ -2036,8 +2036,8 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_sm *sm, noob_json_t * re
 			}
 
 			snprintf(query,len,"UPDATE '%s' SET Noob='%s', Hoob='%s', show_OOB=%d WHERE PeerID='%s'", 
-			data->db_table_name, data->serv_attr->noob_b64, 
-			data->serv_attr->hoob_b64, 1, data->serv_attr->peerID);
+			data->db_table_name, data->serv_attr->oob_data->noob_b64,
+			data->serv_attr->oob_data->hoob_b64, 1, data->serv_attr->peerID);
 			printf("EAP-NOOB: QUERY = %s\n",query);
 			
 			if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->peerDB,SQLITE_OPEN_READWRITE,NULL)){
@@ -2239,7 +2239,7 @@ static struct wpabuf * eap_noob_process (struct eap_sm *sm, void *priv,
 static void eap_noob_free_ctx(struct eap_noob_peer_context * data)
 {
 
-	struct eap_noob_data * peer = data->peer_attr;
+	struct eap_noob_peer_data * peer = data->peer_attr;
 	struct eap_noob_serv_data * serv = data->serv_attr;
 
 	if(NULL == data)
@@ -2348,7 +2348,7 @@ static int eap_noob_create_db(struct eap_sm *sm,struct eap_noob_peer_context * d
 
 }
 
-static void eap_noob_assign_config(char * conf_name,char * conf_value,struct eap_noob_data * data)
+static void eap_noob_assign_config(char * conf_name,char * conf_value,struct eap_noob_peer_data * data)
 {
 	//TODO : version and csuite are directly converted to integer.This needs to be changed if
 	//	more than one csuite or version is supported.
@@ -2383,7 +2383,7 @@ static void eap_noob_assign_config(char * conf_name,char * conf_value,struct eap
 }
 
 
-static void eap_noob_parse_config(char * buff,struct eap_noob_data * data)
+static void eap_noob_parse_config(char * buff,struct eap_noob_peer_data * data)
 {
 
 	char * pos = buff;
@@ -2436,7 +2436,7 @@ static int eap_noob_handle_incomplete_conf(struct eap_noob_peer_context * data)
 }
 
 
-static int eap_noob_prepare_peer_info_obj(struct eap_noob_data * data)
+static int eap_noob_prepare_peer_info_obj(struct eap_noob_peer_data * data)
 {
 	//To-Do: Send Peer Info and Server Info during fast reconnect only if they have changed
 
@@ -2506,6 +2506,31 @@ static int eap_noob_read_config(struct eap_noob_peer_context * data)
 }
 
 
+static int eap_noob_peer_ctxt_alloc(struct eap_sm *sm,  struct eap_noob_peer_context * data){
+
+	if(NULL == (data->peer_attr = os_zalloc( sizeof (struct eap_noob_peer_data)))){
+		return FAILURE;
+	}
+	if((NULL == (data->serv_attr = os_zalloc( sizeof (struct eap_noob_serv_data))))){
+		return FAILURE;
+	}
+	if((NULL == (data->serv_attr->ecdh_exchange_data = os_zalloc( sizeof (struct eap_noob_ecdh_key_exchange))))){
+		return FAILURE;
+	}
+	if((NULL == (data->serv_attr->oob_data = os_zalloc( sizeof (struct eap_noob_oob_data))))){
+		return FAILURE;
+	}
+	if((NULL == (data->serv_attr->kdf_out = os_zalloc( sizeof (struct eap_noob_ecdh_kdf_out))))){
+		return FAILURE;
+	}
+	if((NULL == (data->serv_attr->kdf_nonce_data = os_zalloc( sizeof (struct eap_noob_ecdh_kdf_nonce))))){
+		return FAILURE;
+	}
+
+	return SUCCESS;
+
+}
+
 static int eap_noob_peer_ctxt_init(struct eap_sm *sm,  struct eap_noob_peer_context * data)
 {
 
@@ -2513,8 +2538,7 @@ static int eap_noob_peer_ctxt_init(struct eap_sm *sm,  struct eap_noob_peer_cont
 	  config file*/
 	int retval = FAILURE;
 
-	if(NULL != (data->peer_attr = os_zalloc( sizeof (struct eap_noob_data))) && 
-			(NULL != (data->serv_attr = os_zalloc( sizeof (struct eap_noob_serv_data))))){
+	if(FAILURE != eap_noob_peer_ctxt_alloc(sm,data)){
 
 	
 		data->serv_attr->state = UNREG;
@@ -2554,6 +2578,7 @@ static void * eap_noob_init(struct eap_sm *sm)
 
 	if(NULL == (data = os_zalloc( sizeof (struct eap_noob_peer_context))))
 		return NULL;
+	
 	//TODO: check if hard coded initialization can be avoided
 	if(FAILURE == eap_noob_peer_ctxt_init(sm,data))
 		return NULL;
@@ -2566,7 +2591,7 @@ static void * eap_noob_init(struct eap_sm *sm)
 static Boolean eap_noob_isKeyAvailable(struct eap_sm *sm, void *priv)
 {
 	struct eap_noob_peer_context *data = priv;
-	Boolean retval = ((data->serv_attr->state == REGISTERED) && (data->serv_attr->shared_key_b64 != NULL));
+	Boolean retval = ((data->serv_attr->state == REGISTERED) && (data->serv_attr->ecdh_exchange_data->shared_key_b64 != NULL));
 	printf("STATE = %d\n", data->serv_attr->state);
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: KEY AVAILABLE? %d", retval);
 	return retval;
@@ -2581,13 +2606,13 @@ static u8 * eap_noob_getKey(struct eap_sm *sm, void *priv, size_t *len)
 	u8 *key;
 
 
-	if ((data->serv_attr->state != REGISTERED) || (!data->serv_attr->msk))
+	if ((data->serv_attr->state != REGISTERED) || (!data->serv_attr->kdf_out->msk))
 		return NULL;
 
 	if(NULL == (key = os_malloc(MSK_LEN)))
 		return NULL;
 	*len = MSK_LEN;
-	os_memcpy(key, data->serv_attr->msk, MSK_LEN);
+	os_memcpy(key, data->serv_attr->kdf_out->msk, MSK_LEN);
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: MSK Derived",key,MSK_LEN);
 
 	return key;
@@ -2598,7 +2623,7 @@ static u8 * eap_noob_get_emsk(struct eap_sm *sm, void *priv, size_t *len)
         struct eap_noob_peer_context *data = priv;
         u8 *key;
 	wpa_printf(MSG_DEBUG,"EAP-NOOB:Get EMSK Called");
-	if ((data->serv_attr->state != REGISTERED) || (!data->serv_attr->emsk))
+	if ((data->serv_attr->state != REGISTERED) || (!data->serv_attr->kdf_out->emsk))
                 return NULL;
 
 	if(NULL == (key = os_malloc(MSK_LEN)))
@@ -2606,7 +2631,7 @@ static u8 * eap_noob_get_emsk(struct eap_sm *sm, void *priv, size_t *len)
 
 
         *len = EAP_EMSK_LEN;
-        os_memcpy(key, data->serv_attr->emsk, EAP_EMSK_LEN);
+        os_memcpy(key, data->serv_attr->kdf_out->emsk, EAP_EMSK_LEN);
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: EMSK",key,EAP_EMSK_LEN);
         return key;
 }
