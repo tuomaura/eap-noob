@@ -5,7 +5,7 @@ import os
 import time
 import sqlite3
 import webbrowser
-
+import json
 
 def update_file(signum,frame):
     print ('Updating File')
@@ -16,10 +16,12 @@ def update_file(signum,frame):
 
     file = open("file.txt", "w")
 
-    for row in c.execute('select ssid,ServInfo,PeerID,Noob,Hoob from connections where show_OOB = 1'):
+    for row in c.execute('select ssid,ServInfo,PeerID,Noob,Hoob,err_code from connections where show_OOB = 1'):
         print (row[0] + '\n')
-        file.write(row[0] + ',' + row[1] + ',' + row[1] +'/?PeerId='+row [2] + '&Noob=' + row[3] + '&Hoob=' + row[4] + '\n')
-
+ 	servinfo = json.loads(row[1])
+        if(row[5]!=0):
+             file.write("Error code: "+str(row[5]))
+        file.write(row[0] + ',' + servinfo['ServName'] + ',' + servinfo['ServUrl'] +'/?PeerId='+row [2] + '&Noob=' + row[3] + '&Hoob=' + row[4] + '\n')
 
     file.close()
     con.close()
