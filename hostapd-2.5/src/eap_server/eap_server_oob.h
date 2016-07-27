@@ -11,6 +11,13 @@
 /*Configuration file*/
 #define CONF_FILE 		"eapoob.conf"
 
+#include <jansson.h>
+
+typedef json_t 		noob_json_t;	
+typedef json_int_t 	noob_json_int_t;
+typedef char		noob_json_str_t;
+typedef json_error_t 	noob_json_error_t;
+
 /* All the pre-processors of EAP-NOOB*/
 
 #define NUM_OF_VERSIONS  	1
@@ -115,6 +122,8 @@
 #define MINSLP_RCVD		0x0200
 #define SERV_NAME_RCVD		0x0400
 #define SERV_URL_RCVD		0x0800
+
+
 
 #define TYPE_ONE_PARAMS		(PEERID_RCVD|VERSION_RCVD|CSUITE_RCVD|DIRECTION_RCVD|INFO_RCVD) 
 #define TYPE_TWO_PARAMS		(PEERID_RCVD|NONCE_RCVD|PKEY_RCVD)
