@@ -49,7 +49,7 @@ static u32 eap_noob_json_is_integer(const noob_json_t * value)
 	return json_is_integer(value);
 }
 
-static noob_json_t * eap_noob_json_string(noob_json_str_t * value)
+static noob_json_t * eap_noob_json_string(const noob_json_str_t * value)
 {
 	return json_string(value);
 }
@@ -1543,6 +1543,28 @@ static struct wpabuf * eap_noob_rsp_type_three(const struct eap_noob_peer_contex
 
 }
 
+
+int eap_noob_build_JWK( noob_json_t ** jwk, const char * x_b64, const char * y_b64) {
+
+	if(NULL != ((*jwk) = eap_noob_json_object())){
+		eap_noob_json_object_set_new((*jwk), KEY_TYPE, eap_noob_json_string("EC"));
+		eap_noob_json_object_set_new((*jwk), CURVE, eap_noob_json_string("P-256"));
+	}else{
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: Error in JWK");
+		return FAILURE;
+	}
+
+	if(NULL == x_b64 || NULL == y_b64){
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: CO-ORDINATES are NULL!!");
+		return FAILURE;
+	
+	}
+	eap_noob_json_object_set_new((*jwk), X_COORDINATE, eap_noob_json_string(x_b64));
+	eap_noob_json_object_set_new((*jwk), Y_COORDINATE, eap_noob_json_string(y_b64));
+	wpa_printf(MSG_DEBUG, "JWK Key %s",eap_noob_json_dumps((*jwk),JSON_COMPACT));
+	return SUCCESS;
+}
+
 static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data, u8 id){
 
 	noob_json_t * rsp_obj = NULL;
@@ -1554,12 +1576,6 @@ static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data,
 	char* base64_nonce;
 	size_t secret_len = EAP_SHARED_SECRET_LEN;
 
-	if(NULL != (data->serv_attr->ecdh_exchange_data->jwk_peer = eap_noob_json_object())){
-		eap_noob_json_object_set_new(data->serv_attr->ecdh_exchange_data->jwk_peer,KEY_TYPE,eap_noob_json_string("EC"));
-		eap_noob_json_object_set_new(data->serv_attr->ecdh_exchange_data->jwk_peer,CURVE,eap_noob_json_string("P-256"));
-	}else{
-		wpa_printf(MSG_DEBUG,"EAP-NOOB: Error in JWK");
-	}
 
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB BUILD RESP TYPE 2");
 	if(NULL == data){
@@ -1588,9 +1604,10 @@ static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data,
 		return NULL;
 	}
 
-	eap_noob_json_object_set_new(data->serv_attr->ecdh_exchange_data->jwk_peer,X_COORDINATE,eap_noob_json_string(data->serv_attr->ecdh_exchange_data->x_b64));
-	eap_noob_json_object_set_new(data->serv_attr->ecdh_exchange_data->jwk_peer,Y_COORDINATE,eap_noob_json_string(data->serv_attr->ecdh_exchange_data->y_b64));
-
+	if(FAILURE == eap_noob_build_JWK(&data->serv_attr->ecdh_exchange_data->jwk_peer, data->serv_attr->ecdh_exchange_data->x_b64, data->serv_attr->ecdh_exchange_data->y_b64)){
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to build JWK");
+		return NULL;
+	}
 	eap_noob_Base64Encode(data->serv_attr->kdf_nonce_data->nonce_peer,EAP_NOOB_NONCE_LEN, &base64_nonce);
 	wpa_printf(MSG_DEBUG,"EAP-NOOB: Nonce %s",base64_nonce);
 
