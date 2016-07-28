@@ -1288,6 +1288,8 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName){
 	return 0;
 }
 
+
+
 static int eap_noob_exec_query(const char * query, int(*callback)(void*, int ,char **, char ** ), 
 		void * argv, struct eap_noob_peer_context *data){
 
@@ -1325,15 +1327,58 @@ static int eap_noob_exec_query(const char * query, int(*callback)(void*, int ,ch
 
 }
 
+static int eap_noob_db_update (struct eap_noob_peer_context *data, u8 type)
+{
+
+	char * query = os_zalloc(MAX_QUERY_LEN);
+
+	switch(type){
+
+		case UPDATE_STATE: 
+			snprintf(query,MAX_QUERY_LEN,"UPDATE '%s' SET state=%d WHERE PeerID='%s'", 
+					data->db_table_name, data->serv_attr->state, data->serv_attr->peerID);
+			break;
+		case UPDATE_PERSISTENT_KEYS_SECRET:
+			snprintf(query,MAX_QUERY_LEN,"UPDATE '%s' SET kms='%s', kmp='%s', kz='%s', state=%d WHERE PeerID='%s'", 
+				data->db_table_name, data->serv_attr->kdf_out->kms_b64,data->serv_attr->kdf_out->kmp_b64,data->serv_attr->kdf_out->kz_b64,
+				data->serv_attr->state, data->serv_attr->peerID);
+			break;
+		case UPDATE_OOB:
+			snprintf(query,MAX_QUERY_LEN,"UPDATE '%s' SET Noob='%s', Hoob='%s', show_OOB=%d WHERE PeerID='%s'", 
+				data->db_table_name, data->serv_attr->oob_data->noob_b64,
+				data->serv_attr->oob_data->hoob_b64, 1, data->serv_attr->peerID);
+			break;
+
+		case UPDATE_STATE_ERROR:
+			snprintf(query,MAX_QUERY_LEN,"UPDATE '%s' SET err_code=%d WHERE PeerID='%s'", 
+				data->db_table_name, data->serv_attr->err_code, data->serv_attr->peerID);
+			break;
+
+		default:
+               		wpa_printf(MSG_ERROR, "EAP-NOOB: Wrong DB update type");
+               		return FAILURE;
+	}
+	
+	printf("QUERY = %s\n",query);	
+	if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
+			wpa_printf(MSG_ERROR, "EAP-NOOB: DB update failed");
+			os_free(query);
+			return FAILURE;
+		}
+
+	os_free(query);
+	return SUCCESS;
+}
+
 static int eap_noob_db_entry(struct eap_sm *sm,struct eap_noob_peer_context *data)
 {
-	char query[1500] = {0}; //TODO : replace it with dynamic allocation
+	char * query = os_zalloc(MAX_QUERY_LEN);
 	struct wpa_supplicant *wpa_s = (struct wpa_supplicant *) sm->msg_ctx;
 
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s",__func__);
 
 
-	snprintf(query,1500,"INSERT INTO %s (ssid, PeerID, Vers,Verp, state, Csuites,Csuitep,Dirs,Dirp, "
+	snprintf(query,MAX_QUERY_LEN,"INSERT INTO %s (ssid, PeerID, Vers,Verp, state, Csuites,Csuitep,Dirs,Dirp, "
 			"nonce_peer, nonce_serv, minsleep,ServInfo, PeerInfo,SharedSecret, Noob, Hoob," 
 			" OOB_RECEIVED_FLAG,pub_key_serv,pub_key_peer,err_code)"
 			"VALUES ('%s','%s', %d, %d, %d, %d, %d, %d ,%d,'%s','%s', %d, '%s', '%s','%s',"
@@ -1350,19 +1395,15 @@ static int eap_noob_db_entry(struct eap_sm *sm,struct eap_noob_peer_context *dat
 
 
 	printf("QUERY = %s\n",query);
-/*
-	if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->peerDB,SQLITE_OPEN_READWRITE,NULL)){
-                wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
-                return FAILURE;
-        }
-*/
+
 	if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
 		//sqlite3_close(data->peerDB);
 		wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
 		//TODO: free data here.
+		os_free(query);	
 		return FAILURE;
 	}
-
+	os_free(query);	
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s",__func__);
 	return SUCCESS;
 }
@@ -1762,9 +1803,6 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_sm *sm, noob_json_t * 
 	u8 * mac = NULL;
 	char * mac_b64 = NULL;
 
-	char query[1000] = {0}; //TODO: remove this static allocation and allocate dynamically with actual length
-	int len = 1000;
-
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB PROCESS REQ TYPE 7");
 	if(NULL == req_obj || NULL == data){
 		wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
@@ -1804,20 +1842,24 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_sm *sm, noob_json_t * 
 		data->serv_attr->state = REGISTERED;
 		eap_noob_config_change(sm,data);
 
+		 if(FAILURE == eap_noob_db_update(data,UPDATE_STATE)){
+			os_free(resp);
+                        return NULL;
+                }
 
-		snprintf(query,len,"UPDATE '%s' SET state=%d WHERE PeerID='%s'", data->db_table_name, data->serv_attr->state, data->serv_attr->peerID);
 /*
+		snprintf(query,MAX_QUERY_LEN,"UPDATE '%s' SET state=%d WHERE PeerID='%s'", data->db_table_name, data->serv_attr->state, data->serv_attr->peerID);
 		if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->peerDB,SQLITE_OPEN_READWRITE,NULL)){
                         wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
                         return FAILURE;
                 }
-*/
 		if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
 			//sqlite3_close(data->peerDB);	
 			wpa_printf(MSG_ERROR, "EAP-NOOB: updating Noob failed");
 			//TODO: free data here.
 			//	return FAILURE;
 		}
+*/
 	}
 	return resp;	
 }
@@ -1907,9 +1949,6 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_sm *sm, noob_json_t * r
 	u8 * mac = NULL;
 	char * mac_b64 = NULL;
 
-	char query[1000] = {0}; //TODO: remove this static allocation and allocate dynamically with actual length
-	int len = 1000;
-
 
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB PROCESS REQ TYPE 4");
 	if(NULL == req_obj || NULL == data){
@@ -1953,22 +1992,13 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_sm *sm, noob_json_t * r
 		eap_noob_Base64Encode(data->serv_attr->kdf_out->kmp, KMP_LEN, &data->serv_attr->kdf_out->kmp_b64);
 		eap_noob_Base64Encode(data->serv_attr->kdf_out->kms, KMS_LEN, &data->serv_attr->kdf_out->kms_b64);
 		eap_noob_Base64Encode(data->serv_attr->kdf_out->kz, KZ_LEN, &data->serv_attr->kdf_out->kz_b64);
-		
 
-		snprintf(query,len,"UPDATE '%s' SET kms='%s', kmp='%s', kz='%s', state=%d WHERE PeerID='%s'", 
-			data->db_table_name, data->serv_attr->kdf_out->kms_b64,data->serv_attr->kdf_out->kmp_b64,data->serv_attr->kdf_out->kz_b64,
-			data->serv_attr->state, data->serv_attr->peerID);
+ 		if(FAILURE == eap_noob_db_update(data,UPDATE_PERSISTENT_KEYS_SECRET)){
+			os_free(resp);
+                        return NULL;
+                }		
 
-/*
-		if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->peerDB,SQLITE_OPEN_READWRITE,NULL)){
-                        wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
-                        return FAILURE;
-                }
-*/
-		if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
-			wpa_printf(MSG_ERROR, "EAP-NOOB: updating Noob failed");
-			//TODO: free data here.
-		}
+
 	}
 	return resp;	
 }
@@ -2012,8 +2042,6 @@ static struct wpabuf * eap_noob_req_type_three(struct eap_sm *sm, noob_json_t * 
 static struct wpabuf * eap_noob_req_type_two(struct eap_sm *sm, noob_json_t * req_obj , struct eap_noob_peer_context *data, u8 id){
 
 	struct wpabuf *resp = NULL;
-	char query[1000] = {0}; //TODO : replace it with dynamic allocation
-	int len = 1000;
 
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB PROCESS REQ TYPE 2");
 	if(NULL == req_obj || NULL == data){
@@ -2047,24 +2075,11 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_sm *sm, noob_json_t * re
 				wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB generation FAILED");
 				return NULL;
 			}
-
-			snprintf(query,len,"UPDATE '%s' SET Noob='%s', Hoob='%s', show_OOB=%d WHERE PeerID='%s'", 
-			data->db_table_name, data->serv_attr->oob_data->noob_b64,
-			data->serv_attr->oob_data->hoob_b64, 1, data->serv_attr->peerID);
-			printf("EAP-NOOB: QUERY = %s\n",query);
-/*			
-			if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->peerDB,SQLITE_OPEN_READWRITE,NULL)){
-                                        wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
-                                        return FAILURE;
-                        }
-			
-*/
-			if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
-				//sqlite3_close(data->peerDB);	
-				wpa_printf(MSG_ERROR, "EAP-NOOB: updating Noob failed");
-				//TODO: free data here.
-				//	return FAILURE;
-			}
+	
+			if(FAILURE == eap_noob_db_update(data,UPDATE_OOB)){
+                        	os_free(resp);
+                        	return NULL;
+               	 	}
 			/*To-Do: If an error is received for the response then set the show_OOB flag to zero and send update signal*/
 			if(FAILURE == eap_noob_sendUpdateSignal()){
 				wpa_printf(MSG_DEBUG,"EAP-NOOB: Failed to Notify the Script");
@@ -2132,17 +2147,8 @@ static void eap_noob_req_err_handling(struct eap_sm *sm,noob_json_t * req_obj , 
 		u8 id){
 	
 
-	char query[200] = {0}; //TODO : replace it with dynamic allocation
-	int len = 200;
-
 	if(!data->serv_attr->err_code){
-		
-		snprintf(query,len,"UPDATE '%s' SET err_code=%d WHERE PeerID='%s'", 
-			data->db_table_name, data->serv_attr->err_code, data->serv_attr->peerID);
-
-			if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
-				wpa_printf(MSG_ERROR, "EAP-NOOB: updating Noob failed");
-		}
+		eap_noob_db_update(data,UPDATE_STATE_ERROR);
 	}	
 }
 
@@ -2666,9 +2672,7 @@ static void * eap_noob_init_for_reauth(struct eap_sm *sm, void *priv)
 static Boolean eap_noob_has_reauth_data(struct eap_sm *sm, void *priv)
 {
 	struct eap_noob_peer_context *data = priv;
-	char query[1000] = {0}; //TODO: remove this static allocation and allocate dynamically with actual length
-	int len = 1000;
-
+	
         printf("######################### Has reauth function called\n");
 	
 	if(data->serv_attr->state == REGISTERED){
@@ -2676,22 +2680,10 @@ static Boolean eap_noob_has_reauth_data(struct eap_sm *sm, void *priv)
 		data->serv_attr->state = RECONNECT;
 
 		eap_noob_config_change(sm,data);
-	
-		snprintf(query,len,"UPDATE '%s' SET state=%d WHERE PeerID='%s'", data->db_table_name, data->serv_attr->state, data->serv_attr->peerID);
-/*			
-		if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->peerDB,SQLITE_OPEN_READWRITE,NULL)){
-        		wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
-                	return FALSE;
-        	}
-			
-*/
-		if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
-			wpa_printf(MSG_ERROR, "EAP-NOOB: updating Noob failed");
-			return FALSE;
-		}
-		
-		return TRUE;
 
+		eap_noob_db_update(data,UPDATE_STATE);
+	
+		return TRUE;
 	}
 	printf("############################Returning False\n");
 	return FALSE;

@@ -13,7 +13,8 @@
 #define NUM_OF_VERSIONS 		 1
 #define PEER_ID_DEFAULT 		"noob@eap-noob.net"	 
 #define MAX_PATH_LEN			256
-#define MAX_QUERY_LEN			1000
+#define MAX_QUERY_LEN			2048
+#define SHORT_QUERY_LEN			500
 #define DOMAIN		    		"@eap-noob.net"
 #define PEER_INFO			"Believe_me_i_am_a_printer!!"
 #define PUBLIC_KEY			"Peer public key"
@@ -180,7 +181,7 @@ enum 	{UNREG, WAITING, OOB, RECONNECT,REGISTERED};
 enum	{NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7};
 enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001};
 enum 	{HOOB,MACS,MACP};
-
+enum    {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,UPDATE_STATE_ERROR,UPDATE_OOB};
 struct eap_noob_peer_config_params{	
 
 	char * Peer_name;
