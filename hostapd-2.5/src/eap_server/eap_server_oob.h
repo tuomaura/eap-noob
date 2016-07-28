@@ -190,91 +190,100 @@ struct eap_noob_serv_context{
 	sqlite3 * servDB;
 };
 
+struct eap_noob_ecdh_kdf_nonce{
+
+        u8 * nonce_serv;
+        char * nonce_serv_b64;
+        u8 * nonce_peer;
+        char * nonce_peer_b64;
+
+};
+
+struct eap_noob_ecdh_kdf_out{
+
+        u8 * msk;
+        char * msk_b64;
+        u8 * emsk;
+        char * emsk_b64;
+        u8 * kms;
+        char * kms_b64;
+        u8 * kmp;
+        char * kmp_b64;
+        u8 * kz;
+        char * kz_b64;
+};
+
+struct eap_noob_ecdh_key_exchange{
+
+        EVP_PKEY *dh_key;
+
+        char * x_peer_b64;
+        char * y_peer_b64;
+
+        char * x_b64;
+        size_t x_len;
+        char * y_b64;
+        size_t y_len;
+
+        json_t * jwk_serv;
+        json_t * jwk_peer;
+
+        u8 * shared_key;
+        char * shared_key_b64;
+        size_t shared_key_b64_len;
+
+};
+
+struct eap_noob_oob_data{
+
+        char * noob_b64;
+	size_t noob_len;
+        u8 * noob;
+
+        char * hoob_b64;
+	size_t hoob_len;
+        u8 * hoob;
+};
+
+
 
 struct eap_noob_peer_data{
 
         u32 version; 
-        char * peerID_rcvd;
-        char * peerID_gen;
-        u8 peer_state;
-        u8 serv_state;
         u32 cryptosuite;
         u32 dir;
         u32 minsleep; 
-	Boolean record_present;
+	u32 recv_msg;
+	u32 rcvd_params;
+	u32 minslp_count;
+	int oob_recv;	
+
+        u8 peer_state;
+        u8 serv_state;
+	u8 next_req;
+	u8 is_done;
+	u8 is_success;
+
+        char * peerID_rcvd;
+        char * peerID_gen;
 	char * peer_info;
 	char * peer_snum;
 	char *NAI;
 	char *user_name_peer;
 	char *realm;
-	u8 next_req;
-	u8 is_done;
-	u8 is_success;
-
 	char * mac;
 
-        u8 * nonce_peer;
-        char * nonce_peer_b64;
-        
-	u8 * peer_public_key;
-        char * peer_public_key_b64;
-	size_t pub_key_peer_len; 
+	Boolean record_present;
 
-
-        u8 * nonce_serv;
-	char * nonce_serv_b64;
-
-	EVP_PKEY *dh_key;
-/*
-        u8 * serv_public_key;
-        char * serv_public_key_b64;
-	size_t pub_key_server_len;
-	u8 * priv_key;
-	size_t priv_key_len;
-*/
-	u8 * shared_key;
-	char * shared_key_b64;
-	size_t shared_key_b64_len;
-
-	char * noob_b64;
-	size_t noob_len;
-	u8 * noob;
-
-	char * hoob_b64;
-	size_t hoob_len;
-	u8 * hoob;
-	
 	enum eap_noob_err_code err_code;
-	int oob_recv;
-
-	json_t * jwk_serv;
-	json_t * jwk_peer;	
-
-	u8 * msk;
-	char * msk_b64;
-	u8 * emsk;
-	char * emsk_b64;
-	u8 * kms;
-	char * kms_b64;
-	u8 * kmp;
-	char * kmp_b64;
-	u8 * kz;
-	char * kz_b64;
-	u32 recv_msg;
-	u32 rcvd_params;
-	u32 minslp_count;
-
 	
-	char * x_peer_b64;
-	char * y_peer_b64;
-
-	char * x_b64;
-	size_t x_len;
-	char * y_b64;
-	size_t y_len;
-	
-
 	struct timespec sleep_time;
+
+        struct eap_noob_ecdh_key_exchange * ecdh_exchange_data;
+        struct eap_noob_oob_data * oob_data;
+        struct eap_noob_ecdh_kdf_nonce * kdf_nonce_data;
+        struct eap_noob_ecdh_kdf_out * kdf_out;
+
 	
 };
 
