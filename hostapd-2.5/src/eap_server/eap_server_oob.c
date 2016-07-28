@@ -2055,6 +2055,28 @@ static struct wpabuf * eap_noob_req_type_three(struct eap_noob_serv_context *dat
 	}
 	return req;
 }
+
+int eap_noob_build_JWK( noob_json_t ** jwk, const char * x_b64, const char * y_b64) {
+
+	if(NULL != ((*jwk) = eap_noob_json_object())){
+		eap_noob_json_object_set_new((*jwk), KEY_TYPE, eap_noob_json_string("EC"));
+		eap_noob_json_object_set_new((*jwk), CURVE, eap_noob_json_string("P-256"));
+	}else{
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: Error in JWK");
+		return FAILURE;
+	}
+
+	if(NULL == x_b64 || NULL == y_b64){
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: CO-ORDINATES are NULL!!");
+		return FAILURE;
+	
+	}
+	eap_noob_json_object_set_new((*jwk), X_COORDINATE, eap_noob_json_string(x_b64));
+	eap_noob_json_object_set_new((*jwk), Y_COORDINATE, eap_noob_json_string(y_b64));
+	wpa_printf(MSG_DEBUG, "JWK Key %s",eap_noob_json_dumps((*jwk),JSON_COMPACT));
+	return SUCCESS;
+}
+
 /**
  * eap_oob_req_type_two - Build the EAP-Request/Initial Exchange 2.
  * @sm: Pointer to EAP state machine allocated with eap_peer_sm_init()
@@ -2069,28 +2091,9 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_noob_serv_context *data,
 	struct wpabuf *req = NULL;
 	char * req_json = NULL;
 	size_t len = 0 ;
-	//char* base64_pubkey;
 	char* base64_nonce;
 
-	//char * check;
-	//char * check1; 
-	//noob_json_t * test = NULL;
-	//noob_json_t * jwk = NULL;
 	
-	if(NULL != (data->peer_attr->ecdh_exchange_data->jwk_serv = eap_noob_json_object())){
-		eap_noob_json_object_set_new(data->peer_attr->ecdh_exchange_data->jwk_serv,KEY_TYPE,eap_noob_json_string("EC"));
-		eap_noob_json_object_set_new(data->peer_attr->ecdh_exchange_data->jwk_serv,CURVE,eap_noob_json_string("P-256"));
-		//eap_noob_json_object_set_new(jwk,"kid",eap_noob_json_string("1234"));
-	}else{
-		wpa_printf(MSG_DEBUG,"EAP-NOOB: Error in JWK");
-	}	
-	
-	//check1 = eap_noob_json_dumps(jwk,JSON_COMPACT);	
-	//wpa_printf(MSG_DEBUG, "EAP-NOOB: request- check1 %s",check1);	
-
-	//unsigned char *decode_nonce;
-	//unsigned char *decode_key;
-	//size_t decode_length;
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: Request 2/Initial Exchange");
 
 	if(NULL == data){
@@ -2098,12 +2101,6 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_noob_serv_context *data,
 		return NULL;
 	}
 	data->peer_attr->kdf_nonce_data->nonce_serv = os_zalloc(EAP_NOOB_NONCE_LEN);
-	/*if (os_get_random(data->peer_attr->kdf_nonce_data->nonce_serv, EAP_NOOB_NONCE_LEN)) {
-	  wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to generate the nonce");
-	  set_done(data,DONE);
-	  set_success(data,FAIL);
-	  return NULL;
-	  }*/
 
 	int rc = RAND_bytes(data->peer_attr->kdf_nonce_data->nonce_serv, EAP_NOOB_NONCE_LEN);// To-Do base64 encoding
 	unsigned long err = ERR_get_error();
@@ -2114,7 +2111,6 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_noob_serv_context *data,
 	}
 
 	wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Nonce", data->peer_attr->kdf_nonce_data->nonce_serv, EAP_NOOB_NONCE_LEN);
-	//data->server_attr->nonce = 1234;
 
 	/* Generate Key material */
 	if (eap_noob_get_key(data) == 0)  {
@@ -2124,25 +2120,25 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_noob_serv_context *data,
 		return NULL;
 	}
 	
-	
-	eap_noob_json_object_set_new(data->peer_attr->ecdh_exchange_data->jwk_serv,X_COORDINATE,eap_noob_json_string(data->peer_attr->ecdh_exchange_data->x_b64));
-	eap_noob_json_object_set_new(data->peer_attr->ecdh_exchange_data->jwk_serv,Y_COORDINATE,eap_noob_json_string(data->peer_attr->ecdh_exchange_data->y_b64));
+	if(FAILURE == eap_noob_build_JWK(&data->peer_attr->ecdh_exchange_data->jwk_serv, data->peer_attr->ecdh_exchange_data->x_b64, data->peer_attr->ecdh_exchange_data->y_b64)){
+
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to generate JWK");
+		return NULL;	
+
+	}
 
 	//TODO: change get key params and finally store only base 64 encoded public key	
-	//eap_noob_Base64Encode(data->peer_attr->serv_public_key, data->peer_attr->pub_key_server_len, &base64_pubkey);
-	//wpa_printf(MSG_DEBUG,"EAP-NOOB: Public Key %s",base64_pubkey);
+	
 	eap_noob_Base64Encode(data->peer_attr->kdf_nonce_data->nonce_serv,EAP_NOOB_NONCE_LEN, &base64_nonce);
 	wpa_printf(MSG_DEBUG,"EAP-NOOB: Nonce %s",base64_nonce);
 	
 	data->peer_attr->kdf_nonce_data->nonce_serv_b64 = base64_nonce;
-	//data->peer_attr->serv_public_key_b64 = base64_pubkey;
 
 	if(NULL != (req_obj = eap_noob_json_object())){ 
 
 		eap_noob_json_object_set_new(req_obj,TYPE,eap_noob_json_integer(EAP_NOOB_TYPE_2));
 		eap_noob_json_object_set_new(req_obj,PEERID,eap_noob_json_string(data->peer_attr->peerID_gen));
 		eap_noob_json_object_set_new(req_obj,NONCE_SERV,eap_noob_json_string(base64_nonce));
-		//eap_noob_json_object_set_new(req_obj,PUBLICKEY_SERV,eap_noob_json_string(base64_pubkey));
 		eap_noob_json_object_set_new(req_obj,JSON_WEB_KEY,data->peer_attr->ecdh_exchange_data->jwk_serv);
 		
 
@@ -2166,10 +2162,6 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_noob_serv_context *data,
 		os_free(req_json);
 
 	}
-	//eap_noob_Base64Decode(base64_pubkey, &decode_key, &decode_length);
-	//wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Key Verify", decode_key, decode_length);
-	//os_free(base64_nonce);
-	//os_free(base64_pubkey);
 	return req;
 }
 
