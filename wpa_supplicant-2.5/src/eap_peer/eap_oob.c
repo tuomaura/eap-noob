@@ -103,7 +103,7 @@ static int eap_noob_sendUpdateSignal()
 	FILE *fp;
 	char pid[10];
 	int p = 0;
-	fp = popen("pidof ./wpa_auto_run.py", "r");
+	fp = popen("pidof /usr/bin/python wpa_auto_run.py", "r");
 	if (fp == NULL)
 		return FAILURE;
 	if( fgets (pid, 10, fp)!=NULL ) 
@@ -1288,29 +1288,40 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName){
 	return 0;
 }
 
-static int eap_noob_exec_query(const char * query, int(*callback)(void*, int ,char **, char ** ), void * data,sqlite3 * dbname){
+static int eap_noob_exec_query(const char * query, int(*callback)(void*, int ,char **, char ** ), 
+		void * argv, struct eap_noob_peer_context *data){
 
 	char * sql_error = NULL;
+	
+	if(NULL == data){
+		wpa_printf(MSG_ERROR, "EAP-NOOB: Peer context null");
+		return FAILURE;	
+	}
+	
+	if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->peerDB,SQLITE_OPEN_READWRITE,NULL)){
+        		wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
+                	return FAILURE;
+        	}
 
-	if(SQLITE_OK != sqlite3_exec(dbname, query,callback, data, &sql_error)){
+	if(SQLITE_OK != sqlite3_exec(data->peerDB, query,callback, argv, &sql_error)){
 		if (sql_error!=NULL) {
 			wpa_printf(MSG_DEBUG,"EAP_NOOB: sql error : %s\n",sql_error);
 			sqlite3_free(sql_error);
 		}
-		if(SQLITE_OK != sqlite3_close(dbname)){
+		if(SQLITE_OK != sqlite3_close(data->peerDB)){
                         wpa_printf(MSG_DEBUG, "EAP-NOOB:Error closing DB");
                 }
 
-		wpa_printf(MSG_DEBUG,"FAILED QUERY");
+		wpa_printf(MSG_ERROR,"Failed to Query DB");
 		return FAILURE;
 	}
-	if(SQLITE_OK != sqlite3_close(dbname)){
+
+	if(SQLITE_OK != sqlite3_close(data->peerDB)){
                         wpa_printf(MSG_DEBUG, "EAP-NOOB:Error closing DB");
         }
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s",__func__);
 
 	return SUCCESS;
-
 
 }
 
@@ -1339,11 +1350,13 @@ static int eap_noob_db_entry(struct eap_sm *sm,struct eap_noob_peer_context *dat
 
 
 	printf("QUERY = %s\n",query);
+/*
 	if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->peerDB,SQLITE_OPEN_READWRITE,NULL)){
                 wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
                 return FAILURE;
         }
-	if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data->peerDB)){
+*/
+	if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
 		//sqlite3_close(data->peerDB);
 		wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
 		//TODO: free data here.
@@ -1793,13 +1806,13 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_sm *sm, noob_json_t * 
 
 
 		snprintf(query,len,"UPDATE '%s' SET state=%d WHERE PeerID='%s'", data->db_table_name, data->serv_attr->state, data->serv_attr->peerID);
-
+/*
 		if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->peerDB,SQLITE_OPEN_READWRITE,NULL)){
                         wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
                         return FAILURE;
                 }
-
-		if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data->peerDB)){
+*/
+		if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
 			//sqlite3_close(data->peerDB);	
 			wpa_printf(MSG_ERROR, "EAP-NOOB: updating Noob failed");
 			//TODO: free data here.
@@ -1946,13 +1959,13 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_sm *sm, noob_json_t * r
 			data->db_table_name, data->serv_attr->kdf_out->kms_b64,data->serv_attr->kdf_out->kmp_b64,data->serv_attr->kdf_out->kz_b64,
 			data->serv_attr->state, data->serv_attr->peerID);
 
-
+/*
 		if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->peerDB,SQLITE_OPEN_READWRITE,NULL)){
                         wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
                         return FAILURE;
                 }
-		if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data->peerDB)){
-			//sqlite3_close(data->peerDB);	
+*/
+		if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
 			wpa_printf(MSG_ERROR, "EAP-NOOB: updating Noob failed");
 			//TODO: free data here.
 		}
@@ -2039,14 +2052,14 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_sm *sm, noob_json_t * re
 			data->db_table_name, data->serv_attr->oob_data->noob_b64,
 			data->serv_attr->oob_data->hoob_b64, 1, data->serv_attr->peerID);
 			printf("EAP-NOOB: QUERY = %s\n",query);
-			
+/*			
 			if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->peerDB,SQLITE_OPEN_READWRITE,NULL)){
                                         wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
                                         return FAILURE;
                         }
 			
-
-			if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data->peerDB)){
+*/
+			if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
 				//sqlite3_close(data->peerDB);	
 				wpa_printf(MSG_ERROR, "EAP-NOOB: updating Noob failed");
 				//TODO: free data here.
@@ -2127,7 +2140,7 @@ static void eap_noob_req_err_handling(struct eap_sm *sm,noob_json_t * req_obj , 
 		snprintf(query,len,"UPDATE '%s' SET err_code=%d WHERE PeerID='%s'", 
 			data->db_table_name, data->serv_attr->err_code, data->serv_attr->peerID);
 
-			if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data->peerDB)){
+			if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
 				wpa_printf(MSG_ERROR, "EAP-NOOB: updating Noob failed");
 		}
 	}	
@@ -2305,7 +2318,7 @@ static int eap_noob_create_db(struct eap_sm *sm,struct eap_noob_peer_context * d
 			return FAILURE;
 		}
 
-		if(FAILURE == eap_noob_exec_query(CREATE_CONNECTION_TABLE, NULL,NULL,data->peerDB)){
+		if(FAILURE == eap_noob_exec_query(CREATE_CONNECTION_TABLE, NULL,NULL,data)){
 			//sqlite3_close(data->peerDB);	
 			wpa_printf(MSG_ERROR, "EAP-NOOB: connections Table creation failed");
 			//TODO: free data here.
@@ -2319,7 +2332,7 @@ static int eap_noob_create_db(struct eap_sm *sm,struct eap_noob_peer_context * d
 			//TODO: add row check condition here	
 			os_snprintf(buff,100,"SELECT COUNT(*) from %s WHERE ssid ='%s'",data->db_table_name,
 					wpa_s->current_ssid->ssid);
-			if(FAILURE !=  eap_noob_exec_query(buff, eap_noob_db_entry_check,data->serv_attr,data->peerDB)
+			if(FAILURE !=  eap_noob_exec_query(buff, eap_noob_db_entry_check,data->serv_attr,data)
 					&& (data->serv_attr->record_present)){
 
 				memset(buff, 0, sizeof(buff));
@@ -2333,9 +2346,7 @@ static int eap_noob_create_db(struct eap_sm *sm,struct eap_noob_peer_context * d
 			}
 
 
-			if(FAILURE !=  eap_noob_exec_query(buff, eap_noob_callback,data,
-						data->peerDB)){
-				//printf("AFTER DB CALLBACK \n");
+			if(FAILURE !=  eap_noob_exec_query(buff, eap_noob_callback,data,data)){
 				data->peer_attr->peerID = os_malloc(strlen(data->serv_attr->peerID)+1);
 				os_memcpy(data->peer_attr->peerID,data->serv_attr->peerID,
 						strlen(data->serv_attr->peerID)+1);
@@ -2667,14 +2678,14 @@ static Boolean eap_noob_has_reauth_data(struct eap_sm *sm, void *priv)
 		eap_noob_config_change(sm,data);
 	
 		snprintf(query,len,"UPDATE '%s' SET state=%d WHERE PeerID='%s'", data->db_table_name, data->serv_attr->state, data->serv_attr->peerID);
-			
+/*			
 		if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->peerDB,SQLITE_OPEN_READWRITE,NULL)){
         		wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
                 	return FALSE;
         	}
 			
-
-		if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data->peerDB)){
+*/
+		if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
 			wpa_printf(MSG_ERROR, "EAP-NOOB: updating Noob failed");
 			return FALSE;
 		}

@@ -500,25 +500,36 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)
 
 
 
-static int eap_noob_exec_query(const char * query, int(*callback)(void*, int ,char **, char ** ), void * data,sqlite3 * dbname){
+static int eap_noob_exec_query(const char * query, int(*callback)(void*, int ,char **, char ** ), void * argv,
+		struct eap_noob_serv_context * data){
 
 	char * sql_error = NULL;
 	//struct eap_oob_serv_context * value = data;
 	
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s",__func__);
 	
-	if(SQLITE_OK != sqlite3_exec(dbname, query,callback, data, &sql_error)){
+	if(NULL == data){
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: Server context is NULL");
+		return FAILURE;
+	}
+
+	if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->servDB,SQLITE_OPEN_READWRITE,NULL)){
+		wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
+		return FAILURE;
+	}	
+	
+	if(SQLITE_OK != sqlite3_exec(data->servDB, query,callback, argv, &sql_error)){
 		if (sql_error!=NULL) {
 			wpa_printf(MSG_DEBUG,"EAP-NOOB: sql error : %s\n",sql_error);
 			sqlite3_free(sql_error);
 		}
-		if(SQLITE_OK != sqlite3_close(dbname)){
+		if(SQLITE_OK != sqlite3_close(data->servDB)){
 			wpa_printf(MSG_DEBUG, "EAP-NOOB:Error closing DB");
 		}
 		return FAILURE;
 	}
 
-	if(SQLITE_OK != sqlite3_close(dbname)){
+	if(SQLITE_OK != sqlite3_close(data->servDB)){
 		wpa_printf(MSG_DEBUG, "EAP-NOOB:Error closing DB");
 	}
 
@@ -546,13 +557,13 @@ static int eap_noob_db_entry(struct eap_noob_serv_context *data)
 			(eap_noob_json_dumps(peer_attr->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER)),"","","");
 
 	printf("QUERY = %s\n",query);
-	
+/*	
 	if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->servDB,SQLITE_OPEN_READWRITE,NULL)){
 		wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
 		return FAILURE;
 	}	
-	
-	if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data->servDB)){
+*/	
+	if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
 		//sqlite3_close(data->servDB);
 		wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
 		//TODO: free data here.
@@ -613,12 +624,13 @@ static int eap_noob_db_update(struct eap_noob_serv_context *data, u8 type)
 	}
 	
 		
+/*
 	if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->servDB,SQLITE_OPEN_READWRITE,NULL)){
 		wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
 		return FAILURE;
 	}	
-
-	if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data->servDB)){
+*/
+	if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
 		//sqlite3_close(data->servDB);
 		wpa_printf(MSG_ERROR, "EAP-NOOB: DB value update failed");
 		//TODO: free data here.
@@ -697,7 +709,7 @@ static int eap_noob_create_db(struct eap_noob_serv_context * data)
 			return FAILURE;
 		}
 
-		if(FAILURE == eap_noob_exec_query(CREATE_CONNECTION_TABLE, NULL,NULL,data->servDB)){
+		if(FAILURE == eap_noob_exec_query(CREATE_CONNECTION_TABLE, NULL,NULL,data)){
 			//sqlite3_close(data->servDB);
 			wpa_printf(MSG_ERROR, "EAP-NOOB: connections Table creation failed");
 			//TODO: free data here.
@@ -714,7 +726,7 @@ static int eap_noob_create_db(struct eap_noob_serv_context * data)
 			return FAILURE;
 		}
 
-		if(FAILURE == eap_noob_exec_query(CREATE_CONNECTION_TABLE, NULL,NULL,data->servDB)){
+		if(FAILURE == eap_noob_exec_query(CREATE_CONNECTION_TABLE, NULL,NULL,data)){
 			//sqlite3_close(data->servDB);
 			wpa_printf(MSG_ERROR, "EAP-NOOB: connections Table creation failed");
 			//TODO: free data here.
@@ -733,7 +745,7 @@ static int eap_noob_create_db(struct eap_noob_serv_context * data)
 			}
 
 			if(FAILURE != eap_noob_exec_query(buff, eap_noob_db_entry_check,
-						data,data->servDB) && (data->peer_attr->record_present)){
+						data,data) && (data->peer_attr->record_present)){
 
 				memset(buff, 0, sizeof(buff));
 				os_snprintf(buff,200,"SELECT * from %s WHERE  PeerID = '%s'",
@@ -743,7 +755,7 @@ static int eap_noob_create_db(struct eap_noob_serv_context * data)
 					wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
 					return FAILURE;
 				}	
-				eap_noob_exec_query(buff, eap_noob_callback,data,data->servDB);
+				eap_noob_exec_query(buff, eap_noob_callback,data,data);
 				
 			}else{
 
