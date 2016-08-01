@@ -63,25 +63,25 @@ Compiling
  
 hostapd:
 
-*Move to directory  hostapd-2.5/hostapd.
-*Open build configuration file .config and set CONFIG_DRIVER_WIRED=y and CONFIG_EAP_OOB=y.
-*Now execute  
-  $ make
+1) Move to directory  hostapd-2.5/hostapd.	
+2) Open build configuration file .config and set CONFIG_DRIVER_WIRED=y and CONFIG_EAP_OOB=y.	
+3) Now execute  		
+  	$ make
 
 
 wpa_supplicant:
 
-*Move to directory  wpa_supplicant-2.5/wpa_supplicant.
-*Open build configuration file .config and set CONFIG_DRIVER_NL80211=y and CONFIG_EAP_OOB=Y. 
-*Now execute
-  $ make
+1) Move to directory  wpa_supplicant-2.5/wpa_supplicant.	
+2) Open build configuration file .config and set CONFIG_DRIVER_NL80211=y and CONFIG_EAP_OOB=Y. 	
+3) Now execute		
+	 $ make
 
 
 Webserver: 
 
- *Move to folder nodejs
- *execute 
-    $ npm install
+1) Move to folder nodejs	
+2) execute 	
+    $ npm install	
 
 
 Execution
@@ -90,23 +90,23 @@ Execution
 Hostapd:
 
 At location hostapd-2.5/hostapd  execute
-$  ./hostapd  hostapd.conf
+$  ./hostapd  hostapd.conf	
 
 Webserver: 
 
-At location nodejs execute
-$ node server.js
+At location nodejs execute	
+$ node server.js	
 
 WPA_Supplicant:
 
-At location wpa_supplicant-2.5/wpa_supplicant execute
-$ ./wpa_auto_run.py
+At location wpa_supplicant-2.5/wpa_supplicant execute	
+$ ./wpa_auto_run.py	
 
 Note: 
 Before executing wpa_supplicant, the network manager of the host machine must be stopped. To stop network-manger execute,
-  $ sudo stop network-manger.
+  $ sudo stop network-manger.	
 
-Alternatively a local AAA server can also be used between the Access point and the authenticator (hostapd). The local AAA server will relay the relevant radius message to the authenticator.  
+Alternatively a local AAA server can also be used between the Access point and the authenticator (hostapd). The local AAA server will relay the relevant radius message to the authenticator.  	
 
  
 
