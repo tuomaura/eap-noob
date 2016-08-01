@@ -37,14 +37,13 @@ Neither the name of the Aalto University nor the names of its contributors may b
 Setup
 -------
 
-	---------                              ---------------				                         ---------
+	---------                              ---------------				       ---------
 	| WPA_S | ---------------------------- | Access Point | ----------------------------- | Hostapd |
-	---------			                         ---------------				                         ---------
-	   |                  											                                              |
-	   |									                  		                                              |
-	   |				                              ------------                             --------------
-	   |---	–---------------------------------|OOB device| ----------------------------| Web server |
-					                                  ------------				                     --------------
+	---------			       ---------------				       ---------
+	   |                  									   |		           |                                                                                       | 
+	   |									                   |		        	|			               ------------                               --------------
+	   |---	–---------------------------------|OOB device| ------------------------------| Web server |
+		                                  ------------				     --------------
 
 
 	Access point is a wifi access point configured in WAP2-enterprise mode and OOB device is a device used by the user for delivering out of band message. An example OOB device is user's mobile phone.
