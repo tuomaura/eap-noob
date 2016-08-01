@@ -40,10 +40,12 @@ Setup
 	---------                              ---------------				                   ---------
 	| WPA_S | ---------------------------- | Access Point | ----------------------------- | Hostapd |
 	---------			                   ---------------				                   ---------
-	   |                  									   |		           |                                                                                       | 
-	   |									                   |		        	|			               ------------                               --------------
+	   |                  									                                  |		           
+	   |                                                                                      | 
+	   |									                                                  |		        	
+	   |			                          ------------                               --------------
 	   |---	–---------------------------------|OOB device| ------------------------------| Web server |
-		                                  ------------				     --------------
+		                                      ------------				                 --------------
 
 
 	Access point is a wifi access point configured in WAP2-enterprise mode and OOB device is a device used by the user for delivering out of band message. An example OOB device is user's mobile phone.
