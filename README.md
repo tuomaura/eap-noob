@@ -1,8 +1,5 @@
-# eap-noob
-Nimble out-of-band authentication for EAP (EAP-NOOB)
-
-eapnoobimplimentation README 
-==========================
+# eap-noob ,Nimble out-of-band authentication for EAP 
+=====================================================
 
 About
 -------- 
