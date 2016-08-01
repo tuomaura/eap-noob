@@ -1,4 +1,4 @@
-# eap-noob ,Nimble out-of-band authentication for EAP 
+# EAP-NOOB, Nimble out-of-band authentication for EAP 
 =====================================================
 
 About
