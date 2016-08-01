@@ -4,7 +4,7 @@
 About
 -------- 
 
-The eapnoobimplimentation is an implementation of new EAP method named EAP_NOOB. This is a method for secure bootstrapping of IOT appliances. The specification for EAP_NOOB can be found in this IETF draft.
+The eapnoobimplimentation is an implementation of new EAP method named EAP_NOOB. This is a method for secure bootstrapping of IOT appliances. The specification for EAP_NOOB can be found in [this](https://datatracker.ietf.org/doc/draft-aura-eap-noob/?include_text=1) IETF draft.
 
 The eapnoobimplimentation consists of three separate applications.
 
@@ -36,13 +36,13 @@ Setup
 
 	---------                              ---------------				                   ---------
 	| WPA_S | ---------------------------- | Access Point | ----------------------------- | Hostapd |
-	---------			                   ---------------				                   ---------
-	   |                  									                                  |		           
+	---------                              ---------------                                 ---------
+	   |                                                                                      |		           
 	   |                                                                                      | 
-	   |									                                                  |		        	
+	   |                                                                                      |		        	
 	   |			                          ------------                               --------------
 	   |---	–---------------------------------|OOB device| ------------------------------| Web server |
-		                                      ------------				                 --------------
+		                                      ------------                               --------------
 
 
 	Access point is a wifi access point configured in WAP2-enterprise mode and OOB device is a device used by the user for delivering out of band message. An example OOB device is user's mobile phone.
@@ -54,7 +54,7 @@ Following packages have to be installed before compiling any applications from  
 
 Openssl-dev (OpenSSL dev library).
 libsqlite3-dev (Sqlite3 dev library).
-Jansson.
+[Jansson](http://jansson.readthedocs.io/en/2.7/index.html).
 nodejs-legacy (NodeJS package).
 npm (node package manager)
 
