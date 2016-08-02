@@ -276,7 +276,7 @@ endif
 
 ifdef CONFIG_EAP_OOB
 CFLAGS += -DEAP_SERVER_OOB
-OBJS += ../src/eap_server/eap_server_oob.o
+OBJS += ../src/eap_server/eap_server_noob.o
 LIBS += -ljansson
 CHAP=y
 endif
