@@ -1,9 +1,0 @@
-{
-  "name": "sql-thing",
-  "version": "1.0.1",
-  "dependencies": {
-    "sqlite3": "~2.2.3",
-    "body-parser": "^1.14.1",
-    "express": "^4.13.3"
-  }
-}
