@@ -32,7 +32,6 @@ module.exports = function(app, passport) {
     // =====================================
     // LOGIN ===============================
     // =====================================
-    // show the login form
     app.get('/login', function(req, res) {
 
         // render the page and pass in any flash data if it exists
@@ -40,27 +39,19 @@ module.exports = function(app, passport) {
         res.render('login.ejs', { message: req.flash('loginMessage')}); 
     });
 
-    // process the login form
-    // app.post('/login', do all our passport stuff here);
 
     // =====================================
     // SIGNUP ==============================
     // =====================================
-    // show the signup form
     app.get('/signup', function(req, res) {
 
-        // render the page and pass in any flash data if it exists
         res.render('signup.ejs', { message: req.flash('signupMessage') });
     });
 
-    // process the signup form
-    // app.post('/signup', do all our passport stuff here);
 
     // =====================================
     // PROFILE SECTION =====================
     // =====================================
-    // we will want this protected so you have to be logged in to visit
-    // we will use route middleware to verify this (the isLoggedIn function)
     app.get('/profile', isLoggedIn, function(req, res) {
 	var userDetails = new Array();
 	var i;
@@ -130,7 +121,6 @@ module.exports = function(app, passport) {
 
     // process the login form
     app.post('/login', passport.authenticate('local-login', {
-        //successRedirect : '/profile', // redirect to the secure profile section
         failureRedirect : '/login', // redirect back to the signup page if there is an error
         failureFlash : true // allow flash messages   
     }),function (req, res) { 
@@ -140,6 +130,7 @@ module.exports = function(app, passport) {
           res.redirect('/profile');
 	}  
 	});
+
     // process QR-code
     app.get('/QRcode/',isLoggedIn, function (req, res) {
         var peer_id = req.query.PeerId;
@@ -150,10 +141,8 @@ module.exports = function(app, passport) {
 	
         if(len != 3 || peer_id == undefined || noob == undefined || hoob == undefined)
         {
-    	   //console.log("Its wrong Query");
 	   req.flash('profileMessage','Wrong query String! Please try again with proper Query!!' );
 	   res.redirect('/profile');
-	   //res.json({message: 'Wrong query String! Please try again with proper Query!!'});
         }else if(noob.length != 22 || hoob.length != 22){
 
      	   console.log("Updating Error!!!" + peer_id);
@@ -163,10 +152,6 @@ module.exports = function(app, passport) {
        		 var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, errorCode = ?, userName = ?, serv_state = ? WHERE PeerID = ?");
        		 stmt.run(1234,"","",3,req.user.username,2,peer_id);
 		 stmt.finalize();
-
-       		  /*db.each("SELECT PeerID, OOB_RECEIVED_FLAG FROM peers_connected", function(err, row) {
-       			console.log(row.PeerID + ": " + row.OOB_RECEIVED_FLAG);     
-                  });*/
     	    });
 
 	db.close();
@@ -175,18 +160,12 @@ module.exports = function(app, passport) {
 
         }else{
 
-     	   //console.log("Get Called!!!" + peer_id +" "+ noob +" "+ hoob);
-     	   console.log("Inserting!!!" + peer_id);
      	   db = new sqlite3.Database(conn_str);
      	
             db.serialize(function() {
        		 var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, userName = ?, serv_state = ? WHERE PeerID = ?");
        		 stmt.run(1234,noob,hoob,req.user.username,2,peer_id);
 		 stmt.finalize();
-
-       		  /*db.each("SELECT PeerID, OOB_RECEIVED_FLAG FROM peers_connected", function(err, row) {
-       			console.log(row.PeerID + ": " + row.OOB_RECEIVED_FLAG);     
-                  });*/
     	    });
 
 	db.close();
@@ -195,7 +174,6 @@ module.exports = function(app, passport) {
        }
     });
     app.get('/stateUpdate', function(req, res) {
-    	//console.log(req);
         var peer_id = req.query.PeerId;
         var state = req.query.State;
         var queryObject = url.parse(req.url,true).query;
@@ -205,7 +183,6 @@ module.exports = function(app, passport) {
         {
     	   console.log("Its wrong Query");
 	   res.json({"error":"Wrong Query."});
-	   //res.json({message: 'Wrong query String! Please try again with proper Query!!'});
         }else{
     	   console.log('req received');
 	    db = new sqlite3.Database(conn_str);
@@ -228,18 +205,25 @@ module.exports = function(app, passport) {
 	
         if(len != 1 || peer_id == undefined)
         {
-    	   console.log("Its wrong Query");
 	   res.json({"status":"failed"});
-	   //res.json({message: 'Wrong query String! Please try again with proper Query!!'});
         }else{
     	   console.log('req received');
-	    db = new sqlite3.Database(conn_str);
-            db.get('DELETE FROM peers_connected WHERE PeerID = ?', peer_id, function(err, row) {
 
-            	db.close();
+	    db = new sqlite3.Database(conn_str);
+            db.get('SELECT count(*) AS rowCount FROM peers_connected WHERE PeerID = ?', peer_id, function(err, row) {
+
+            	
                 if (err){res.json({"status": "failed"});}
-		else {res.json({"status": "success"});}
+		else if(row.rowCount != 1) {res.json({"status": "refresh"});}
+		else {
+            		db.get('DELETE FROM peers_connected WHERE PeerID = ?', peer_id, function(err, row) {
+            			db.close();
+                		if (err){res.json({"status": "failed"});}
+				else {res.json({"status": "success"});}
+            		});
+		}
             });
+
 	}
     });
 };
@@ -264,6 +248,5 @@ function isLoggedIn(req, res, next) {
     if(noob != undefined)  str = str + '&Noob=' + noob;
     if(hoob != undefined)  str = str + '&Hoob=' + hoob;
     req.session.returnTo = str;
-    // if they aren't redirect them to the home page
     res.redirect('/login');
 }

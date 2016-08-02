@@ -73,6 +73,15 @@ function deletePost(peer_id){
 				div_alert.style.display='block';
 				setTimeout(hideAlert, 6000);
 			}
+			else if(obj.status == "refresh"){
+
+				var retVal = confirm("Stale Page. Do you want to refresh the page ?");
+   				if (retVal == true) {
+	    				window.location.reload();
+   				} else {
+    	
+   				}	
+			}
 			else{
 				document.getElementById('message_div').innerHTML = "Device Delete Unsuccessful";
 				div_alert.style.display='block';
@@ -148,7 +157,6 @@ function countdown(element, minutes, seconds) {
         if(seconds == 0) {
             if(minutes == 0) {
                 (el.innerHTML = "Authenticating Please Wait... ");     
-		//clearInterval(post_interval);
                 clearInterval(interval);
 		
                 return;
