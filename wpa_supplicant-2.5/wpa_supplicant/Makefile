@@ -564,11 +564,11 @@ ifdef CONFIG_EAP_OOB
 ifeq ($(CONFIG_EAP_OOB), dyn)
 CFLAGS += -DEAP_OOB_DYNAMIC
 CFLAGS += -DINT_DISP="\"eth0\""
-EAPDYN += ../src/eap_peer/eap_oob.so
+EAPDYN += ../src/eap_peer/eap_noob.so
 else
 CFLAGS += -DEAP_OOB
 CFLAGS += -DINT_DISP="\"eth0\""
-OBJS += ../src/eap_peer/eap_oob.o
+OBJS += ../src/eap_peer/eap_noob.o
 endif
 LIBS += -lsqlite3
 LIBS += -ljansson
