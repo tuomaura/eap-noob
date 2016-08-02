@@ -4,9 +4,9 @@
 About
 -------- 
 
-The eapnoobimplimentation is an implementation of new EAP method named EAP_NOOB. This is a method for secure bootstrapping of IOT appliances. The specification for EAP_NOOB can be found in [this](https://datatracker.ietf.org/doc/draft-aura-eap-noob/?include_text=1) IETF draft.
+This repository is an implementation of new EAP method named EAP_NOOB. The new method is for secure bootstrapping of IOT appliances. The specification for EAP_NOOB can be found in [this](https://datatracker.ietf.org/doc/draft-aura-eap-noob/?include_text=1) IETF draft.
 
-The eapnoobimplimentation consists of three separate applications.
+The implimentation consists of three separate applications.
 
 Hostapd : Contains EAP_NOOB server side implementation and acts as an authenticator for the requesting IOT appliances.
 
