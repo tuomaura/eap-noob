@@ -34,18 +34,20 @@ Neither the name of the Aalto University nor the names of its contributors may b
 Setup
 -------
 
-	---------                              ---------------				                   ---------
+	 -------                                --------------				       ---------
 	| WPA_S | ---------------------------- | Access Point | ----------------------------- | Hostapd |
-	---------                              ---------------                                 ---------
+	 -------                                --------------                                 ---------
 	   |                                                                                      |		           
 	   |                                                                                      | 
-	   |                                                                                      |		        	
-	   |			                          ------------                               --------------
-	   |---	–---------------------------------|OOB device| ------------------------------| Web server |
-		                                      ------------                               --------------
+	   |                                                                                      |		        	|                                                                                      |
+	   |			                   ----------                                 ------------
+	   |----–---------------------------------|OOB device| ------------------------------| Web server |
+		                                   ----------                                 ------------
 
 
-	Access point is a wifi access point configured in WAP2-enterprise mode and OOB device is a device used by the user for delivering out of band message. An example OOB device is user's mobile phone.
+	1) Access point is a wifi access point configured in WAP2-enterprise mode and OOB device is a device used by the user for delivering out of band message. An example OOB device is user's mobile phone.
+	
+	2) Webserver and hostapd should run on the same machine.
 
 Dependencies
 -----------------  
@@ -82,7 +84,21 @@ Webserver:
 1) Move to folder nodejs	
 2) execute 	
     $ npm install	
+    
+Configuration
+---------------  
 
+Hostapd:
+
+At location hostapd-2.5/hostapd edit file eapoob.conf to fill in relevant data like server URL, Server name etc...
+
+Webserver: 
+
+At location nodejs/config edit file "database.js" to fill in the relevant data like server URL and the path to database i.e. absolutes path to database file "peer_connection_db" inside hostapd-2.5/hostapd.
+
+WPA_Supplicant:
+
+At location wpa_supplicant-2.5/wpa_supplicant edit file eapoob.conf to fill in relevant data like peerinfo etc...
 
 Execution
 ------------  
@@ -108,8 +124,19 @@ Before executing wpa_supplicant, the network manager of the host machine must be
 
 Alternatively a local AAA server can also be used between the Access point and the authenticator (hostapd). The local AAA server will relay the relevant radius message to the authenticator.  	
 
- 
+Source Files
+-------------
+Files related to EAP-NOOB can be found at the following locations.
 
+hostapd:
+
+eap-noob/hostapd-2.5/src/eap_server/eap_server_noob.c
+eap-noob/hostapd-2.5/src/eap_server/eap_server_noob.h
+ 
+wpa_supplicant:
+
+eap-noob/wpa_supplicant-2.5/src/eap_peer/eap_noob.c
+eap-noob/wpa_supplicant-2.5/src/eap_peer/eap_noob.h
 
 
 
