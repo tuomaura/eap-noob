@@ -129,15 +129,15 @@ Source Files
 -------------
 Files related to EAP-NOOB can be found at the following locations.
 
-hostapd:
+Hostapd:
 
-eap-noob/hostapd-2.5/src/eap_server/eap_server_noob.c
-eap-noob/hostapd-2.5/src/eap_server/eap_server_noob.h
+1) eap-noob/hostapd-2.5/src/eap_server/eap_server_noob.c
+2) eap-noob/hostapd-2.5/src/eap_server/eap_server_noob.h
  
-wpa_supplicant:
+WPA_supplicant:
 
-eap-noob/wpa_supplicant-2.5/src/eap_peer/eap_noob.c
-eap-noob/wpa_supplicant-2.5/src/eap_peer/eap_noob.h
+1) eap-noob/wpa_supplicant-2.5/src/eap_peer/eap_noob.c
+2) eap-noob/wpa_supplicant-2.5/src/eap_peer/eap_noob.h
 
 
 
