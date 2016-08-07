@@ -48,15 +48,34 @@
 #include "eap_i.h"
 #include "eap_server_noob.h"
 
+/**
+ * eap_noob_json_array - Wrapper function for creating JSON array.
+ * Returns: reference to new array if successful or NULL otherwise.
+ **/
+
+
 static noob_json_t * eap_noob_json_array()
 {
 	return json_array();
 }
 
+/**
+ * eap_noob_json_array_append - Wrapper function for appending elements to JSON array.
+ * @arr  : input json array.
+ * @value : Value to be appended.
+ * Returns: Zero on success or -1 on failure.
+ **/
+
 static u32  eap_noob_json_array_append(noob_json_t * arr, noob_json_t * value)
 {
 	return json_array_append(arr, value);
 }
+
+/**
+ * eap_noob_json_integer - Wrapper function for creating JSON_Integer value.
+ * @value : Value to be converted.
+ * Returns: reference to new value if successful or NULL otherwise.
+ **/
 
 
 static noob_json_t * eap_noob_json_integer(noob_json_int_t value)
@@ -64,61 +83,132 @@ static noob_json_t * eap_noob_json_integer(noob_json_int_t value)
 	return json_integer(value);
 }
 
+/**
+ * eap_noob_json_integer_value - Wrapper function for converting JSON_Integer 
+   value to integer value.
+ * @value : Value to be converted.
+ * Returns: reference to new value if successful or NULL otherwise.
+ **/
+
 static noob_json_int_t eap_noob_json_integer_value(noob_json_t * value)
 {
 	return json_integer_value(value);
 }
+
+/**
+ * eap_noob_json_integer - Wrapper function for creating JSON_Integer value.
+ * @value : Value to be converted.
+ * Returns: integer value or Zero otherwise.
+ **/
 
 static u32 eap_noob_json_is_integer(const noob_json_t * value)
 {
 	return json_is_integer(value);
 }
 
+/**
+ * eap_noob_json_string - Wrapper function for creating JSON_String value.
+ * @value : Value to be converted.
+ * Returns: reference to new value if successful or NULL otherwise.
+ **/
+
 static noob_json_t * eap_noob_json_string(const noob_json_str_t * value)
 {
 	return json_string(value);
 }
+
+/**
+ * eap_noob_json_string_value - Wrapper function for converting JSON_String to char * value.
+ * @value : Value to be converted.
+ * Returns: reference to new value if successful or NULL otherwise.
+ **/
 
 static noob_json_str_t * eap_noob_json_string_value(noob_json_t * value)
 {
 	return (char *)json_string_value(value);
 }
 
+/**
+ * eap_noob_json_object : wrapper function for creating json object
+**/
+
 static noob_json_t * eap_noob_json_object()
 {
 	return json_object();
 }
+
+/**
+ * eap_noob_json_object_set_new :  adds a new key value pair to the JSON object
+ * @obj :  input JSON object
+ * @key :  key for parameter
+ * @value :  value for parameter
+ * Returns : 0/-1
+**/
 
 static u32 eap_noob_json_object_set_new (noob_json_t * obj, const char* key, noob_json_t * value)
 {
 	return json_object_set_new(obj,key,value);
 }
 
+/** 
+ *eap_noob_json_dumps : wrapper function to convert object type to string 
+ * @root : object to be decoded
+ * @flags : JSON flags for the calls
+ * returns : converted buffer or NULL
+ **/
+
 static char * eap_noob_json_dumps(noob_json_t * root, size_t flags)
 {
 	return json_dumps(root, flags);
 }
 
+/** 
+ *eap_noob_json_loads : wrapper function  to convert sting to JSON object type 
+ * @input : input string
+ * @flags : JSON flags for the calls
+ * @error : object to collect error message
+ * Returns  : reference to JSON obj 
+ **/
 
 static noob_json_t * eap_noob_json_loads(const char * input, size_t flags, noob_json_error_t * error)
 {
 	return json_loads(input,flags, error);
 }
 
+/** 
+ *eap_noob_json_is_object : checks for JSON object type
+ *@obj : input object
+ Returns : TRUE/FALSE
+**/
+
 static u32 eap_noob_json_is_object(noob_json_t * obj)
 {
 	return json_is_object(obj);
 }
+
+/**
+ *eap_noob_json_object_get : fetches the requested value from the JSON object
+ *@obj : input JSON object
+ *@key : key for the parameter inside the object
+ *Returns :  refrence to the value inside the object 
+**/
 
 static noob_json_t * eap_noob_json_object_get(noob_json_t * obj, const char * key)
 {
 	return json_object_get(obj,key);
 }
 
+/**
+ * eap_noob_json_typeof : Gives the JSON data type of the input argument
+ @value : unknown json type param
+ Returns : JSON datatype enum value 
+**/
+
 static u32 eap_noob_json_typeof(const noob_json_t * value)
 {
 	return json_typeof(value);
 }
+
 
 
 static void eap_noob_set_error(struct eap_noob_peer_data *data, 
@@ -128,6 +218,12 @@ static void eap_noob_set_error(struct eap_noob_peer_data *data,
 	data->next_req = NONE;
 	data->err_code = err_code;
 }
+
+/**
+ * eap_noob_verify_peerID : compares recived PeerID with the assigned one
+ * @data : server context
+ * @return : SUCCESS or FAILURE
+**/
 
 
 static int eap_noob_verify_peerID(struct eap_noob_serv_context * data)
@@ -171,6 +267,12 @@ static void eap_noob_set_success(struct eap_noob_serv_context *data,
 	data->peer_attr->is_success = outcome;
 }
 
+/**
+ * eap_noob_calcDecodeLength : calculate length from base64url to ascii
+ * @b64input : input base64url string
+ * returns : length of input in ascii
+**/
+
 size_t eap_noob_calcDecodeLength(const char* b64input) { //Calculates the length of a decoded string
 	size_t len = strlen(b64input),
 	padding = 0;
@@ -182,6 +284,14 @@ size_t eap_noob_calcDecodeLength(const char* b64input) { //Calculates the length
 
 	return (len*3)/4 - padding;
 }
+
+/**
+ * eap_noob_Base64Decode :Decodes a base64url string.
+ * @b64message : input base64url string
+ * @buffer : output
+ * @length : Converted string length.
+ * Returns :  Converted string length.
+**/
 
 int eap_noob_Base64Decode(char* b64message, unsigned char** buffer, size_t* length) { //Decodes a base64 encoded string
 	BIO *bio, *b64;
@@ -225,6 +335,14 @@ int eap_noob_Base64Decode(char* b64message, unsigned char** buffer, size_t* leng
 
 	return decodeLen; //success
 }
+
+/**
+ * eap_noob_Base64Encode : Encode an ascii string to base64url
+ * @buffer : input buffer
+ * @length : input buffer length
+ * @b64text : converted base64url text
+ * Returns : SUCCESS/FAILURE
+**/
 
 int eap_noob_Base64Encode(const unsigned char* buffer, size_t length, char** b64text) { //Encodes a binary safe base 64 string
 	BIO *bio, *b64;
@@ -315,6 +433,14 @@ int eap_noob_verify_oob_msg_len(struct eap_noob_peer_data *data)
 
 	return SUCCESS;	
 }
+
+/**
+ * eap_noob_callback : Repopulate the peer context when method re initializes
+ * @priv : peer context
+ * @argc : argument count
+ * @argv : argument 2d array
+ * @azColName : colomn name 2d arra
+**/
 
 int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)
 {
@@ -491,7 +617,14 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)
 	return 0;
 }
 
-
+/**
+ * eap_noob_exec_query : wrapper function to execute a sql query
+ * @query : query to be executed
+ * @callback : pointer to callback function 
+ * @argv : parmeter to callback function
+ * @data : server context
+ * Returns  :  SUCCESS/FAILURE
+**/
 
 static int eap_noob_exec_query(const char * query, int(*callback)(void*, int ,char **, char ** ), void * argv,
 		struct eap_noob_serv_context * data){
@@ -529,6 +662,12 @@ static int eap_noob_exec_query(const char * query, int(*callback)(void*, int ,ch
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s",__func__);
 	return SUCCESS;
 }
+
+/**
+ * eap_noob_db_entry : Make an entery of the current peer context inside the DB
+ * @data : server context
+ * Returns : FAILURE/SUCCESS
+**/
 
 static int eap_noob_db_entry(struct eap_noob_serv_context *data)
 {
@@ -573,6 +712,13 @@ static int eap_noob_change_state(struct eap_noob_serv_context *data, int state)
 
 	return SUCCESS;
 }
+
+/**
+ * eap_noob_db_update : prepare a DB update query
+ * @data : server context
+ * @type : type of update
+ * Returns : SUCCESS/FAILURE
+**/
 
 static int eap_noob_db_update(struct eap_noob_serv_context *data, u8 type)
 {
@@ -680,6 +826,12 @@ static int eap_noob_parse_NAI(struct eap_noob_serv_context * data, int len)
 
 	return SUCCESS;
 }
+
+/**
+ * eap_noob_create_db : Creates a new DB or opens the existing DB and populates the context
+ * @data : server context
+ * returns : SUCCESS/FAILURE
+**/
 
 static int eap_noob_create_db(struct eap_noob_serv_context * data)
 {
@@ -798,6 +950,11 @@ static void eap_noob_assign_config(char * conf_name,char * conf_value,struct eap
 
 }
 
+/**
+ * eap_noob_parse_config : parse eacj line from the config file
+ * @buff : read line
+ * data : server_context
+**/
 
 static void eap_noob_parse_config(char * buff,struct eap_noob_server_data * data)
 {
@@ -834,7 +991,11 @@ static void eap_noob_parse_config(char * buff,struct eap_noob_server_data * data
         }
 }
 
-
+/** 
+ * eap_noob_handle_incomplete_conf :  assigns defult value of the configuration is incomplete
+ * @data : server config
+ * Returs : FAILURE/SUCCESS
+**/
 
 static int eap_noob_handle_incomplete_conf(struct eap_noob_serv_context * data)
 {
@@ -870,6 +1031,12 @@ static noob_json_t * eap_noob_prepare_serv_json_obj(struct eap_noob_serv_config_
 	return info_obj;
 }
 
+/**
+ * eap_noob_prepare_serv_info_obj : Create a Json object for peer information.
+ * @data : server context. 
+ * returns : SUCCESS or FAILURE.
+**/
+
 static int eap_noob_prepare_serv_info_obj(struct eap_noob_server_data * data)
 {
 
@@ -895,6 +1062,12 @@ static int eap_noob_prepare_serv_info_obj(struct eap_noob_server_data * data)
 
         return SUCCESS;
 }
+
+/**
+ * eap_noob_read_config : read configuraions from config file
+ * @data : server context
+ * Returns : SUCCESS/FAILURE
+**/
 
 static int eap_noob_read_config(struct eap_noob_serv_context * data)
 {
@@ -941,6 +1114,12 @@ static int eap_noob_read_config(struct eap_noob_serv_context * data)
 
 }
 
+/**
+ * eap_noob_serv_ctxt_alloc : Allocates the subcontexts inside the peer context
+ * @sm : eap method context
+ * @peer : server context
+ * Returns : SUCCESS/FAILURE 
+**/
 
 static int eap_noob_serv_ctxt_alloc(struct eap_sm *sm,  struct eap_noob_serv_context * data){
 
@@ -971,7 +1150,9 @@ static int eap_noob_serv_ctxt_alloc(struct eap_sm *sm,  struct eap_noob_serv_con
  * eap_oob_serv_ctxt_init -Supporting Initializer for EAP-NOOB Peer Method
  * Allocates memory for the EAP-NOOB data
  * @data: Pointer to EAP-NOOB data
+ * @sm : eap method context
  **/
+
 static int eap_noob_serv_ctxt_init( struct eap_noob_serv_context * data, struct eap_sm *sm)
 {
 	/*TODO: remove hard codings and initialize preferably through a
@@ -1041,6 +1222,7 @@ static int eap_noob_serv_ctxt_init( struct eap_noob_serv_context * data, struct 
  * Allocates memory for the EAP-NOOB data
  * @sm: Pointer to EAP State Machine data
  **/
+
 static void * eap_noob_init(struct eap_sm *sm)
 {
 
@@ -1064,9 +1246,9 @@ static void * eap_noob_init(struct eap_sm *sm)
 
 
 /**
-
- * this method is to generate peer id
-
+ * eap_noob_get_id_peer - generate PEER ID
+ * @str: pointer to PEER ID
+ * @size: PEER ID Length
  **/
 
 int eap_noob_get_id_peer(char *str, size_t size)
@@ -1092,7 +1274,24 @@ int eap_noob_get_id_peer(char *str, size_t size)
 	return 1;
 }
 
-#if 1
+
+/**
+ *eap_noob_ECDH_KDF_X9_63: generates KDF
+ *@out:
+ *@outlen:
+ *@Z: 
+ *@Zlen:
+ *@alorithm_id:
+ *@alorithm_id_len:
+ *@partyUinfo:
+ *@partyUinfo_len:
+ *@partyVinfo:
+ *@partyVinfo_len
+ *@suppPrivinfo:
+ *@suppPrivinfo_len:
+ *@EVP_MD:
+ *@Returns:
+**/
 
 int eap_noob_ECDH_KDF_X9_63(unsigned char *out, size_t outlen,
 		const unsigned char *Z, size_t Zlen,
@@ -1163,9 +1362,13 @@ err:
 	return rv;
 }
 
-#endif
+/**
+ * eap_noob_derive_session_secret : Generates secret using public keys ogf both the entities
+ * @data : server context
+ * @secret_len : Secret length
+ * returns FAILURE/SUCCESS
+**/
 
-#if 1
 
 static int eap_noob_derive_session_secret(struct eap_noob_serv_context *data, size_t *secret_len) //ToDo: Rename this function as secret_key
 {
@@ -1310,13 +1513,11 @@ static int eap_noob_derive_session_secret(struct eap_noob_serv_context *data, si
 	return 0;
 }
 
-#endif
-
 /**
- *  * get_key - Generate Priv/Pub key pair based on the Csuite selected.
- *   * @data: Pointer to EAP-NOOB data
- *    * Returns: 1 if keys generated and stored successfully, or 0 if not
- *     **/
+ * eap_noob_get_key - Generate Priv/Pub key pair based on the Csuite selected.
+ * @data: Pointer to EAP-NOOB data
+ * Returns: 1 if keys generated and stored successfully, or 0 if not
+ **/
 static int eap_noob_get_key(struct eap_noob_serv_context *data)
 {
 	//BIGNUM *big_pub = NULL;
@@ -1464,6 +1665,13 @@ static int eap_noob_get_minsleep(struct eap_noob_serv_context *data)
 	return (int)((eap_noob_cal_pow(2,data->peer_attr->minslp_count))* (rand()%8) + 1) % 3600 ;
 }
 
+/**
+ * eap_noob_err_msg : prepares error message 
+ * @data : server context
+ * @id   : response message id
+ * Returns : pointer to message buffer or null 
+**/
+
 static struct wpabuf * eap_noob_err_msg(struct eap_noob_serv_context *data, u8 id)
 {
 	noob_json_t * req_obj = NULL;
@@ -1514,6 +1722,12 @@ static struct wpabuf * eap_noob_err_msg(struct eap_noob_serv_context *data, u8 i
 	return req;
 }
 
+/** 
+ * eap_noob_gen_KDF : generates and updates the KDF inside the peer context.
+ * @data  : peer context.
+ * @state : EAP_NOOB state 
+ * Returns:
+**/
 
 static void eap_noob_gen_KDF(struct eap_noob_serv_context * data, int state){
 
@@ -1679,6 +1893,13 @@ err:
         return rv;
 }
 
+/**
+ * eap_noob_prepare_mac_arr : Prepare a JSON array to generate MAC.
+ * @data : server context
+ * @type : MAC type
+ * state : EAP_NOOB state 
+**/
+
 static char * eap_noob_prepare_mac_arr(struct eap_noob_serv_context * data,int type,int state){
 
 	noob_json_t * mac_arr = NULL;
@@ -1762,6 +1983,15 @@ static char * eap_noob_prepare_mac_arr(struct eap_noob_serv_context * data,int t
 	return mac_str;
 }
 
+/**
+ * eap_noob_gen_MAC : generate a HMAC for user authentication. 
+ * @data : server context
+ * type  : MAC type
+ * @key  : key to generate MAC
+ * @keylen: key length
+ * @state : EAP_NOOB state
+ * Returns : MAC on success or NULL on error.
+**/
 
 static u8 * eap_noob_gen_MAC(struct eap_noob_serv_context * data, int type, u8 * key, int keylen, int state){
 
@@ -2056,6 +2286,14 @@ static struct wpabuf * eap_noob_req_type_three(struct eap_noob_serv_context *dat
 	return req;
 }
 
+/**
+ *  eap_noob_build_JWK : Builds a JWK object to send in the inband message
+ *  @jwk : output json object
+ *  @x_64 : x co-ordinate in base64url format
+ *  @y_64 : y co-ordinate in base64url format
+ *  Returns : FAILURE/SUCCESS
+**/
+
 int eap_noob_build_JWK( noob_json_t ** jwk, const char * x_b64, const char * y_b64) {
 
 	if(NULL != ((*jwk) = eap_noob_json_object())){
@@ -2172,6 +2410,7 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_noob_serv_context *data,
  * @id: EAP packet ID
  * Returns: Pointer to allocated EAP-Request packet, or NULL if not.
  **/
+
 static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context *data, u8 id)
 {
 	/* (Type=1,PeerId,CryptoSuites,Dirs,ServerInfo) */
@@ -2355,6 +2594,11 @@ static Boolean eap_noob_check(struct eap_sm *sm, void *priv,
 
 }
 
+/**
+ * eap_noob_verify_param_len : verify lengths of string type parameters 
+ * @data : peer context
+**/
+
 static void eap_noob_verify_param_len(struct eap_noob_peer_data * data)
 {
 
@@ -2406,6 +2650,12 @@ int eap_noob_FindIndex( int value )
 
     return index;
 }
+
+/**
+ * eap_noob_decode_obj : Decode parameters from incoming messages
+ * @data : peer context
+ * @req_obj : incoming json object with message parameters
+**/
 
 static void  eap_noob_decode_obj(struct eap_noob_peer_data * data ,noob_json_t * resp_obj)
 {
@@ -3013,6 +3263,13 @@ static void eap_noob_reset(struct eap_sm *sm, void *priv)
 	eap_noob_free_ctx(data);
 }
 
+/**
+ * eap_noob_getKey : gets the msk if available
+ * @sm : eap statemachine context
+ * @priv : eap noob data
+ * @len : msk len 
+ * Returns MSK or NULL
+**/
 
 static u8 * eap_noob_getKey(struct eap_sm *sm, void *priv, size_t *len)
 {
@@ -3036,6 +3293,14 @@ static u8 * eap_noob_getKey(struct eap_sm *sm, void *priv, size_t *len)
         return key;
 
 }
+
+/**
+ * eap_noob_get_emsk : gets the msk if available
+ * @sm : eap statemachine context
+ * @priv : eap noob data
+ * @len : msk len 
+ * Returns EMSK or NULL
+**/
 
 static u8 * eap_noob_get_emsk(struct eap_sm *sm, void *priv, size_t *len)
 {
@@ -3080,6 +3345,7 @@ static int eap_noob_getTimeout(struct eap_sm *sm, void *priv)
  * Returns: 0 on success, -1 on invalid method, or -2 if a matching EAP
  * method has already been registered
  **/
+
 int eap_server_noob_register(void) {
 	struct eap_method *eap;
 	int ret;
