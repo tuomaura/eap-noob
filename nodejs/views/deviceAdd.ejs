@@ -1,0 +1,65 @@
+<!-- views/profile.ejs -->
+<!doctype html>
+<html>
+<head>
+    <title>User Authentication</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <style>
+        body { 
+          padding-top:80px; 
+          word-wrap:break-word; 
+        }
+
+	input[type=text] {
+	    width: 130px;
+	    box-sizing: border-box;
+	    border: 2px solid #ccc;
+	    border-radius: 4px;
+	    font-size: 16px;
+	    background-color: white;
+	    background-image: url('/images/searchicon.png');
+	    background-position: 10px 10px; 
+	    background-repeat: no-repeat;
+	    padding: 12px 20px 12px 40px;
+	    -webkit-transition: width 0.4s ease-in-out;
+	    transition: width 0.4s ease-in-out;
+	}
+	input[type=text]:focus {
+    		width: 100%;
+	}
+        .button {
+                position:relative;
+                padding:13px 10px 11px 16px;
+		left:-8px;
+		border-radius: 0 4px 4px 0;
+                border:2px solid #207cca;
+                background-color:#207cca;
+		font-weight: bold;
+		font-size: 16px;
+                color:#fafafa;
+	}
+	
+	form {
+  		text-align: center;
+	}
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="page-header text-center">
+        <h1><span class="fa fa-anchor"></span> Unattached Devices Page</h1>
+	<a href="/profile" class="btn btn-default btn-sm">Home</a>
+        <a href="/logout" class="btn btn-default btn-sm">Logout</a>
+    </div>
+    <form align="center">
+	<input type="text" name="search" placeholder="Search..">
+	<input type="button" value="Search" class="button">   
+    </form>
+   <br>
+
+</div>
+</body>
+</html>
