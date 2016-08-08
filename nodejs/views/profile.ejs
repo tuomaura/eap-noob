@@ -7,7 +7,10 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
     <style>
-        body        { padding-top:80px; word-wrap:break-word; }
+        body { 
+          padding-top:80px; 
+          word-wrap:break-word; 
+        }
     </style>
 </head>
 <body>
@@ -15,8 +18,11 @@
 
     <div class="page-header text-center">
         <h1><span class="fa fa-anchor"></span> Aalto University Profile Page</h1>
+	<a href="/addDevice" class="btn btn-default btn-sm">Add Device</a>
         <a href="/logout" class="btn btn-default btn-sm">Logout</a>
     </div>
+	  
+  
     <% if (message.length > 0) { %>
         <div class="alert alert-danger" id ="message_div"><%= message %></div>
     <% }else { %>

@@ -29,6 +29,8 @@ var options = {
     rejectUnauthorized: false
 };
 
+app.use(express.static(__dirname + '/public'));
+
 require('./config/passport')(passport); // pass passport for configuration
 
 // set up our express application

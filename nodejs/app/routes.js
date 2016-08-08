@@ -112,6 +112,10 @@ module.exports = function(app, passport) {
         res.redirect('/');
     });
 
+    app.get('/addDevice',isLoggedIn, function(req, res) {
+        res.render('deviceAdd.ejs');
+    });
+
     // process the signup form
     app.post('/signup', passport.authenticate('local-signup', {
         successRedirect : '/profile', // redirect to the secure profile section
