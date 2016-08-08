@@ -10,7 +10,7 @@
 
 /*Configuration file*/
 #define CONF_FILE 		"eapoob.conf"
-
+#define JSON_ARRAY_FOREACH json_array_foreach
 #include <jansson.h>
 
 typedef json_t 		noob_json_t;	
@@ -343,7 +343,8 @@ const int state_message_check[NUM_OF_STATES][MAX_MSG_TYPES] = {
 	{VALID,INVALID,INVALID,INVALID,VALID,INVALID,INVALID,INVALID},//REGISTERED
 };
 /*Function prototypes*/
-
+static noob_json_t * eap_noob_prepare_vers_arr(const struct eap_noob_serv_context * data);
+static noob_json_t * eap_noob_prepare_csuites_arr(const struct eap_noob_serv_context * data);
 static void eap_noob_set_done(struct eap_noob_serv_context *,u8 );
 static void eap_noob_set_success(struct eap_noob_serv_context *, u8);
 

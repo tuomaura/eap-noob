@@ -122,7 +122,7 @@
 
 
 #if 1
-
+#define JSON_ARRAY_FOREACH json_array_foreach
 #include <jansson.h>
 
 typedef json_t 		noob_json_t;	
