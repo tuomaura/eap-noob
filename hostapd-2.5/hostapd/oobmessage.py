@@ -3,8 +3,28 @@ import json
 import hashlib
 import os
 import base64
- 
+import sys, getopt
+
 db_name = "peer_connection_db"
+
+def main(argv):
+
+	peerId = ''
+	try:
+		opts, args = getopt.getopt(argv,"h:o:",["getoob=","help="])
+	except getopt.GetoptError:
+		print 'oobmessage.py -o <peerId>'
+		sys.exit(2)
+	for opt, arg in opts:
+		if opt == '-h':
+			print 'oobmessage.py -o <peerId>'
+			sys.exit()
+		elif opt in ("-o", "--getoob"):
+			peerId = arg
+			print get_oob_message(peerId)
+			sys.exit()
+
+ 
 
 def ret_obj(noob, hoob, err):
 	obj = {}
@@ -96,3 +116,5 @@ def get_peer_context(peer_id):
 def del_peer_context(peer_id):
 	print peer_id
 
+if __name__ == "__main__":
+   main(sys.argv[1:])

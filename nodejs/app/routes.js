@@ -5,6 +5,15 @@ var db;
 var configDB = require('../config/database.js');
 var conn_str = configDB.dbPath;
 
+var PythonShell = require('python-shell');
+var options = {
+  mode: 'text',
+  pythonPath: '/usr/bin/python',
+  pythonOptions: ['-u'],
+  scriptPath: '/home/shiva/Desktop/git_8_aug/eap-noob/hostapd-2.5/hostapd/',
+  args: ['value1', 'value2', 'value3']
+};
+
 var url = require('url');
 var state_array = ['Unregistered','OOB Waiting', 'OOB Received' ,'Reconnect Exchange', 'Registered'];
 var error_info = [ "No error",
@@ -37,6 +46,58 @@ module.exports = function(app, passport) {
         // render the page and pass in any flash data if it exists
 	//console.log(req.session.returnTo);
         res.render('login.ejs', { message: req.flash('loginMessage')}); 
+    });
+
+    
+    app.get('/getDevices', isLoggedIn, function(req, res) {
+	
+        var device_info = req.query.DeviceInfo;
+        var queryObject = url.parse(req.url,true).query;
+        var len = Object.keys(queryObject).length;
+	
+        if(len != 1 || device_info == undefined)
+        {
+		console.log("Its wrong Query");
+		res.json({"error":"Wrong Query."});
+        }else{
+		var deviceDetails = new Array();
+		var i= 0;
+		var parseJson;
+		var devInfoParam = '%' + device_info + '%';
+		db = new sqlite3.Database(conn_str);
+		db.all('SELECT PeerID, PeerInfo FROM peers_connected where peerInfo LIKE ? AND serv_state = ? AND userName IS NULL', devInfoParam, 1, function(err,rows){ //check for error conditions too
+			db.close();
+			if(!err){
+				rows.forEach(function(row) {
+					deviceDetails[i] = new Object();
+					deviceDetails[i].peer_id = row.PeerID;
+					parseJson= JSON.parse(row.PeerInfo);
+					deviceDetails[i].peer_name = parseJson['PeerName'];
+					deviceDetails[i].peer_num = parseJson['PeerSNum'];
+					
+					i++;
+				});
+				console.log(JSON.stringify(deviceDetails));	
+				res.send(JSON.stringify(deviceDetails));
+			}else{
+				res.send(JSON.stringify(deviceDetails));
+				
+			}
+		});
+	}
+    });
+
+    app.get('/python', function(req, res) {
+
+        // render the page and pass in any flash data if it exists
+        //console.log(req.session.returnTo)i;
+	var parseJ;
+        PythonShell.run('oobmessage.py', options, function (err,results) {
+                if (err) throw err;
+                res.send("Its Successful");
+		parseJ = JSON.parse(results);
+                console.log('results: %j', parseJ['Input']);
+        });
     });
 
 
@@ -113,7 +174,7 @@ module.exports = function(app, passport) {
     });
 
     app.get('/addDevice',isLoggedIn, function(req, res) {
-        res.render('deviceAdd.ejs');
+        res.render('deviceAdd.ejs',{url : configDB.url});
     });
 
     // process the signup form
