@@ -53,6 +53,8 @@ require('./app/routes.js')(app, passport); // load our routes and pass in our ap
   db = new sqlite3.Database(conn_str);
   db.serialize(function() {
   	db.run('CREATE TABLE  IF NOT EXISTS \"users\" ( \"id\" INTEGER PRIMARY KEY AUTOINCREMENT, \"username\" TEXT, \"password\" TEXT );');
+  	db.run('CREATE TABLE  IF NOT EXISTS \"devices\" (\"PeerID\" TEXT, \"serv_state\" INTEGER, \"PeerInfo\" TEXT,\"Noob\" TEXT, \"Hoob\" TEXT, \"errorCode\" INTEGER ,\"username\" TEXT, PRIMARY KEY (PeerID, username));');
+	
   	db.close();
   });
 

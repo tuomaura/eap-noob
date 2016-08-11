@@ -87,6 +87,37 @@ module.exports = function(app, passport) {
 	}
     });
 
+    
+    app.get('/insertDevice', function(req, res) {
+    	//console.log(req);
+        var peer_id = req.query.PeerId;
+        var queryObject = url.parse(req.url,true).query;
+        var len = Object.keys(queryObject).length;
+	
+        if(len != 1 || peer_id == undefined)
+        {
+	   res.json({"status":"failed"});
+        }else{
+    	   console.log('req received');
+
+	    db = new sqlite3.Database(conn_str);
+            db.get('SELECT count(*) AS rowCount, PeerID, serv_state, PeerInfo, errorCode FROM peers_connected WHERE PeerID = ?', peer_id, function(err, row) {
+
+            	
+                if (err){res.json({"status": "failed"});}
+		else if(row.rowCount != 1) {console.log(row.length);res.json({"status": "refresh"});}
+		else {
+            		db.get('INSERT INTO devices values(?,?,?,?,?,?,?)', peer_id, row.serv_state, row.PeerInfo, "aa", "aa", 0, req.user.username, function(err, row) {
+            			db.close();
+                		if (err){res.json({"status": "failed"});}
+				else {res.json({"status": "success"});}
+            		});
+		}
+            });
+
+	}
+    });
+
     app.get('/python', function(req, res) {
 
         // render the page and pass in any flash data if it exists

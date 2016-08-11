@@ -128,6 +128,11 @@
 </div>
 
 <script>
+function hideAlert(){	
+	var alert_div = document.getElementById('message_div');
+	if(alert_div)
+	alert_div.style.display='none';
+}
 function startLoading(){
 	document.getElementById("loader").style.display = "block";
   	document.getElementById("container").style.display = "none";
@@ -141,6 +146,50 @@ function clearPage(){
 	while (myNode.firstChild) {
         	myNode.removeChild(myNode.firstChild);
 	}
+}
+function postAddDevice(peer_id){
+	var url_str = "<%=url%>";
+	url_str = url_str + "/insertDevice/?PeerId=" + peer_id; 
+	console.log(url_str);
+        var xhttp = new XMLHttpRequest();
+  	xhttp.onreadystatechange = function() {
+    		if (xhttp.readyState == 4 && xhttp.status == 200) {
+			var obj = JSON.parse(xhttp.responseText)
+			if(obj.status == "success"){
+				document.getElementById(peer_id).remove();
+				var div_alert = document.getElementById('message_div');
+				div_alert.innerHTML = "Device Added Successfully";
+				div_alert.style.display='block';
+				setTimeout(hideAlert, 6000);
+			}
+			else if(obj.status == "refresh"){
+
+				var retVal = confirm("Stale Page. Do you want to refresh the page ?");
+   				if (retVal == true) {
+	    				window.location.reload();
+   				} else {
+    	
+   				}	
+			}
+			else{
+				document.getElementById('message_div').innerHTML = "Device Adding Unsuccessful";
+				div_alert.style.display='block';
+				setTimeout(hideAlert, 6000);				
+			}
+			
+    		}
+  	};
+  	xhttp.open("GET", url_str, true);
+  	xhttp.send();
+}
+function addDevice(button){
+	var retVal = confirm("Are you sure you want to add this device ?");
+	if (retVal == true) {
+		postAddDevice(button.getAttribute("value"));	
+	} else {
+	    	
+	}
+
 }
 
 function getDevices(){
@@ -185,6 +234,7 @@ device.setAttribute("id",deviceInfo.peer_id);
 device.setAttribute("class","well");
 
 btn.setAttribute("value",deviceInfo.peer_id);
+btn.setAttribute("onclick","addDevice(this)");
 btn.innerHTML = "Add"
 
 head.innerHTML = "Device Information";
