@@ -6,14 +6,87 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script type="text/javascript" src="/qrcode.js"></script>
     <style>
         body { 
           padding-top:80px; 
           word-wrap:break-word; 
         }
     </style>
+    <style>
+	/* The Overlay (background) */
+	.overlay {
+	    /* Height & width depends on how you want to reveal the overlay (see JS below) */   
+	    height: 100%;
+	    width: 0;
+	    position: fixed; /* Stay in place */
+	    z-index: 1; /* Sit on top */
+	    left: 0;
+	    top: 0;
+	    background-color: rgb(0,0,0); /* Black fallback color */
+	    background-color: rgba(0,0,0, 0.9); /* Black w/opacity */
+	    overflow-x: hidden; /* Disable horizontal scroll */
+	    transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+	}
+
+	/* Position the content inside the overlay */
+	.overlay-content {
+	    position: relative;
+	    top: 25%; /* 25% from the top */
+	    width: 100%; /* 100% width */
+	    text-align: -moz-center; /* Centered text/links */
+            text-align: center;
+	    margin-top: 30px; /* 30px top margin to avoid conflict with the close button on smaller screens */
+	}
+
+	/* The navigation links inside the overlay */
+	.overlay a {
+	    padding: 8px;
+	    text-decoration: none;
+	    font-size: 36px;
+	    color: #818181;
+	    display: block; /* Display block instead of inline */
+	    transition: 0.3s; /* Transition effects on hover (color) */
+	}
+
+	/* When you mouse over the navigation links, change their color */
+	.overlay a:hover, .overlay a:focus {
+	    color: #f1f1f1;
+	}
+
+	/* Position the close button (top right corner) */
+	.overlay .closebtn {
+	    position: absolute;
+	    top: 20px;
+	    right: 45px;
+	    font-size: 60px;
+	}
+
+	/* When the height of the screen is less than 450 pixels, change the font-size of the links and position the close button again, so they don't overlap */
+	@media screen and (max-height: 450px) {
+	    .overlay a {font-size: 20px}
+	    .overlay .closebtn {
+		font-size: 40px;
+		top: 15px;
+		right: 35px;
+	    }
+	}
+    </style>
 </head>
 <body>
+
+<!-- The overlay -->
+<div id="myNav" class="overlay">
+
+  <!-- Button to close the overlay navigation -->
+  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+
+  <!-- Overlay content -->
+  <div id = "overlay"class="overlay-content">
+    
+  </div>
+
+</div>
 <div class="container">
 
     <div class="page-header text-center">
@@ -40,6 +113,23 @@
                     </p>
 
             </div>
+    <% if (deviceInfo && deviceInfo.length > 0) { %>
+	    <% for(var j=0; j < deviceInfo.length; j++) { %>
+            <div class="well" id = <%=deviceInfo[j].peer_id%>>
+                <h3> Attached Device Information</h3>
+                    <p>
+  			 <strong>Device Name</strong>: <%= deviceInfo[j].peer_name %><br>
+			 <strong>Device Mac </strong>: <%= deviceInfo[j].peer_num %><br>
+			 <%var id_val = 'Dcountdown' + j %>
+			 <strong id = <%=id_val%> value1 = <%=deviceInfo[j].peer_id%> value2 = <%=deviceInfo[j].state_num%> >Device Status: <%= deviceInfo[j].state %></strong><br>
+			 <div> </div>
+			 <button onclick="openNav(this)" value1 = <%=deviceInfo[j].noob%> value2 = <%=deviceInfo[j].hoob%>>QR Code</button>
+			 <button onclick="" value = <%=deviceInfo[j].peer_id%>>Delete</button> 
+                    </p>
+            </div>
+	    <% } %>
+    <% } %>
+
     <% if (userInfo && userInfo.length > 0) { %>
 	    <% for(var i=0; i < userInfo.length; i++) { %>
             <div class="well" id = <%=userInfo[i].peer_id%>>
@@ -47,9 +137,9 @@
                     <p>
   			 <strong>Device Name</strong>: <%= userInfo[i].peer_name %><br>
 			 <strong>Device Mac </strong>: <%= userInfo[i].peer_num %><br>
-			 <%var id_val = 'Dcountdown' + i %>
+			 <%var id_val = 'Dcountdown' + i + j %>
 			 <strong id = <%=id_val%> value1 = <%=userInfo[i].peer_id%> value2 = <%=userInfo[i].state_num%> >Device Status: <%= userInfo[i].state %></strong><br>
-			 <%var id_val = 'countdown' + i %>
+			 <%var id_val = 'countdown' + i + j %>
           		 <div id= <%=id_val%> value = <%=userInfo[i].sTime%> ></div>
 			 <button onclick="deleteDevice(this)" value = <%=userInfo[i].peer_id%>>Delete</button> 
                     </p>
@@ -208,6 +298,29 @@ function callTimers(){
 }
 
 callTimers();
+
+/* Open when someone clicks on the span element */
+function openNav(btn) {
+    document.getElementById("myNav").style.width = "100%";
+    
+    var val = "Noob = " + btn.getAttribute("value1") + "Hoob =" + btn.getAttribute("value2");
+    var overlay = document.getElementById("overlay");
+    var content = document.createElement('div');
+    content.setAttribute("id","overlayContent");
+    content.setAttribute("style","text-align:-moz-center;");
+    overlay.appendChild(content);
+    var qrcode = new QRCode(content, {
+			 width : 400,
+			 height : 400
+    });
+    qrcode.makeCode(val);
+}
+
+/* Close when someone clicks on the "x" symbol inside the overlay */
+function closeNav() {
+    document.getElementById("myNav").style.width = "0%";
+    document.getElementById("overlayContent").remove();
+}
 </script>
 
 </body>

@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import sqlite3
 import json
 import hashlib
@@ -14,16 +15,15 @@ def main(argv):
 		opts, args = getopt.getopt(argv,"h:o:",["getoob=","help="])
 	except getopt.GetoptError:
 		print 'oobmessage.py -o <peerId>'
-		sys.exit(2)
+		return;
 	for opt, arg in opts:
 		if opt == '-h':
 			print 'oobmessage.py -o <peerId>'
-			sys.exit()
+			return;
 		elif opt in ("-o", "--getoob"):
 			peerId = arg
 			print get_oob_message(peerId)
-			sys.exit()
-
+        
  
 
 def ret_obj(noob, hoob, err):
@@ -74,7 +74,7 @@ def get_hoob(peer_id, noob_b64):
 	if out is None:
 		return ret_obj(None, None, "No recored found")
 
-        Dir = int(out[4]) and int(out[7])	
+        Dir = int(1) and int(3)	
 
 	hoob_arr = []
 

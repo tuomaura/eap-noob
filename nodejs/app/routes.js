@@ -10,8 +10,8 @@ var options = {
   mode: 'text',
   pythonPath: '/usr/bin/python',
   pythonOptions: ['-u'],
-  scriptPath: '/home/shiva/Desktop/git_8_aug/eap-noob/hostapd-2.5/hostapd/',
-  args: ['value1', 'value2', 'value3']
+  scriptPath: '/home/shiva/Desktop/git_11_aug/eap-noob/hostapd-2.5/hostapd/',
+  args: ['-o', '9GKVwgAILuyzWzsJg3fRLqOaCpL20v17aJ3GXDmH7Tg1sIKHLXyvlnDXMmYK']
 };
 
 var url = require('url');
@@ -107,11 +107,20 @@ module.exports = function(app, passport) {
                 if (err){res.json({"status": "failed"});}
 		else if(row.rowCount != 1) {console.log(row.length);res.json({"status": "refresh"});}
 		else {
-            		db.get('INSERT INTO devices values(?,?,?,?,?,?,?)', peer_id, row.serv_state, row.PeerInfo, "aa", "aa", 0, req.user.username, function(err, row) {
-            			db.close();
-                		if (err){res.json({"status": "failed"});}
-				else {res.json({"status": "success"});}
-            		});
+			var parseJ;
+        		PythonShell.run('oobmessage.py', options, function (err,results) {
+                		if (err){console.log("results : ",results); res.json({"status": "failed"});}
+				else{
+					parseJ = JSON.parse(results);
+					var noob = parseJ['noob'];
+					var hoob = parseJ['hoob'];
+            				db.get('INSERT INTO devices values(?,?,?,?,?,?,?)', peer_id, row.serv_state, row.PeerInfo, noob, hoob, 0, req.user.username, function(err, row) {
+            					db.close();
+                				if (err){console.log("hello error");res.json({"status": "failed"});}
+						else {res.json({"status": "success"});}
+            				});
+				}
+        		});
 		}
             });
 
@@ -124,10 +133,10 @@ module.exports = function(app, passport) {
         //console.log(req.session.returnTo)i;
 	var parseJ;
         PythonShell.run('oobmessage.py', options, function (err,results) {
-                if (err) throw err;
+                if (err) console.log (err);
                 res.send("Its Successful");
-		parseJ = JSON.parse(results);
-                console.log('results: %j', parseJ['Input']);
+		//parseJ = JSON.parse(results);
+                console.log('results:', results);
         });
     });
 
@@ -146,49 +155,80 @@ module.exports = function(app, passport) {
     // =====================================
     app.get('/profile', isLoggedIn, function(req, res) {
 	var userDetails = new Array();
-	var i;
+	var deviceDetails = new Array();
+	var i,j;
 	var parseJson;
+	var parseJson1;
 	var d = new Date();
 	var seconds = Math.ceil(d.getTime() / 1000);
 	var val = 0;
 	console.log(seconds);
 	i = 0;
+	j = 0;
 	db = new sqlite3.Database(conn_str);
 	db.all('SELECT PeerID, PeerInfo, serv_state,sleepTime,errorCode FROM peers_connected where userName = ?', req.user.username , function(err,rows){
 		if(!err){
-			rows.forEach(function(row) {
-				userDetails[i] = new Object();
-        			userDetails[i].peer_id = row.PeerID;
-				parseJson= JSON.parse(row.PeerInfo);
-        			userDetails[i].peer_name = parseJson['PeerName'];
-				userDetails[i].peer_num = parseJson['PeerSNum'];
-				if(row.errorCode){
-					userDetails[i].state_num = '0';
-					userDetails[i].state = error_info[parseInt(row.errorCode)];
-				}
-				else{ 
-					userDetails[i].state = state_array[parseInt(row.serv_state,10)];
-					userDetails[i].state_num = row.serv_state;
-				}
-				if(row.sleepTime)
-				val = parseInt(row.sleepTime) - seconds; 
-				console.log(val);
-				if(row.sleepTime && parseInt(row.serv_state) != 4 && parseInt(val) > 0){
-					val = parseInt(val) + 60;
-					userDetails[i].sTime = val;
-				}else{
-					userDetails[i].sTime = '0';
-				}	
+			db.all('SELECT PeerID, PeerInfo, serv_state, errorCode, Noob, Hoob FROM devices where userName = ?', req.user.username , function(err1,rows1){
+				console.log("Here");
+				if(!err1){
+					console.log("Here 1" + rows1);
+					rows1.forEach(function(row1) {
+						deviceDetails[j] = new Object();
+        					deviceDetails[j].peer_id = row1.PeerID;
+						parseJson1= JSON.parse(row1.PeerInfo);
+        					deviceDetails[j].peer_name = parseJson1['PeerName'];
+						deviceDetails[j].peer_num = parseJson1['PeerSNum'];
+						deviceDetails[j].noob = row1.Noob;
+						deviceDetails[j].hoob = row1.Hoob;
+						if(row1.errorCode){
+							deviceDetails[j].state_num = '0';
+							deviceDetails[j].state = error_info[parseInt(row.errorCode)];
+						}
+						else{ 
+							deviceDetails[j].state = state_array[parseInt(row1.serv_state,10)];
+							deviceDetails[j].state_num = row1.serv_state;
+						}
+						deviceDetails[j].sTime = '0';	
+						j++;
+					});	
+					rows.forEach(function(row) {
+						userDetails[i] = new Object();
+        					userDetails[i].peer_id = row.PeerID;
+						parseJson= JSON.parse(row.PeerInfo);
+        					userDetails[i].peer_name = parseJson['PeerName'];
+						userDetails[i].peer_num = parseJson['PeerSNum'];
+						if(row.errorCode){
+							userDetails[i].state_num = '0';
+							userDetails[i].state = error_info[parseInt(row.errorCode)];
+						}
+						else{ 
+							userDetails[i].state = state_array[parseInt(row.serv_state,10)];
+							userDetails[i].state_num = row.serv_state;
+						}
+						if(row.sleepTime)
+							val = parseInt(row.sleepTime) - seconds; 
+						if(row.sleepTime && parseInt(row.serv_state) != 4 && parseInt(val) > 0){
+							val = parseInt(val) + 60;
+							userDetails[i].sTime = val;
+						}else{
+							userDetails[i].sTime = '0';
+						}	
 				
-				i++;
-			});
+						i++;
+					});
 		
-		 	res.render('profile.ejs', {
-            			user : req.user, userInfo : userDetails, url : configDB.url, message: req.flash('profileMessage') // get the user out of session and pass to template
-        		});
+		 			res.render('profile.ejs', {
+            				user : req.user, userInfo : userDetails, deviceInfo : deviceDetails,  url : configDB.url, message: req.flash('profileMessage') // get the user out of session and pass to template
+        				});
+				}else{
+		 			res.render('profile.ejs', {
+            				user : req.user, userInfo : userDetails, deviceInfo : '',  url : configDB.url,  message: req.flash('profileMessage') // get the user out of session and pass to template
+        				});
+				}
+			});
 		}else{
 		 	res.render('profile.ejs', {
-            			user : req.user,userInfo :'', url : configDB.url,  message: req.flash('profileMessage') // get the user out of session and pass to template
+            			user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage') // get the user out of session and pass to template
         		});
 			
 		}

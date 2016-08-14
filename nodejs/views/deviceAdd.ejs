@@ -154,10 +154,10 @@ function postAddDevice(peer_id){
         var xhttp = new XMLHttpRequest();
   	xhttp.onreadystatechange = function() {
     		if (xhttp.readyState == 4 && xhttp.status == 200) {
-			var obj = JSON.parse(xhttp.responseText)
+			var obj = JSON.parse(xhttp.responseText);
+			var div_alert = document.getElementById('message_div');
 			if(obj.status == "success"){
 				document.getElementById(peer_id).remove();
-				var div_alert = document.getElementById('message_div');
 				div_alert.innerHTML = "Device Added Successfully";
 				div_alert.style.display='block';
 				setTimeout(hideAlert, 6000);
@@ -172,7 +172,7 @@ function postAddDevice(peer_id){
    				}	
 			}
 			else{
-				document.getElementById('message_div').innerHTML = "Device Adding Unsuccessful";
+				div_alert.innerHTML = "Device Adding Unsuccessful";
 				div_alert.style.display='block';
 				setTimeout(hideAlert, 6000);				
 			}
