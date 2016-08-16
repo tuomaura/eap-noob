@@ -2058,6 +2058,41 @@ static struct wpabuf * eap_noob_rsp_type_one(const struct eap_noob_peer_context 
 }
 
 
+static struct wpabuf * eap_noob_rsp_hint(const struct eap_noob_peer_context *data, u8 id)
+{
+	noob_json_t * rsp_obj = NULL;
+	struct wpabuf *resp = NULL;
+	char * resp_json = NULL;
+	size_t len = 0 ;
+
+	if(NULL == data){
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
+		return NULL;		
+	}
+	
+	if(NULL != (rsp_obj = eap_noob_json_object())){
+
+		eap_noob_json_object_set_new(rsp_obj,TYPE,eap_noob_json_integer(EAP_NOOB_HINT));
+		eap_noob_json_object_set_new(rsp_obj,PEERID,eap_noob_json_string(data->serv_attr->peerID));
+		//TODO : hash noob before sending
+		eap_noob_json_object_set_new(rsp_obj,HINT,eap_noob_json_string(data->serv_attr->oob_data->noob_b64));
+
+		resp_json = eap_noob_json_dumps(rsp_obj,JSON_COMPACT|JSON_PRESERVE_ORDER);
+		len = strlen(resp_json)+1;
+		printf("RESPONSE = %s\n", resp_json);	
+		resp = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB,len , EAP_CODE_RESPONSE, id);
+		if (resp == NULL) {
+			wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to allocate memory "
+					"for Response/NOOB-IE");
+			return NULL;
+		}	
+		wpabuf_put_data(resp,resp_json,len);	
+
+	}
+
+	return resp;
+}
+
 /**
  * eap_noob_rsp_type_five : prepares message type file
  * @data : peer context
@@ -2472,8 +2507,8 @@ static struct wpabuf * eap_noob_req_type_three(struct eap_sm *sm, noob_json_t * 
 
 	if(NULL == (resp = eap_noob_verify_peerID(data,id))){
 		resp = eap_noob_rsp_type_three(data,id);
-		data->serv_attr->state = OOB;
-		eap_noob_config_change(sm,data);
+		//data->serv_attr->state = OOB;
+		//eap_noob_config_change(sm,data);
 		eap_noob_assign_waittime(sm,data);
 	}
 
@@ -2600,6 +2635,30 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_sm *sm,noob_json_t * req
 }
 
 
+static struct wpabuf * eap_noob_req_hint(struct eap_sm *sm,noob_json_t * req_obj , struct eap_noob_peer_context *data,
+                u8 id)
+{
+	struct wpabuf *resp = NULL;
+
+	eap_noob_decode_obj(data->serv_attr,req_obj);
+
+	if(data->serv_attr->err_code != NO_ERROR){
+		resp = eap_noob_err_msg(data,id);
+		return resp;		
+	}
+
+	if(data->serv_attr->rcvd_params != TYPE_HINT_PARAMS){
+		data->serv_attr->err_code = E1002;
+		resp = eap_noob_err_msg(data,id);
+		return resp;
+	}
+
+	if(NULL == (resp = eap_noob_verify_peerID(data,id))){
+		resp = eap_noob_rsp_hint(data,id);
+	}	
+	return resp;
+}
+
 /**
  * eap_noob_req_err_handling :  handle received error message
  * @eap_sm : eap statemachine context
@@ -2719,6 +2778,9 @@ static struct wpabuf * eap_noob_process (struct eap_sm *sm, void *priv,
 		case EAP_NOOB_TYPE_7:
 			resp = eap_noob_req_type_seven(sm, req_obj, data, id);
 			ret->decision = DECISION_COND_SUCC;
+			break;
+		case EAP_NOOB_HINT:
+			resp = eap_noob_req_hint(sm, req_obj, data, id);
 			break;
 		default:
 			wpa_printf(MSG_DEBUG, "EAP-NOOB: Unknown EAP-NOOB request received");
@@ -3096,7 +3158,9 @@ static int eap_noob_peer_ctxt_init(struct eap_sm *sm,  struct eap_noob_peer_cont
 
 		if(FAILURE == (retval = eap_noob_create_db(sm , data)))
 			return retval;		
-		
+	
+		printf("************* STATE = %d\n",data->serv_attr->state);
+	
 		if(data->serv_attr->state == UNREG || 
 			data->serv_attr->state == RECONNECT){	
 

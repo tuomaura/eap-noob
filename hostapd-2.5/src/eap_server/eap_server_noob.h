@@ -39,6 +39,7 @@ typedef json_error_t 	noob_json_error_t;
 #define MAX_CONF_LEN    	500
 #define MAX_INFO_LEN		500
 #define MAX_PEER_ID_LEN 	60
+#define MAX_LINE_SIZE		1000
 
 #define KDF_LEN			192
 #define MSK_LEN     		64
@@ -99,6 +100,7 @@ typedef json_error_t 	noob_json_error_t;
 #define PUBLICKEY_PEER		"PKp"
 #define PEER_INFO		"PeerInfo"
 #define PEERSTATE       	"state"
+#define HINT			"Hint"
 #define MACp			"MACp" 
 #define X_COORDINATE    	"x"
 #define Y_COORDINATE    	"y"
@@ -122,6 +124,7 @@ typedef json_error_t 	noob_json_error_t;
 #define MINSLP_RCVD		0x0200
 #define SERV_NAME_RCVD		0x0400
 #define SERV_URL_RCVD		0x0800
+#define HINT_RCVD		0x1000
 
 
 
@@ -132,8 +135,11 @@ typedef json_error_t 	noob_json_error_t;
 #define TYPE_FIVE_PARAMS        (PEERID_RCVD|CSUITE_RCVD|INFO_RCVD)
 #define TYPE_SIX_PARAMS		(PEERID_RCVD|NONCE_RCVD)
 #define TYPE_SEVEN_PARAMS       (PEERID_RCVD|MAC_RCVD)
+#define TYPE_HINT_PARAMS        (PEERID_RCVD|HINT_RCVD)
 
 #define CONF_PARAMS             (DIRECTION_RCVD|CSUITE_RCVD|VERSION_RCVD|SERV_NAME_RCVD|SERV_URL_RCVD)
+
+#define DEVICE_TABLE		"devices"
 
 /*SQL query to create peer connection database*/
 #define CREATE_CONNECTION_TABLE "CREATE TABLE IF NOT EXISTS peers_connected(\
@@ -160,7 +166,7 @@ typedef json_error_t 	noob_json_error_t;
 				kz TEXT,\
 				pub_key_serv TEXT,\
 				pub_key_peer TEXT,\
-				userName,\
+				UserName,\
 				sleepTime UNSIGNED BIG INT,\
 				errorCode INTEGER)" 
 
@@ -169,8 +175,8 @@ typedef json_error_t 	noob_json_error_t;
 
 enum{COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW}; //Flag used during KDF and MAC generation
 enum {UNREG, WAITING, OOB, RECONNECT,REGISTERED};
-enum {NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7};
-enum {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,UPDATE_STATE_ERROR};
+enum {NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7, EAP_NOOB_TYPE_HINT};
+enum {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,UPDATE_STATE_ERROR, UPDATE_OOB};
 enum eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001}; 
 enum {HOOB,MACS,MACP};
 
@@ -243,6 +249,10 @@ struct eap_noob_oob_data{
         char * hoob_b64;
 	size_t hoob_len;
         u8 * hoob;
+
+	char * hint_b64;
+	size_t hint_len;
+	u8 * hint;
 };
 
 
@@ -268,11 +278,11 @@ struct eap_noob_peer_data{
         char * peerID_gen;
 	char * peer_info;
 	char * peer_snum;
-	char *NAI;
-	char *user_name_peer;
-	char *realm;
+	char * NAI;
+	char * user_name_peer;
+	char * realm;
 	char * mac;
-
+	char * user_info;
 	Boolean record_present;
 
 	enum eap_noob_err_code err_code;

@@ -123,7 +123,7 @@
 			 <%var id_val = 'Dcountdown' + j %>
 			 <strong id = <%=id_val%> value1 = <%=deviceInfo[j].peer_id%> value2 = <%=deviceInfo[j].state_num%> >Device Status: <%= deviceInfo[j].state %></strong><br>
 			 <div> </div>
-			 <button onclick="openNav(this)" value1 = <%=deviceInfo[j].noob%> value2 = <%=deviceInfo[j].hoob%>>QR Code</button>
+			 <button onclick="openNav(this)" value1 = <%=deviceInfo[j].noob%> value2 = <%=deviceInfo[j].hoob%> value3 = <%=deviceInfo[j].peer_id%>>QR Code</button>
 			 <button onclick="" value = <%=deviceInfo[j].peer_id%>>Delete</button> 
                     </p>
             </div>
@@ -303,8 +303,9 @@ callTimers();
 function openNav(btn) {
     document.getElementById("myNav").style.width = "100%";
     
-    var val = "Noob = " + btn.getAttribute("value1") + "Hoob =" + btn.getAttribute("value2");
+    var val = "https://127.0.0.1:8080/?PeerID="+btn.getAttribute("value3")+"&Noob=" + btn.getAttribute("value1") + "&Hoob=" + btn.getAttribute("value2");
     var overlay = document.getElementById("overlay");
+    overlay.setAttribute("style", "background-color: white;")
     var content = document.createElement('div');
     content.setAttribute("id","overlayContent");
     content.setAttribute("style","text-align:-moz-center;");

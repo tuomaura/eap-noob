@@ -6,14 +6,15 @@ var configDB = require('../config/database.js');
 var conn_str = configDB.dbPath;
 
 var PythonShell = require('python-shell');
+/*
 var options = {
   mode: 'text',
   pythonPath: '/usr/bin/python',
   pythonOptions: ['-u'],
-  scriptPath: '/home/shiva/Desktop/git_11_aug/eap-noob/hostapd-2.5/hostapd/',
-  args: ['-o', '9GKVwgAILuyzWzsJg3fRLqOaCpL20v17aJ3GXDmH7Tg1sIKHLXyvlnDXMmYK']
+  scriptPath: '/home/mudugor1/EAP_NOOB/git_repo/15aug_testing/eap-noob/hostapd-2.5/hostapd',
+  args: ['-o', 'lXxgmZujXSE04Roc9riXLW4gY3T6GY2ZTxffxHysAasC2OObf4700bgYe73S']
 };
-
+*/
 var url = require('url');
 var state_array = ['Unregistered','OOB Waiting', 'OOB Received' ,'Reconnect Exchange', 'Registered'];
 var error_info = [ "No error",
@@ -107,6 +108,14 @@ module.exports = function(app, passport) {
                 if (err){res.json({"status": "failed"});}
 		else if(row.rowCount != 1) {console.log(row.length);res.json({"status": "refresh"});}
 		else {
+
+			var options = {
+  				mode: 'text',
+  				pythonPath: '/usr/bin/python',
+  				pythonOptions: ['-u'],
+  				scriptPath: configDB.ooblibPath,
+  				args: ['-o', peer_id]
+			};
 			var parseJ;
         		PythonShell.run('oobmessage.py', options, function (err,results) {
                 		if (err){console.log("results : ",results); res.json({"status": "failed"});}
@@ -114,7 +123,7 @@ module.exports = function(app, passport) {
 					parseJ = JSON.parse(results);
 					var noob = parseJ['noob'];
 					var hoob = parseJ['hoob'];
-            				db.get('INSERT INTO devices values(?,?,?,?,?,?,?)', peer_id, row.serv_state, row.PeerInfo, noob, hoob, 0, req.user.username, function(err, row) {
+            				db.get('INSERT INTO devices (PeerID, serv_state, PeerInfo, Noob, Hoob,errorCode, username) values(?,?,?,?,?,?,?)', peer_id, row.serv_state, row.PeerInfo, noob, hoob, 0, req.user.username, function(err, row) {
             					db.close();
                 				if (err){console.log("hello error");res.json({"status": "failed"});}
 						else {res.json({"status": "success"});}
