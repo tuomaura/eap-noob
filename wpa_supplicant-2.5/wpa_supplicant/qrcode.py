@@ -4,10 +4,16 @@ import sqlite3
 import os
 import os.path
 import subprocess
+import re
+import _thread
+import time
 
 db_name = 'peer_connection_db'
 config_file = "wpa_supplicant.conf"
 target_file = config_file+'.tmp'
+noob_conf_file='eapoob.conf'
+keyword = 'Direction'
+oob_out_file = '/tmp/noob_output.txt'
 
 def runbash(cmd):
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
@@ -74,10 +80,7 @@ def url_to_db(params):
 
 	exec_query(cmd)
 
-def read_qr_code():
-	url_file = open('output.txt', 'r')
-	
-	url = url_file.readline().strip("\n")
+def parse_qr_code(url):
 	
 	url_comp = urlparse(url);
 	
@@ -89,9 +92,49 @@ def read_qr_code():
 
 	change_config(params['PeerID'][0])
 
-def main():
-	read_qr_code()
 
+def read_qr_code(arg):
+	no_message = True
+	print("In new thread")
+	cmd = "zbarcam >"+oob_out_file
+	#runbash(cmd)
+	subprocess.Popen(cmd,shell=True)
+
+	while no_message:
+        	time.sleep(2)
+        	print ("File opened")
+        	oob_output = open(oob_out_file,'r')
+        	for line in oob_output:
+                	if 'Noob' in line and 'Hoob' in line and 'PeerID' in line:
+                        	no_message = False
+        	oob_output.close()
+        	print ("File closed")
+
+	subprocess.Popen("sudo killall zbarcam",shell=True)
+	cmd = 'rm -f '+oob_out_file
+	runbash(cmd)
+	print (line)
+	parse_qr_code(line) 
+
+def get_direction():
+	noob_conf = open(noob_conf_file, 'r')
+
+	for line in noob_conf:
+        	if '#' != line[0] and keyword in line:
+                	parts = re.sub('[\s+]', '', line)
+                	direction =  (parts[len(keyword)+1])
+
+                	return direction
+
+def main():
+	direction = get_direction()
+
+	if direction is '2':
+		print("Server to peer direction")
+		_thread.start_new_thread(read_qr_code,(None,))
+
+	while True:
+		pass
 
 if __name__=='__main__':
         main()
