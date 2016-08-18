@@ -782,6 +782,42 @@ static char * eap_noob_prepare_hoob_arr(const struct eap_noob_peer_context * dat
 	return hoob_str;
 }
 
+static int eap_noob_prepare_hash(u8 *out, size_t outlen, 
+	char * hash_string, int hash_str_len)
+{
+	const EVP_MD *md = EVP_sha256();
+	EVP_MD_CTX *mctx = NULL;
+	int rv = 0;
+	size_t mdlen;
+	
+
+	if (outlen > ECDH_KDF_MAX || hash_str_len > ECDH_KDF_MAX)
+		return 0;
+	mctx = EVP_MD_CTX_create();
+	if (mctx == NULL)
+		return 0;
+	mdlen = EVP_MD_size(md);
+	wpa_printf(MSG_DEBUG,"EAP-NOOB: HASH begin %d",(int)mdlen);
+
+	unsigned char mtmp[EVP_MAX_MD_SIZE];
+	EVP_DigestInit_ex(mctx, md, NULL);
+
+	if (!EVP_DigestUpdate(mctx, hash_string, hash_str_len))
+		goto err;
+	if (!EVP_DigestFinal(mctx, mtmp, NULL))
+		goto err;
+
+	memcpy(out, mtmp, outlen);
+	OPENSSL_cleanse(mtmp, mdlen);
+	rv = 1;
+err:
+	wpa_printf(MSG_DEBUG,"EAP-NOOB:HASH finished %d",rv);
+	EVP_MD_CTX_destroy(mctx);
+	return rv;
+
+}
+
+
 /**
  * eap_noob_get_hoob : generate hoob
  * @data : peer context
@@ -791,42 +827,22 @@ static char * eap_noob_prepare_hoob_arr(const struct eap_noob_peer_context * dat
 **/
 static int eap_noob_get_hoob(struct eap_noob_peer_context *data,unsigned char *out, size_t outlen)
 {
-	const EVP_MD *md = EVP_sha256();
-	EVP_MD_CTX *mctx = NULL;
-	int rv = 0;
-	size_t mdlen;
-	char * mac_string = NULL; //TODO : allocate memory dynamically
-	int mac_str_len= 0;
-	mac_string = eap_noob_prepare_hoob_arr(data);
-	mac_str_len = os_strlen(mac_string);
+	char * hoob_string = NULL; 
+	int hoob_str_len= 0;
+
+
+	if(NULL != (hoob_string = eap_noob_prepare_hoob_arr(data))){
+		hoob_str_len = os_strlen(hoob_string);
 	
-	printf("HOOB string  = %s\n length = %d\n",mac_string,mac_str_len);
-	wpa_printf(MSG_DEBUG,"EAP-NOOB: HOOB start ");
-	wpa_hexdump_ascii(MSG_DEBUG,"EAP-OOB: Value:",mac_string, mac_str_len);	
+		printf("HOOB string  = %s\n length = %d\n",hoob_string,hoob_str_len);
+		wpa_printf(MSG_DEBUG,"EAP-NOOB: HOOB start ");
+		wpa_hexdump_ascii(MSG_DEBUG,"EAP-OOB: Value:",hoob_string, hoob_str_len);	
 
-	if (outlen > ECDH_KDF_MAX || mac_str_len > ECDH_KDF_MAX)
-		return 0;
-	mctx = EVP_MD_CTX_create();
-	if (mctx == NULL)
-		return 0;
-	mdlen = EVP_MD_size(md);
-	wpa_printf(MSG_DEBUG,"EAP-NOOB: HOOB begin %d",(int)mdlen);
 
-	unsigned char mtmp[EVP_MAX_MD_SIZE];
-	EVP_DigestInit_ex(mctx, md, NULL);
+		return eap_noob_prepare_hash(out, outlen,hoob_string,hoob_str_len);
+	}
 
-	if (!EVP_DigestUpdate(mctx, mac_string, mac_str_len))
-		goto err;
-	if (!EVP_DigestFinal(mctx, mtmp, NULL))
-		goto err;
-
-	memcpy(out, mtmp, outlen);
-	OPENSSL_cleanse(mtmp, mdlen);
-	rv = 1;
-err:
-	wpa_printf(MSG_DEBUG,"EAP-NOOB:HOOB finished %d",rv);
-	EVP_MD_CTX_destroy(mctx);
-	return rv;
+	return FAILURE;
 }
 
 
@@ -2057,6 +2073,30 @@ static struct wpabuf * eap_noob_rsp_type_one(const struct eap_noob_peer_context 
 
 }
 
+static int eap_noob_prepare_hint(const struct eap_noob_peer_context *data,u8 * hint)
+{
+	char * hint_str = NULL;
+	int hint_str_len = 0;
+	int noob_len = strlen(data->serv_attr->oob_data->noob_b64);
+	int salt_len = strlen(HINT_SALT);
+	
+	hint_str = malloc(noob_len+salt_len);
+
+	if(hint_str){
+		memset(hint_str,0,noob_len+salt_len);
+		printf("noob= %s len = %d\n",data->serv_attr->oob_data->noob_b64,noob_len);
+		strcat(hint_str,data->serv_attr->oob_data->noob_b64);
+		strcat(hint_str,HINT_SALT);
+		printf("HINT string = %s\n",hint_str);
+		hint_str_len = strlen(hint_str);
+		eap_noob_prepare_hash(hint, HASH_LEN+8, hint_str,hint_str_len);	
+		os_free(hint_str);
+		return SUCCESS;	
+	}
+
+	return FAILURE;
+}	
+
 
 static struct wpabuf * eap_noob_rsp_hint(const struct eap_noob_peer_context *data, u8 id)
 {
@@ -2064,6 +2104,8 @@ static struct wpabuf * eap_noob_rsp_hint(const struct eap_noob_peer_context *dat
 	struct wpabuf *resp = NULL;
 	char * resp_json = NULL;
 	size_t len = 0 ;
+	char hint[HASH_LEN+8] = {0};
+	char * hint_b64 = NULL;
 
 	if(NULL == data){
 		wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
@@ -2075,8 +2117,12 @@ static struct wpabuf * eap_noob_rsp_hint(const struct eap_noob_peer_context *dat
 		eap_noob_json_object_set_new(rsp_obj,TYPE,eap_noob_json_integer(EAP_NOOB_HINT));
 		eap_noob_json_object_set_new(rsp_obj,PEERID,eap_noob_json_string(data->serv_attr->peerID));
 		//TODO : hash noob before sending
-		eap_noob_json_object_set_new(rsp_obj,HINT,eap_noob_json_string(data->serv_attr->oob_data->noob_b64));
-
+		eap_noob_prepare_hint(data, (u8 *)hint);
+		eap_noob_Base64Encode((u8 *)hint,HASH_LEN+8, &hint_b64);
+		eap_noob_json_object_set_new(rsp_obj,HINT,eap_noob_json_string(hint_b64));
+		
+		if(hint_b64) os_free(hint_b64);
+	
 		resp_json = eap_noob_json_dumps(rsp_obj,JSON_COMPACT|JSON_PRESERVE_ORDER);
 		len = strlen(resp_json)+1;
 		printf("RESPONSE = %s\n", resp_json);	

@@ -16,13 +16,11 @@
 #define MAX_QUERY_LEN			2048
 #define SHORT_QUERY_LEN			500
 #define DOMAIN		    		"@eap-noob.net"
-#define PEER_INFO			"Believe_me_i_am_a_printer!!"
-#define PUBLIC_KEY			"Peer public key"
 #define VERSION_ONE 			1
 #define SUITE_ONE 			1
 #define TABLE_NAME			"connections"
 #define DB_NAME				"peer_connection_db"
-
+#define HINT_SALT			"AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING"
 #define EAP_NOOB_NONCE_LEN      	16
 #define EAP_SHARED_SECRET_LEN   	32
 #define ECDH_KDF_MAX 			(1 << 30)

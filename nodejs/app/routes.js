@@ -1,4 +1,6 @@
 // app/routes.js
+var base64url = require('base64url');
+var crypto = require('crypto');
 var sqlite3 = require('sqlite3').verbose();
 var db;
 
@@ -6,15 +8,7 @@ var configDB = require('../config/database.js');
 var conn_str = configDB.dbPath;
 
 var PythonShell = require('python-shell');
-/*
-var options = {
-  mode: 'text',
-  pythonPath: '/usr/bin/python',
-  pythonOptions: ['-u'],
-  scriptPath: '/home/mudugor1/EAP_NOOB/git_repo/15aug_testing/eap-noob/hostapd-2.5/hostapd',
-  args: ['-o', 'lXxgmZujXSE04Roc9riXLW4gY3T6GY2ZTxffxHysAasC2OObf4700bgYe73S']
-};
-*/
+
 var url = require('url');
 var state_array = ['Unregistered','OOB Waiting', 'OOB Received' ,'Reconnect Exchange', 'Registered'];
 var error_info = [ "No error",
@@ -123,7 +117,14 @@ module.exports = function(app, passport) {
 					parseJ = JSON.parse(results);
 					var noob = parseJ['noob'];
 					var hoob = parseJ['hoob'];
-            				db.get('INSERT INTO devices (PeerID, serv_state, PeerInfo, Noob, Hoob,errorCode, username) values(?,?,?,?,?,?,?)', peer_id, row.serv_state, row.PeerInfo, noob, hoob, 0, req.user.username, function(err, row) {
+					var hash = crypto.createHash('sha256');
+					var hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
+					console.log(hash_str);
+  					hash.update(hash_str);
+  					var hint =  base64url.encode(hash.digest());
+					//console.log(hint.slice(0,22));
+					console.log(hint.slice(0,32));
+            				db.get('INSERT INTO devices (PeerID, serv_state, PeerInfo, Noob, Hoob,Hint,errorCode, username) values(?,?,?,?,?,?,?,?)', peer_id, row.serv_state, row.PeerInfo, noob, hoob, hint.slice(0,32),0, req.user.username, function(err, row) {
             					db.close();
                 				if (err){console.log("hello error");res.json({"status": "failed"});}
 						else {res.json({"status": "success"});}

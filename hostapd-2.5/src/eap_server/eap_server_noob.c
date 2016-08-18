@@ -3286,7 +3286,7 @@ static int eap_noob_exec_hint_queries(struct eap_noob_serv_context * data)
 	char * query = os_malloc(MAX_LINE_SIZE);
 
 	if(query){
-		snprintf(query,MAX_LINE_SIZE,"SELECT * from %s where PeerID='%s' and  Noob='%s'",DEVICE_TABLE,
+		snprintf(query,MAX_LINE_SIZE,"SELECT * from %s where PeerID='%s' and  Hint='%s'",DEVICE_TABLE,
 			data->peer_attr->peerID_gen,data->peer_attr->oob_data->hint_b64);
 		printf("Query = %s\n",query);
 		if(eap_noob_exec_query(query, eap_noob_callback,data,data)){
