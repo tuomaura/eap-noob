@@ -180,8 +180,11 @@ def prepare(iface):
 	#now start your own wpa_supplicant
 	
 	print ("start wpa_supplicant")
-	runbash('rm -f wpa_supplicant.conf ; touch wpa_supplicant.conf ')
-	runbash('rm -f peer_connection_db')		
+	cmd = 'rm -f '+config_file+' touch '+config_file+' ; rm -f '+db_name
+	runbash(cmd)		
+	conf_file = open(config_file,'w')
+	conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=120\n\n")
+	conf_file.close()
 	cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant "
 	subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
 
@@ -196,8 +199,7 @@ def network_scan():
 	
 def get_result():
 	scan_result = runbash("wpa_cli scan_result | awk '$4 ~ /WPA2-EAP/ {print $3,$5,$1}' | sort $1")
-	conf_file = open("wpa_supplicant.conf",'w')
-	conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\n\n")
+	conf_file = open(config_file,'a')
 	token = ''
 	ssid_list = []
 	token_list = []
@@ -216,6 +218,7 @@ def get_result():
 			token = ''
 		else:
 			token += str(item)
+	conf_file.close()
 	return ssid_list 
 
 
