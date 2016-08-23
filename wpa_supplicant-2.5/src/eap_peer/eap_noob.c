@@ -215,7 +215,7 @@ static int eap_noob_sendUpdateSignal()
 	FILE *fp;
 	char pid[10];
 	int p = 0;
-	fp = popen("pidof /usr/bin/python signal.py", "r");
+	fp = popen("pidof /usr/bin/python3 wpa_auto_run.py", "r");
 	if (fp == NULL)
 		return FAILURE;
 	if( fgets (pid, 10, fp)!=NULL ) 
@@ -1452,7 +1452,8 @@ static int eap_noob_decode_csuites_array(char * array, struct eap_noob_serv_data
  * @argv : argument 2d array
  * @azColName : colomn name 2d arra
 **/
-int eap_noob_callback(void * priv , int argc, char **argv, char **azColName){
+int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)
+{
 
 	struct eap_noob_peer_context * peer = priv;
 	struct eap_noob_serv_data *data = peer->serv_attr;
@@ -2611,9 +2612,9 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_sm *sm, noob_json_t * re
                         	return NULL;
                	 	}
 			/*To-Do: If an error is received for the response then set the show_OOB flag to zero and send update signal*/
-			if(FAILURE == eap_noob_sendUpdateSignal()){
+			/*if(FAILURE == eap_noob_sendUpdateSignal()){
 				wpa_printf(MSG_DEBUG,"EAP-NOOB: Failed to Notify the Script");
-			}
+			}*/
 
 		}
 
@@ -3352,10 +3353,13 @@ static void * eap_noob_init_for_reauth(struct eap_sm *sm, void *priv)
 static Boolean eap_noob_has_reauth_data(struct eap_sm *sm, void *priv)
 {
 	struct eap_noob_peer_context *data = priv;
+	struct wpa_supplicant *wpa_s = (struct wpa_supplicant *) sm->msg_ctx;
 	
         printf("######################### Has reauth function called\n");
-	
-	if(data->serv_attr->state == REGISTERED){
+	printf("Current SSID = %s, Stored SSID = %s\n",
+		wpa_s->current_ssid->ssid,data->serv_attr->ssid);	
+	if(data->serv_attr->state == REGISTERED && 
+		0 == strcmp((char *)wpa_s->current_ssid->ssid,data->serv_attr->ssid)){
 
 		data->serv_attr->state = RECONNECT;
 
