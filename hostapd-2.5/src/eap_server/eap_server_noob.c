@@ -526,6 +526,7 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)
 			}
 			else if (os_strcmp(azColName[count], "serv_state") == 0) {
 				data->serv_state = (int) strtol(argv[count], NULL, 10);
+				printf("Server state in DB = %d\n",data->serv_state);
 			}			
 			else if (os_strcmp(azColName[count], "Csuitep") == 0) {
 				data->cryptosuite = (int) strtol(argv[count], NULL, 10);
@@ -677,8 +678,8 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)
 			}	
 			else if (os_strcmp(azColName[count], "errorCode") == 0 && os_strlen(argv[count]) > 0) {
 
-				data->err_code = (int) strtol(argv[count],NULL,10);
-				eap_noob_set_error(data,data->err_code);
+				//data->err_code = (int) strtol(argv[count],NULL,10);
+				//eap_noob_set_error(data,data->err_code);
 				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB Error during OOB");
 			}	
 				
@@ -927,7 +928,8 @@ static void eap_noob_check_for_oob(struct eap_noob_serv_context * data)
         
 	dir = (data->server_attr->dir & data->peer_attr->dir);
 
-	if((dir == PEER_TO_SERV) &&(data->peer_attr->oob_recv == 1234)){				
+	if((dir == PEER_TO_SERV) && (data->peer_attr->oob_recv == 1234) 
+				&& (data->peer_attr->serv_state != REGISTERED)){				
 			wpa_printf(MSG_DEBUG,"EAP-NOOB: Received oob!!");
 			data->peer_attr->serv_state = OOB;
 	}
@@ -1263,8 +1265,6 @@ static int eap_noob_serv_ctxt_alloc(struct eap_sm *sm,  struct eap_noob_serv_con
 
 static int eap_noob_serv_ctxt_init( struct eap_noob_serv_context * data, struct eap_sm *sm)
 {
-	/*TODO: remove hard codings and initialize preferably through a
-	  config file*/
 	int retval = FAILURE;
 	size_t len = 0;
 
@@ -2984,6 +2984,7 @@ static void eap_noob_rsp_type_seven(struct eap_sm *sm,
 		
 		eap_noob_change_state(data,REGISTERED);		
 		if(FAILURE == eap_noob_db_update(data,UPDATE_STATE)){
+			wpa_printf(MSG_DEBUG, "EAP-NOOB: Updating server state failed ");	
 			return;
 		}			
 		data->peer_attr->next_req = NONE;
@@ -3124,6 +3125,7 @@ static void eap_noob_rsp_type_four(struct eap_sm *sm,
 		
 		eap_noob_change_state(data,REGISTERED);		
 		if(FAILURE == eap_noob_db_update(data,UPDATE_PERSISTENT_KEYS_SECRET)){
+			wpa_printf(MSG_DEBUG, "EAP-NOOB: Updating server state failed ");	
 			return;
 		}
 
