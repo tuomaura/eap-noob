@@ -760,8 +760,8 @@ static int eap_noob_db_entry(struct eap_noob_serv_context *data)
 	}
 
 	snprintf(query,1500,"INSERT INTO %s ( PeerID, Verp,Vers, serv_state, Csuitep, Csuites,Dirp, Dirs,nonce_serv,nonce_peer, PeerInfo,ServInfo," 
-			"SharedSecret, Noob, Hoob, OOB_RECEIVED_FLAG,MINSLP_count, pub_key_serv, pub_key_peer, kms, kmp, kz)"
-			"VALUES ( '%s',%d ,'%s', %d, %d, '%s', %d, %d, '%s','%s', '%s','%s','%s','%s','%s', %d, %d, '%s', '%s', '%s', '%s', '%s')",
+			"SharedSecret, Noob, Hoob, OOB_RECEIVED_FLAG,MINSLP_count, pub_key_serv, pub_key_peer, kms, kmp, kz,DevUpdate)"
+			"VALUES ( '%s',%d ,'%s', %d, %d, '%s', %d, %d, '%s','%s', '%s','%s','%s','%s','%s', %d, %d, '%s', '%s', '%s', '%s', '%s',%d)",
 			data->db_table_name, peer_attr->peerID_gen, peer_attr->version,eap_noob_json_dumps(ver_arr, JSON_COMPACT),
 			peer_attr->serv_state, peer_attr->cryptosuite,eap_noob_json_dumps(csuite_arr, JSON_COMPACT),
 			peer_attr->dir,data->server_attr->dir,
@@ -769,7 +769,7 @@ static int eap_noob_db_entry(struct eap_noob_serv_context *data)
 			data->server_attr->serv_info, 
 			peer_attr->ecdh_exchange_data->shared_key_b64,"","",0,peer_attr->minslp_count,
 			(eap_noob_json_dumps(peer_attr->ecdh_exchange_data->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER)),
-			(eap_noob_json_dumps(peer_attr->ecdh_exchange_data->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER)),"","","");
+			(eap_noob_json_dumps(peer_attr->ecdh_exchange_data->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER)),"","","",0);
 
 	printf("QUERY = %s\n",query);
 	

@@ -172,11 +172,12 @@ module.exports = function(app, passport) {
 	var d = new Date();
 	var seconds = Math.ceil(d.getTime() / 1000);
 	var val = 0;
+	var dev_status = ['Up to date','Update required','Obsolete, update now!']
 	console.log(seconds);
 	i = 0;
 	j = 0;
 	db = new sqlite3.Database(conn_str);
-	db.all('SELECT PeerID, PeerInfo, serv_state,sleepTime,errorCode FROM peers_connected where userName = ?', req.user.username , function(err,rows){
+	db.all('SELECT PeerID, PeerInfo, serv_state,sleepTime,errorCode,DevUpdate FROM peers_connected where userName = ?', req.user.username , function(err,rows){
 		if(!err){
 			db.all('SELECT PeerID, PeerInfo, serv_state, errorCode, Noob, Hoob FROM devices where userName = ?', req.user.username , function(err1,rows1){
 				console.log("Here");
@@ -205,8 +206,9 @@ module.exports = function(app, passport) {
 						userDetails[i] = new Object();
         					userDetails[i].peer_id = row.PeerID;
 						parseJson= JSON.parse(row.PeerInfo);
-        					userDetails[i].peer_name = parseJson['PeerName'];
 						userDetails[i].peer_num = parseJson['PeerSNum'];
+        					userDetails[i].peer_name = parseJson['PeerName'];
+						userDetails[i].dev_update = dev_status[parseInt(row.DevUpdate)];
 						if(row.errorCode){
 							userDetails[i].state_num = '0';
 							userDetails[i].state = error_info[parseInt(row.errorCode)];

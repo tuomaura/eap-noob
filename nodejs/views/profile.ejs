@@ -137,11 +137,15 @@
                     <p>
   			 <strong>Device Name</strong>: <%= userInfo[i].peer_name %><br>
 			 <strong>Device Mac </strong>: <%= userInfo[i].peer_num %><br>
+			 <strong>Software Status </strong>: <%= userInfo[i].dev_update %><br>
 			 <%var id_val = 'Dcountdown' + i + j %>
 			 <strong id = <%=id_val%> value1 = <%=userInfo[i].peer_id%> value2 = <%=userInfo[i].state_num%> >Device Status: <%= userInfo[i].state %></strong><br>
 			 <%var id_val = 'countdown' + i + j %>
           		 <div id= <%=id_val%> value = <%=userInfo[i].sTime%> ></div>
 			 <button onclick="deleteDevice(this)" value = <%=userInfo[i].peer_id%>>Delete</button> 
+    			<% if (userInfo[i].dev_update > 0) { %>
+			 	<button onclick="UpdateSoftware(this)" value = <%=userInfo[i].peer_id%>>update</button> 
+    			<% } %>
                     </p>
             </div>
 	    <% } %>
@@ -153,6 +157,10 @@
 </div>
 
 <script>
+function UpdateSoftware(peer_id){
+
+}
+
 function deletePost(peer_id){
 
 	var url_str = "<%=url%>";

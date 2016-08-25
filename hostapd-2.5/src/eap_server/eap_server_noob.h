@@ -166,7 +166,8 @@ typedef json_error_t 	noob_json_error_t;
 				kz TEXT,\
 				pub_key_serv TEXT,\
 				pub_key_peer TEXT,\
-				UserName,\
+				UserName TEXT,\
+				DevUpdate INTEGER ,\
 				sleepTime UNSIGNED BIG INT,\
 				errorCode INTEGER)" 
 
