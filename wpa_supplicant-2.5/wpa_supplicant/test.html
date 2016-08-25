@@ -11,7 +11,7 @@ td{
     border: 1px solid black;
     width: 400px;
     height: 400px;
-    text-align: center;
+    text-align: left;
    
 }
 img{
@@ -24,7 +24,7 @@ img{
 
 <body>
 
-<h1 style="text-align:center;">QR Code OOB Authentication</h1>
+<h2 style="text-align:center;margin-top: 2cm">Wait while we search for the right networks</h2>
 
 <div style="text-align:-moz-center">    
 <table id="myTable">
@@ -41,9 +41,11 @@ function displayScreen()
     var h = window.innerHeight;
     var colNum = Math.floor(w/500);
     var rowNum = Math.floor(h/500);
+    if(colNum == 2) {colNum=1;}	
     var tdID = 'idnum';
     var servID ='servid';
     var sID = 'sID';
+    var sURL = 'sURL';	
     
     for(var i = 0; i < rowNum; i++){
 	var table = document.getElementById("myTable");
@@ -53,14 +55,18 @@ function displayScreen()
      		//cell1.innerHTML = "NEW CELL2";
 		cell1.id = tdID + ((i*colNum)+j);
 		var txt = "";
-		txt += "<p id=" +servID + ((i*colNum)+j) +">" + "</p>";
-		txt += "<p id="+sID + ((i*colNum)+j) +"> " + "</p>";
+		txt += "<p id=" + servID + ((i*colNum)+j) +">" + "</p>";
+		txt += "<p id="+ sURL + ((i*colNum)+j) +"> " + "</p>";
+		txt += "<p id="+ sID + ((i*colNum)+j) +"> " + "</p>";
 		cell1.innerHTML = txt;
 	}
     }
     //console.log(rowNum +" "+ colNum);
 }
 
+function nthOccurance(string, char, nth) {
+    return string.split(char,nth).join(char).length;
+}
 
 function readTextFile(file)
 {
@@ -81,6 +87,7 @@ function readTextFile(file)
 		var tdID = 'idnum'; 
 		var servID ='servid';
     		var sID = 'sID';
+		var sURL = 'sURL';
 		var lines = allText.split('\n');
 		var ntd = lines.length - 1;
 		if(max_ntd >= ntd){
@@ -91,15 +98,17 @@ function readTextFile(file)
 				//iDiv.id = divID + line;
 				//document.getElementsByTagName('body')[0].appendChild(iDiv);
 				var qrcode = new QRCode(document.getElementById(tdID + line), {
-					width : 200,
-					height : 200
+					width : 400,
+					height : 400
 				});
 				qrcode.makeCode(array[2]);
 				var p1 = document.getElementById(servID + line);
-				var p2 = document.getElementById(sID + line);
-				p1.innerHTML = "SSID:" + array[0];
-				p2.innerHTML = "SERVER NAME:" +  array[1];
-				
+				var p2 = document.getElementById(sURL + line);
+				var p3 = document.getElementById(sID + line);
+				p1.innerHTML = "SSID: <span style='color:red'> " + array[0]+"</span>";
+				var url=array[2].toString();	
+				p2.innerHTML = "Server: <span style='color:red'>" + url.substring(0,nthOccurance(url,'/',3))+"</span>";
+				p3.innerHTML = "Server Name: <span style='color:red'>" +  array[1]+"</span>";
 
 				//var fileDisplayArea = document.getElementById(divID + line);
 				//fileDisplayArea.innerText = lines[line]; 
@@ -114,14 +123,17 @@ function readTextFile(file)
 			for(var line = 0; line < max_ntd; line++){
       				var array = lines[line].split(',');
 				var qrcode = new QRCode(document.getElementById(tdID + line), {
-					width : 200,
-					height : 200
+					width : 400,
+					height : 400
 				});
 				qrcode.makeCode(array[2]);
 				var p1 = document.getElementById(servID + line);
-				var p2 = document.getElementById(sID + line);
-				p1.innerHTML = "SSID:" + array[0];
-				p2.innerHTML = "SERVER NAME:" +  array[1];
+				var p2 = document.getElementById(sURL + line);
+				var p3 = document.getElementById(sID + line);
+				p1.innerHTML = "SSID: <span style='color:red'>" + array[0]+"</span>";
+				var url=array[2].toString();	
+				p2.innerHTML = "Server: <span style='color:red'>" + url.substring(0,nthOccurance(url,'/',3))+"</span>";
+				p3.innerHTML = "Server Name: <span style='color:red'>" +  array[1]+"</span>";
 			}
 			
 			setTimeout(intrFunc, 6000, (ntd-max_ntd));
@@ -155,9 +167,12 @@ function readTextFile(file)
 						});
 						qrcode.makeCode(array[2]);
 						var p1 = document.getElementById(servID + line);
-						var p2 = document.getElementById(sID + line);
-						p1.innerHTML = "SSID:" + array[0];
-						p2.innerHTML = "SERVER NAME:" +  array[1];
+						var p2 = document.getElementById(sURL + line);
+						var p3 = document.getElementById(sID + line);
+						p1.innerHTML = "SSID: <span style='color:red'>" + array[0]+"</span>";
+						var url=array[2].toString();	
+						p2.innerHTML = "Server: <span style='color:red'>" + url.substring(0,nthOccurance(url,'/',3))+"</span>";
+						p3.innerHTML = "Server Name: <span style='color:red'>" +  array[1]+"</span>";
 						left = left - 1;
 					}
 					//alert("here" + left);
