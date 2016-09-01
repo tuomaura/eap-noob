@@ -93,6 +93,8 @@
 
 #define PEER_NAME			"PeerName"
 #define PEER_SERIAL_NUM			"PeerSNum"
+#define PEER_SSID			"PeerSSID"
+#define PEER_BSSID			"PeerBSSID"
 
 
 /*bit masks to validate message structure*/
@@ -327,9 +329,9 @@ static noob_json_t * eap_noob_json_loads(const char * input, size_t flags, noob_
 static u32 eap_noob_json_is_object(noob_json_t * obj);
 static noob_json_t * eap_noob_json_object_get(noob_json_t * obj, const char * key);
 static u32 eap_noob_json_typeof(const noob_json_t * value);
-static int eap_noob_sendUpdateSignal();
+//static int eap_noob_sendUpdateSignal();
 static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state);
-static noob_json_t * eap_noob_prepare_peer_info_json(struct eap_noob_peer_config_params * data);
+static noob_json_t * eap_noob_prepare_peer_info_json(struct eap_sm *sm,struct eap_noob_peer_config_params * data);
 static char * eap_noob_prepare_mac_arr(const struct eap_noob_peer_context * data, int type, int state);
 static u8 * eap_noob_gen_MAC(const struct eap_noob_peer_context * data,int type, u8 * key, int keylen, int state);
 static int eap_noob_get_noob(struct eap_noob_peer_context *data);
@@ -367,8 +369,8 @@ static int eap_noob_build_JWK( noob_json_t ** jwk, const char * x_b64, const cha
 static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data, u8 id);
 static int eap_noob_build_JWK( noob_json_t ** jwk, const char * x_b64, const char * y_b64);
 static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_rsp_type_one(const struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_rsp_type_five(const struct eap_noob_peer_context *data, u8 id);
+static struct wpabuf * eap_noob_rsp_type_one(struct eap_sm *sm,const struct eap_noob_peer_context *data, u8 id);
+static struct wpabuf * eap_noob_rsp_type_five(struct eap_sm *sm,const struct eap_noob_peer_context *data, u8 id);
 static struct wpabuf * eap_noob_rsp_type_six(struct eap_noob_peer_context *data, u8 id);
 static struct wpabuf * eap_noob_rsp_type_seven(const struct eap_noob_peer_context *data, u8 id);
 static struct wpabuf * eap_noob_req_type_seven(struct eap_sm *sm, noob_json_t * req_obj , struct eap_noob_peer_context *data, u8 id);
@@ -392,7 +394,7 @@ static void eap_noob_assign_config(char * conf_name,char * conf_value,struct eap
 static void eap_noob_parse_config(char * buff,struct eap_noob_peer_data * data);
 static int eap_noob_handle_incomplete_conf(struct eap_noob_peer_context * data);
 static int eap_noob_prepare_peer_info_obj(struct eap_noob_peer_data * data);
-static int eap_noob_read_config(struct eap_noob_peer_context * data);
+static int eap_noob_read_config(struct eap_sm *sm,struct eap_noob_peer_context * data);
 static int eap_noob_peer_ctxt_alloc(struct eap_sm *sm,  struct eap_noob_peer_context * data);
 static int eap_noob_peer_ctxt_init(struct eap_sm *sm,  struct eap_noob_peer_context * data);
 static void * eap_noob_init(struct eap_sm *sm);

@@ -209,6 +209,7 @@ static u32 eap_noob_json_typeof(const noob_json_t * value)
                       to display the new oob message
  * Returns: SUCCESS/FAILURE
 **/
+#if 0
 static int eap_noob_sendUpdateSignal()
 {
 
@@ -235,7 +236,7 @@ static int eap_noob_sendUpdateSignal()
 		return FAILURE;
 	}
 }
-
+#endif
 /** 
  * eap_noob_gen_KDF : generates and updates the KDF inside the peer context.
  * @data  : peer context.
@@ -296,10 +297,12 @@ static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state){
  * @data : peer context. 
  * returns : reference to a new object or NULL.
 **/
-static noob_json_t * eap_noob_prepare_peer_info_json(struct eap_noob_peer_config_params * data)
+static noob_json_t * eap_noob_prepare_peer_info_json(struct eap_sm *sm,struct eap_noob_peer_config_params * data)
 {
 
 	noob_json_t * info_obj = NULL;
+	struct wpa_supplicant *wpa_s = (struct wpa_supplicant *) sm->msg_ctx;
+	char bssid[18] = {0};
 
         if(NULL == data){
                 wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
@@ -310,6 +313,11 @@ static noob_json_t * eap_noob_prepare_peer_info_json(struct eap_noob_peer_config
 
                 eap_noob_json_object_set_new(info_obj,PEER_NAME,eap_noob_json_string(data->Peer_name));
                 eap_noob_json_object_set_new(info_obj,PEER_SERIAL_NUM,eap_noob_json_string(data->Peer_ID_Num));
+               	eap_noob_json_object_set_new(info_obj,PEER_SSID,eap_noob_json_string((char *)wpa_s->current_ssid->ssid));
+		sprintf(bssid,"%x:%x:%x:%x:%x:%x",wpa_s->current_ssid->bssid[0],wpa_s->current_ssid->bssid[1],
+			wpa_s->current_ssid->bssid[2],wpa_s->current_ssid->bssid[3],wpa_s->current_ssid->bssid[4],
+			wpa_s->current_ssid->bssid[5]);
+                eap_noob_json_object_set_new(info_obj,PEER_BSSID,eap_noob_json_string(bssid));
 	}
 	return info_obj;
 }
@@ -2035,7 +2043,7 @@ static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data,
  * @id   : response message id
  * Returns : pointer to message buffer or null 
 **/
-static struct wpabuf * eap_noob_rsp_type_one(const struct eap_noob_peer_context *data, u8 id){
+static struct wpabuf * eap_noob_rsp_type_one(struct eap_sm *sm,const struct eap_noob_peer_context *data, u8 id){
 
 	noob_json_t * rsp_obj = NULL;
 	struct wpabuf *resp = NULL;
@@ -2055,7 +2063,7 @@ static struct wpabuf * eap_noob_rsp_type_one(const struct eap_noob_peer_context 
 		eap_noob_json_object_set_new(rsp_obj,PEERID,eap_noob_json_string(data->serv_attr->peerID));
 		eap_noob_json_object_set_new(rsp_obj,CSUITES_PEER,eap_noob_json_integer(data->peer_attr->cryptosuite));
 		eap_noob_json_object_set_new(rsp_obj,DIRECTION_PEER,eap_noob_json_integer(data->peer_attr->dir));
-		eap_noob_json_object_set_new(rsp_obj,PEERINFO,eap_noob_prepare_peer_info_json(data->peer_attr->peer_config_params));
+		eap_noob_json_object_set_new(rsp_obj,PEERINFO,eap_noob_prepare_peer_info_json(sm,data->peer_attr->peer_config_params));
 
 		resp_json = eap_noob_json_dumps(rsp_obj,JSON_COMPACT|JSON_PRESERVE_ORDER);
 		len = strlen(resp_json)+1;
@@ -2146,7 +2154,7 @@ static struct wpabuf * eap_noob_rsp_hint(const struct eap_noob_peer_context *dat
  * @id   : response message id
  * Returns : pointer to message buffer or null 
 **/
-static struct wpabuf * eap_noob_rsp_type_five(const struct eap_noob_peer_context *data, u8 id){
+static struct wpabuf * eap_noob_rsp_type_five(struct eap_sm *sm,const struct eap_noob_peer_context *data, u8 id){
 
 	noob_json_t * rsp_obj = NULL;
 	struct wpabuf *resp = NULL;
@@ -2164,7 +2172,7 @@ static struct wpabuf * eap_noob_rsp_type_five(const struct eap_noob_peer_context
 		eap_noob_json_object_set_new(rsp_obj,TYPE,eap_noob_json_integer(EAP_NOOB_TYPE_5));
 		eap_noob_json_object_set_new(rsp_obj,PEERID,eap_noob_json_string(data->serv_attr->peerID));
 		eap_noob_json_object_set_new(rsp_obj,CSUITES_PEER,eap_noob_json_integer(data->peer_attr->cryptosuite));
-		eap_noob_json_object_set_new(rsp_obj,PEERINFO,eap_noob_prepare_peer_info_json(data->peer_attr->peer_config_params)); //Send this only if previous info has changed
+		eap_noob_json_object_set_new(rsp_obj,PEERINFO,eap_noob_prepare_peer_info_json(sm,data->peer_attr->peer_config_params)); //Send this only if previous info has changed
 
 		resp_json = eap_noob_json_dumps(rsp_obj,JSON_COMPACT);
 		len = strlen(resp_json)+1;
@@ -2439,7 +2447,7 @@ static struct wpabuf * eap_noob_req_type_five(struct eap_sm *sm,noob_json_t * re
 
 	//TODO: handle eap_noob failure scenario
 	if(SUCCESS == eap_noob_check_compatibility(data)){
-		resp = eap_noob_rsp_type_five(data, id);		
+		resp = eap_noob_rsp_type_five(sm,data, id);		
 	}else{
 		resp = eap_noob_err_msg(data,id);
 	}
@@ -2670,7 +2678,7 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_sm *sm,noob_json_t * req
 
 	//TODO: handle eap_noob failure scenario
 	if(SUCCESS == eap_noob_check_compatibility(data)){
-		resp = eap_noob_rsp_type_one(data, id);		
+		resp = eap_noob_rsp_type_one(sm,data, id);		
 	}else{
 		resp = eap_noob_err_msg(data,id);
 	}
@@ -3102,7 +3110,7 @@ static int eap_noob_prepare_peer_info_obj(struct eap_noob_peer_data * data)
  * Returns : SUCCESS/FAILURE
 **/
 
-static int eap_noob_read_config(struct eap_noob_peer_context * data)
+static int eap_noob_read_config(struct eap_sm *sm,struct eap_noob_peer_context * data)
 {
 	FILE * conf_file = NULL;
 	char * buff = NULL; 
@@ -3139,9 +3147,16 @@ static int eap_noob_read_config(struct eap_noob_peer_context * data)
 	if(data->peer_attr->config_params != CONF_PARAMS &&
 		FAILURE == eap_noob_handle_incomplete_conf(data))
 		return FAILURE;
-	
-	return eap_noob_prepare_peer_info_obj(data->peer_attr);
 
+	//return eap_noob_prepare_peer_info_obj(data->peer_attr);
+	if((NULL == (data->peer_attr->peer_info = eap_noob_json_dumps(eap_noob_prepare_peer_info_json(sm,data->peer_attr->peer_config_params),
+		JSON_COMPACT|JSON_PRESERVE_ORDER))) || (strlen(data->peer_attr->peer_info) > MAX_INFO_LEN)){
+				wpa_printf(MSG_ERROR, "EAP-NOOB: Incorrect or no peer info");
+ 	                       	return FAILURE;
+		}       
+	printf("PEER INFO = %s\n",data->peer_attr->peer_info);
+
+	return SUCCESS;
 }
 
 /**
@@ -3211,7 +3226,7 @@ static int eap_noob_peer_ctxt_init(struct eap_sm *sm,  struct eap_noob_peer_cont
 		if(data->serv_attr->state == UNREG || 
 			data->serv_attr->state == RECONNECT){	
 
-			if(FAILURE == eap_noob_read_config(data)){
+			if(FAILURE == eap_noob_read_config(sm,data)){
 				wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to initialize context");
 				return FAILURE;
 			}
