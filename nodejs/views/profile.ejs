@@ -144,7 +144,7 @@
 			 <%var id_val = 'countdown' + i + j %>
           		 <div id= <%=id_val%> value = <%=userInfo[i].sTime%> ></div>
 			 <button onclick="deleteDevice(this)" value = <%=userInfo[i].peer_id%>>Delete</button> 
-    			<% if (userInfo[i].dev_update > 0) { %>
+    			<% if (userInfo[i].dev_update != 'Up to date') { %>
 			 	<button onclick="UpdateSoftware(this)" value = <%=userInfo[i].peer_id%>>update</button> 
     			<% } %>
                     </p>
