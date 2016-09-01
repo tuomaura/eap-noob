@@ -224,12 +224,18 @@ var head = document.createElement('h3');
 var para = document.createElement('p');
 var str1 = document.createElement('strong');
 var str2 = document.createElement('strong');
+var str3 = document.createElement('strong');
+var str4 = document.createElement('strong');
 var nl1 = document.createElement('br');
 var nl2 = document.createElement('br');
 var nl3 = document.createElement('br');
+var nl4 = document.createElement('br');
+var nl5 = document.createElement('br');
 var btn = document.createElement('button');
 var device_name = document.createTextNode(deviceInfo.peer_name);
 var device_mac = document.createTextNode(deviceInfo.peer_num);
+var device_ssid = document.createTextNode(deviceInfo.peer_ssid);
+var device_bssid = document.createTextNode(deviceInfo.peer_bssid);
 
 device.setAttribute("id",deviceInfo.peer_id);
 device.setAttribute("class","well");
@@ -244,6 +250,9 @@ str1.innerHTML = "Device Name :";
 
 str2.innerHTML = "Device Mac :";
 
+str3.innerHTML = "SSID :";
+
+str4.innerHTML = "BSSID :";
 
 para.appendChild(str1);
 para.appendChild(device_name);
@@ -251,7 +260,13 @@ para.appendChild(nl1);
 para.appendChild(str2);
 para.appendChild(device_mac);
 para.appendChild(nl2);
+para.appendChild(str3);
+para.appendChild(device_ssid);
 para.appendChild(nl3);
+para.appendChild(str4);
+para.appendChild(device_bssid);
+para.appendChild(nl4);
+para.appendChild(nl5);
 para.appendChild(btn);
 
 device.appendChild(head);

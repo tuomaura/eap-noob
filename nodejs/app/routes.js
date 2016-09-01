@@ -69,6 +69,8 @@ module.exports = function(app, passport) {
 					parseJson= JSON.parse(row.PeerInfo);
 					deviceDetails[i].peer_name = parseJson['PeerName'];
 					deviceDetails[i].peer_num = parseJson['PeerSNum'];
+					deviceDetails[i].peer_ssid = parseJson['PeerSSID'];
+					deviceDetails[i].peer_bssid = parseJson['PeerBSSID'];
 					
 					i++;
 				});
@@ -97,7 +99,6 @@ module.exports = function(app, passport) {
 
 	    db = new sqlite3.Database(conn_str);
             db.get('SELECT count(*) AS rowCount, PeerID, serv_state, PeerInfo, errorCode FROM peers_connected WHERE PeerID = ?', peer_id, function(err, row) {
-
             	
                 if (err){res.json({"status": "failed"});}
 		else if(row.rowCount != 1) {console.log(row.length);res.json({"status": "refresh"});}
@@ -119,14 +120,14 @@ module.exports = function(app, passport) {
 					var hoob = parseJ['hoob'];
 					var hash = crypto.createHash('sha256');
 					var hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
-					console.log(hash_str);
+					//console.log(hash_str);
   					hash.update(hash_str);
   					var hint =  base64url.encode(hash.digest());
 					//console.log(hint.slice(0,22));
-					console.log(hint.slice(0,32));
+					//console.log(hint.slice(0,32));
             				db.get('INSERT INTO devices (PeerID, serv_state, PeerInfo, Noob, Hoob,Hint,errorCode, username) values(?,?,?,?,?,?,?,?)', peer_id, row.serv_state, row.PeerInfo, noob, hoob, hint.slice(0,32),0, req.user.username, function(err, row) {
             					db.close();
-                				if (err){console.log("hello error");res.json({"status": "failed"});}
+                				if (err){console.log(err);res.json({"status": "failed"});}
 						else {res.json({"status": "success"});}
             				});
 				}
@@ -180,15 +181,15 @@ module.exports = function(app, passport) {
 	db.all('SELECT PeerID, PeerInfo, serv_state,sleepTime,errorCode,DevUpdate FROM peers_connected where userName = ?', req.user.username , function(err,rows){
 		if(!err){
 			db.all('SELECT PeerID, PeerInfo, serv_state, errorCode, Noob, Hoob FROM devices where userName = ?', req.user.username , function(err1,rows1){
-				console.log("Here");
 				if(!err1){
-					console.log("Here 1" + rows1);
+					db.close();
 					rows1.forEach(function(row1) {
 						deviceDetails[j] = new Object();
         					deviceDetails[j].peer_id = row1.PeerID;
 						parseJson1= JSON.parse(row1.PeerInfo);
         					deviceDetails[j].peer_name = parseJson1['PeerName'];
 						deviceDetails[j].peer_num = parseJson1['PeerSNum'];
+						//deviceDetails[j].dev_update = dev_status[parseInt(row1.DevUpdate)];
 						deviceDetails[j].noob = row1.Noob;
 						deviceDetails[j].hoob = row1.Hoob;
 						if(row1.errorCode){
@@ -233,19 +234,22 @@ module.exports = function(app, passport) {
             				user : req.user, userInfo : userDetails, deviceInfo : deviceDetails,  url : configDB.url, message: req.flash('profileMessage') // get the user out of session and pass to template
         				});
 				}else{
+					db.close();
 		 			res.render('profile.ejs', {
             				user : req.user, userInfo : userDetails, deviceInfo : '',  url : configDB.url,  message: req.flash('profileMessage') // get the user out of session and pass to template
         				});
 				}
 			});
 		}else{
+			db.close();
 		 	res.render('profile.ejs', {
             			user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage') // get the user out of session and pass to template
         		});
 			
 		}
-		db.close();
+		//db.close();
 	});
+	//db.close();
     });
 
     // =====================================
