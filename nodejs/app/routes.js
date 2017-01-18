@@ -350,6 +350,34 @@ module.exports = function(app, passport) {
 	}
     });
 
+    app.get('/deleteDeviceTemp', function(req, res) {
+        var peer_id = req.query.PeerId;
+        var queryObject = url.parse(req.url,true).query;
+        var len = Object.keys(queryObject).length;
+	console.log(req.user.username + " " + peer_id);	
+        if(len != 1 || peer_id == undefined)
+        {
+	   res.json({"status":"failed"});
+        }else{
+    	   console.log('req received');
+
+	    db = new sqlite3.Database(conn_str);
+            db.get('SELECT count(*) AS rowCount FROM devices WHERE PeerID = ? AND UserName = ?', peer_id, req.user.username, function(err, row) {
+            	
+		console.log(req.user.username + " " + peer_id);	
+                if (err){res.json({"status": "failed"});}
+		else if(row.rowCount != 1) {res.json({"status": "refresh"});}
+		else {
+            		db.get('DELETE FROM devices WHERE PeerID = ? AND UserName = ?', peer_id, req.user.username, function(err, row) {
+            			db.close();
+                		if (err){res.json({"status": "failed"});}
+				else {res.json({"status": "success"});}
+            		});
+		}
+            });
+
+	}
+    });
     app.get('/deleteDevice', function(req, res) {
     	//console.log(req);
         var peer_id = req.query.PeerId;

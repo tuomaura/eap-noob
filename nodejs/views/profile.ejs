@@ -125,7 +125,7 @@
 			 <strong id = <%=id_val%> value1 = <%=deviceInfo[j].peer_id%> value2 = <%=deviceInfo[j].state_num%> >Device Status: <%= deviceInfo[j].state %></strong><br>
 			 <div> </div>
 			 <button onclick="openNav(this)" value1 = <%=deviceInfo[j].noob%> value2 = <%=deviceInfo[j].hoob%> value3 = <%=deviceInfo[j].peer_id%>>QR Code</button>
-			 <button onclick="" value = <%=deviceInfo[j].peer_id%>>Delete</button> 
+			 <button onclick="deleteDeviceTemp(this)" value = <%=deviceInfo[j].peer_id%>>Delete</button> 
                     </p>
             </div>
 	    <% } %>
@@ -159,6 +159,44 @@
 
 <script>
 function UpdateSoftware(peer_id){
+
+}
+
+function deletePostTemp(peer_id){
+
+	var url_str = "<%=url%>";
+	url_str = url_str + "/deleteDeviceTemp/?PeerId=" + peer_id; 
+	console.log(url_str);
+        var xhttp = new XMLHttpRequest();
+  	xhttp.onreadystatechange = function() {
+    		if (xhttp.readyState == 4 && xhttp.status == 200) {
+			var obj = JSON.parse(xhttp.responseText)
+			if(obj.status == "success"){
+				document.getElementById(peer_id).remove();
+				var div_alert = document.getElementById('message_div');
+				div_alert.innerHTML = "Device Deleted Successfully";
+				div_alert.style.display='block';
+				setTimeout(hideAlert, 6000);
+			}
+			else if(obj.status == "refresh"){
+
+				var retVal = confirm("Stale Page. Do you want to refresh the page ?");
+   				if (retVal == true) {
+	    				window.location.reload();
+   				} else {
+    	
+   				}	
+			}
+			else{
+				document.getElementById('message_div').innerHTML = "Device Delete Unsuccessful";
+				div_alert.style.display='block';
+				setTimeout(hideAlert, 6000);				
+			}
+			
+    		}
+  	};
+  	xhttp.open("GET", url_str, true);
+  	xhttp.send();
 
 }
 
@@ -206,6 +244,16 @@ function deleteDevice(button){
    var retVal = confirm("Are you sure you want to delete this device permanently ?");
    if (retVal == true) {
     	deletePost(button.getAttribute("value"));
+   } else {
+    	
+   }	
+}
+
+function deleteDeviceTemp(button){
+ 
+   var retVal = confirm("Are you sure you want to delete this device permanently ?");
+   if (retVal == true) {
+    	deletePostTemp(button.getAttribute("value"));
    } else {
     	
    }	
