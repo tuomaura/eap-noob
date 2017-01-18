@@ -125,7 +125,7 @@
 			 <strong id = <%=id_val%> value1 = <%=deviceInfo[j].peer_id%> value2 = <%=deviceInfo[j].state_num%> >Device Status: <%= deviceInfo[j].state %></strong><br>
 			 <div> </div>
 			 <button onclick="openNav(this)" value1 = <%=deviceInfo[j].noob%> value2 = <%=deviceInfo[j].hoob%> value3 = <%=deviceInfo[j].peer_id%>>QR Code</button>
-			 <button onclick="deleteDeviceTemp(this)" value = <%=deviceInfo[j].peer_id%>>Delete</button> 
+			 <button onclick="deleteDeviceTemp(this)" value = <%=deviceInfo[j].peer_id%>>Remove</button> 
                     </p>
             </div>
 	    <% } %>
@@ -251,7 +251,7 @@ function deleteDevice(button){
 
 function deleteDeviceTemp(button){
  
-   var retVal = confirm("Are you sure you want to delete this device permanently ?");
+   var retVal = confirm("Are you sure you want to remove this device from your account ?");
    if (retVal == true) {
     	deletePostTemp(button.getAttribute("value"));
    } else {
