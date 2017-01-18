@@ -385,60 +385,6 @@ int eap_noob_Base64Encode(const unsigned char* buffer, size_t length, char** b64
 }
 
 
-static int eap_noob_get_next_req(struct eap_noob_peer_data * data){
-
-	int retval = 0;
-	
-	if(state_machine[data->serv_state][data->peer_state]){
-		retval = next_request_type [(data->serv_state * NUM_OF_STATES) + data->peer_state];
-	}
-	wpa_printf(MSG_DEBUG,"EAP-NOOB:Serv state = %d, Peer state = %d, Next req =%d",data->serv_state, data->peer_state, retval);
-	if( retval == EAP_NOOB_TYPE_5) data->serv_state = RECONNECT;
-	
-	printf("**********DIRp =%d\n",data->dir);
-	/*code change to include the hint message for serv_to_peer direction*/
-	if((data->dir == SERV_TO_PEER)  && (retval == EAP_NOOB_TYPE_4)) retval = EAP_NOOB_TYPE_HINT;
-
-	return retval;
-}
-
-
-int eap_noob_db_entry_check(void * priv , int argc, char **argv, char **azColName){
-
-	int res = 0;
-	struct eap_noob_serv_context *data = priv;
-
-	if((res = strtol(argv[0],NULL,10)) == 1){
-		data->peer_attr->record_present = TRUE;		
-	}
-
-	return 0;
-}
-
-int eap_noob_verify_oob_msg_len(struct eap_noob_peer_data *data)
-{
-
-
-	if(data){
-		if(data->oob_data->noob){
-			if(data->oob_data->noob_len > EAP_NOOB_NONCE_LEN){
-				eap_noob_set_error(data,E1003);
-				return FAILURE;	
-			}
-		}
-		
-		if(data->oob_data->hoob){
-			if(data->oob_data->hoob_len > HASH_LEN){
-				eap_noob_set_error(data,E1003);
-				return FAILURE;		
-			}
-		}
-
-	}
-
-	return SUCCESS;	
-}
-
 /**
  * eap_noob_decode_vers_array : assigns the values of Vers JSON array to version array
  * @data: Server context
@@ -484,7 +430,6 @@ static int eap_noob_decode_csuites_array(char * array, struct eap_noob_server_da
 
         return SUCCESS;
 }
-
 
 /**
  * eap_noob_callback : Repopulate the peer context when method re initializes
@@ -690,6 +635,8 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)
 	return 0;
 }
 
+
+
 /**
  * eap_noob_exec_query : wrapper function to execute a sql query
  * @query : query to be executed
@@ -699,7 +646,7 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)
  * Returns  :  SUCCESS/FAILURE
 **/
 
-static int eap_noob_exec_query(const char * query, int(*callback)(void*, int ,char **, char ** ), void * argv,
+int eap_noob_exec_query(const char * query, int(*callback)(void*, int ,char **, char ** ), void * argv,
 		struct eap_noob_serv_context * data){
 
 	char * sql_error = NULL;
@@ -736,63 +683,6 @@ static int eap_noob_exec_query(const char * query, int(*callback)(void*, int ,ch
 	return SUCCESS;
 }
 
-/**
- * eap_noob_db_entry : Make an entery of the current peer context inside the DB
- * @data : server context
- * Returns : FAILURE/SUCCESS
-**/
-
-static int eap_noob_db_entry(struct eap_noob_serv_context *data)
-{
-	char query[1500] = {0}; //TODO : replace it with dynamic allocation
-	noob_json_t * ver_arr = NULL;
-	noob_json_t * csuite_arr = NULL;
-	struct eap_noob_peer_data * peer_attr = data->peer_attr;
-
-	wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s",__func__);
-
-        if((ver_arr = eap_noob_prepare_vers_arr(data)) == NULL)
-                 return FAILURE;
-
-        if((csuite_arr = eap_noob_prepare_csuites_arr(data)) == NULL){
-		os_free(ver_arr);
-                return FAILURE;
-	}
-
-	snprintf(query,1500,"INSERT INTO %s ( PeerID, Verp,Vers, serv_state, Csuitep, Csuites,Dirp, Dirs,nonce_serv,nonce_peer, PeerInfo,ServInfo," 
-			"SharedSecret, Noob, Hoob, OOB_RECEIVED_FLAG,MINSLP_count, pub_key_serv, pub_key_peer, kms, kmp, kz,DevUpdate)"
-			"VALUES ( '%s',%d ,'%s', %d, %d, '%s', %d, %d, '%s','%s', '%s','%s','%s','%s','%s', %d, %d, '%s', '%s', '%s', '%s', '%s',%d)",
-			data->db_table_name, peer_attr->peerID_gen, peer_attr->version,eap_noob_json_dumps(ver_arr, JSON_COMPACT),
-			peer_attr->serv_state, peer_attr->cryptosuite,eap_noob_json_dumps(csuite_arr, JSON_COMPACT),
-			peer_attr->dir,data->server_attr->dir,
-			peer_attr->kdf_nonce_data->nonce_serv_b64,peer_attr->kdf_nonce_data->nonce_peer_b64, peer_attr->peer_info,
-			data->server_attr->serv_info, 
-			peer_attr->ecdh_exchange_data->shared_key_b64,"","",0,peer_attr->minslp_count,
-			(eap_noob_json_dumps(peer_attr->ecdh_exchange_data->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER)),
-			(eap_noob_json_dumps(peer_attr->ecdh_exchange_data->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER)),"","","",0);
-
-	printf("QUERY = %s\n",query);
-	
-	os_free(ver_arr);
-	os_free(csuite_arr);
-	
-	if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
-		//sqlite3_close(data->servDB);
-		wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
-		//TODO: free data here.
-		return FAILURE;
-	}	
-
-	wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s",__func__);
-	return SUCCESS;
-}
-
-static int eap_noob_change_state(struct eap_noob_serv_context *data, int state)
-{
-	data->peer_attr->serv_state = state;
-
-	return SUCCESS;
-}
 
 /**
  * eap_noob_db_update : prepare a DB update query
@@ -801,7 +691,7 @@ static int eap_noob_change_state(struct eap_noob_serv_context *data, int state)
  * Returns : SUCCESS/FAILURE
 **/
 
-static int eap_noob_db_update(struct eap_noob_serv_context *data, u8 type)
+int eap_noob_db_update(struct eap_noob_serv_context *data, u8 type)
 {
 
 	char * query = malloc(MAX_LINE_SIZE); 
@@ -870,6 +760,172 @@ static int eap_noob_db_update(struct eap_noob_serv_context *data, u8 type)
 	return SUCCESS;		
 
 }
+
+int eap_noob_exec_no_hint_queries(struct eap_noob_serv_context * data)
+{
+	char * query = os_malloc(MAX_LINE_SIZE);
+
+	if(query){
+		snprintf(query,MAX_LINE_SIZE,"SELECT * from %s where PeerID='%s'",DEVICE_TABLE,
+			data->peer_attr->peerID_gen);
+		printf("Query = %s\n",query);
+		if(eap_noob_exec_query(query, eap_noob_callback,data,data)){
+			return eap_noob_db_update(data,UPDATE_OOB);
+
+		}
+		os_free(query);
+	}
+	return FAILURE;
+}
+
+
+int eap_noob_hint_request_check(void * priv , int argc, char **argv, char **azColName){
+
+	int res = 0;
+	struct eap_noob_serv_context *data = priv;
+
+	if((res = strtol(argv[0],NULL,10)) > 1){
+		data->peer_attr->hint_required = TRUE;		
+	}else{
+		data->peer_attr->hint_required = FALSE;
+	}
+
+	return 0;
+}
+
+
+int eap_noob_is_hint_required(struct eap_noob_serv_context * data){
+	
+	char buff[200] = {0}; //TODO : replace this with dynamic allocation
+
+	os_snprintf(buff,200,"SELECT COUNT(*) from %s WHERE  PeerID = '%s'",
+		DEVICE_TABLE,data->peer_attr->peerID_rcvd);
+		
+	return (eap_noob_exec_query(buff, eap_noob_hint_request_check,
+		data,data));
+
+}
+
+static int eap_noob_get_next_req(struct eap_noob_serv_context * data){
+
+	int retval = 0;
+	
+	if(state_machine[data->peer_attr->serv_state][data->peer_attr->peer_state]){
+		retval = next_request_type [(data->peer_attr->serv_state * NUM_OF_STATES) + data->peer_attr->peer_state];
+	}
+	wpa_printf(MSG_DEBUG,"EAP-NOOB:Serv state = %d, Peer state = %d, Next req =%d",data->peer_attr->serv_state, data->peer_attr->peer_state, retval);
+	if( retval == EAP_NOOB_TYPE_5) data->peer_attr->serv_state = RECONNECT;
+	
+	printf("**********DIRp =%d\n",data->peer_attr->dir);
+	/*code change to include the hint message for serv_to_peer direction*/
+	if((data->peer_attr->dir == SERV_TO_PEER)  && (retval == EAP_NOOB_TYPE_4) && FAILURE != eap_noob_is_hint_required(data) && data->peer_attr->hint_required) {
+		retval = EAP_NOOB_TYPE_HINT;
+		wpa_printf(MSG_DEBUG,"EAP-NOOB: Hint Required: True");
+	}else if((data->peer_attr->dir == SERV_TO_PEER)  && (retval == EAP_NOOB_TYPE_4) && !data->peer_attr->hint_required){
+		eap_noob_exec_no_hint_queries(data);
+ 		wpa_printf(MSG_DEBUG,"EAP-NOOB: Hint Required: False");
+	}
+
+	return retval;
+}
+
+
+
+int eap_noob_db_entry_check(void * priv , int argc, char **argv, char **azColName){
+
+	int res = 0;
+	struct eap_noob_serv_context *data = priv;
+
+	if((res = strtol(argv[0],NULL,10)) == 1){
+		data->peer_attr->record_present = TRUE;		
+	}
+
+	return 0;
+}
+
+int eap_noob_verify_oob_msg_len(struct eap_noob_peer_data *data)
+{
+
+
+	if(data){
+		if(data->oob_data->noob){
+			if(data->oob_data->noob_len > EAP_NOOB_NONCE_LEN){
+				eap_noob_set_error(data,E1003);
+				return FAILURE;	
+			}
+		}
+		
+		if(data->oob_data->hoob){
+			if(data->oob_data->hoob_len > HASH_LEN){
+				eap_noob_set_error(data,E1003);
+				return FAILURE;		
+			}
+		}
+
+	}
+
+	return SUCCESS;	
+}
+
+
+/**
+ * eap_noob_db_entry : Make an entery of the current peer context inside the DB
+ * @data : server context
+ * Returns : FAILURE/SUCCESS
+**/
+
+static int eap_noob_db_entry(struct eap_noob_serv_context *data)
+{
+	char query[1500] = {0}; //TODO : replace it with dynamic allocation
+	noob_json_t * ver_arr = NULL;
+	noob_json_t * csuite_arr = NULL;
+	struct eap_noob_peer_data * peer_attr = data->peer_attr;
+
+	wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s",__func__);
+
+        if((ver_arr = eap_noob_prepare_vers_arr(data)) == NULL)
+                 return FAILURE;
+
+        if((csuite_arr = eap_noob_prepare_csuites_arr(data)) == NULL){
+		os_free(ver_arr);
+                return FAILURE;
+	}
+
+	snprintf(query,1500,"INSERT INTO %s ( PeerID, Verp,Vers, serv_state, Csuitep, Csuites,Dirp, Dirs,nonce_serv,nonce_peer, PeerInfo,ServInfo," 
+			"SharedSecret, Noob, Hoob, OOB_RECEIVED_FLAG,MINSLP_count, pub_key_serv, pub_key_peer, kms, kmp, kz,DevUpdate)"
+			"VALUES ( '%s',%d ,'%s', %d, %d, '%s', %d, %d, '%s','%s', '%s','%s','%s','%s','%s', %d, %d, '%s', '%s', '%s', '%s', '%s',%d)",
+			data->db_table_name, peer_attr->peerID_gen, peer_attr->version,eap_noob_json_dumps(ver_arr, JSON_COMPACT),
+			peer_attr->serv_state, peer_attr->cryptosuite,eap_noob_json_dumps(csuite_arr, JSON_COMPACT),
+			peer_attr->dir,data->server_attr->dir,
+			peer_attr->kdf_nonce_data->nonce_serv_b64,peer_attr->kdf_nonce_data->nonce_peer_b64, peer_attr->peer_info,
+			data->server_attr->serv_info, 
+			peer_attr->ecdh_exchange_data->shared_key_b64,"","",0,peer_attr->minslp_count,
+			(eap_noob_json_dumps(peer_attr->ecdh_exchange_data->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER)),
+			(eap_noob_json_dumps(peer_attr->ecdh_exchange_data->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER)),"","","",0);
+
+	printf("QUERY = %s\n",query);
+	
+	os_free(ver_arr);
+	os_free(csuite_arr);
+	
+	if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
+		//sqlite3_close(data->servDB);
+		wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
+		//TODO: free data here.
+		return FAILURE;
+	}	
+
+	wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s",__func__);
+	return SUCCESS;
+}
+
+static int eap_noob_change_state(struct eap_noob_serv_context *data, int state)
+{
+	data->peer_attr->serv_state = state;
+
+	return SUCCESS;
+}
+
 
 
 static int eap_noob_parse_NAI(struct eap_noob_serv_context * data, int len)
@@ -1307,7 +1363,7 @@ static int eap_noob_serv_ctxt_init( struct eap_noob_serv_context * data, struct 
 
 			if(data->peer_attr->err_code == NO_ERROR){
 				data->peer_attr->next_req = 
-				eap_noob_get_next_req(data->peer_attr);		
+				eap_noob_get_next_req(data);		
 			}
 
 			if(data->peer_attr->serv_state == UNREG ||

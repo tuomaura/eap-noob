@@ -60,7 +60,7 @@ module.exports = function(app, passport) {
 		var parseJson;
 		var devInfoParam = '%' + device_info + '%';
 		db = new sqlite3.Database(conn_str);
-		db.all('SELECT PeerID, PeerInfo FROM peers_connected where peerInfo LIKE ? AND serv_state = ? AND userName IS NULL', devInfoParam, 1, function(err,rows){ //check for error conditions too
+		db.all('SELECT PeerID, PeerInfo FROM peers_connected where peerInfo LIKE ? AND serv_state = ? AND UserName IS NULL', devInfoParam, 1, function(err,rows){ //check for error conditions too
 			db.close();
 			if(!err){
 				rows.forEach(function(row) {
@@ -77,6 +77,7 @@ module.exports = function(app, passport) {
 				console.log(JSON.stringify(deviceDetails));	
 				res.send(JSON.stringify(deviceDetails));
 			}else{
+				console.log("Some error" + err);
 				res.send(JSON.stringify(deviceDetails));
 				
 			}

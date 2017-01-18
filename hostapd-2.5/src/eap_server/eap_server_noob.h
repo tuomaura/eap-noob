@@ -166,7 +166,7 @@ typedef json_error_t 	noob_json_error_t;
 				kz TEXT,\
 				pub_key_serv TEXT,\
 				pub_key_peer TEXT,\
-				UserName TEXT,\
+				UserName TEXT DEFAULT NULL,\
 				DevUpdate INTEGER ,\
 				sleepTime UNSIGNED BIG INT,\
 				errorCode INTEGER)" 
@@ -285,6 +285,7 @@ struct eap_noob_peer_data{
 	char * mac;
 	char * user_info;
 	Boolean record_present;
+	Boolean hint_required;
 
 	enum eap_noob_err_code err_code;
 	
@@ -358,5 +359,4 @@ static noob_json_t * eap_noob_prepare_vers_arr(const struct eap_noob_serv_contex
 static noob_json_t * eap_noob_prepare_csuites_arr(const struct eap_noob_serv_context * data);
 static void eap_noob_set_done(struct eap_noob_serv_context *,u8 );
 static void eap_noob_set_success(struct eap_noob_serv_context *, u8);
-
 #endif 
