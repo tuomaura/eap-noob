@@ -60,7 +60,9 @@ module.exports = function(app, passport) {
 		var parseJson;
 		var devInfoParam = '%' + device_info + '%';
 		db = new sqlite3.Database(conn_str);
-		db.all('SELECT PeerID, PeerInfo FROM peers_connected where peerInfo LIKE ? AND serv_state = ? AND UserName IS NULL', devInfoParam, 1, function(err,rows){ //check for error conditions too
+		//db.all('SELECT PeerID, PeerInfo FROM peers_connected where peerInfo LIKE ? AND serv_state = ? AND UserName IS NULL', devInfoParam, 1, function(err,rows){ //check for error conditions too
+
+		db.all('SELECT p.PeerID, p.PeerInfo FROM peers_connected p where p.peerInfo LIKE ? AND p.serv_state = ? AND p.UserName IS NULL AND p.PeerID NOT IN (SELECT d.PeerID FROM devices d WHERE d.UserName = ?)', devInfoParam, 1,req.user.username, function(err,rows){ //check for error conditions too
 			db.close();
 			if(!err){
 				rows.forEach(function(row) {
@@ -192,7 +194,7 @@ module.exports = function(app, passport) {
 						deviceDetails[j].peer_num = parseJson1['PeerSNum'];
 						//deviceDetails[j].dev_update = dev_status[parseInt(row1.DevUpdate)];
 						deviceDetails[j].noob = row1.Noob;
-						deviceDetails[j].hoob = row1.Hoob;
+  						deviceDetails[j].hoob = row1.Hoob;
 						if(row1.errorCode){
 							deviceDetails[j].state_num = '0';
 							deviceDetails[j].state = error_info[parseInt(row.errorCode)];
