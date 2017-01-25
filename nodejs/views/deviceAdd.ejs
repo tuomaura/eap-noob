@@ -201,13 +201,17 @@ function getDevices(){
 	url_str = url_str + "/getDevices?DeviceInfo=" + device_info; 
         var xhttp = new XMLHttpRequest();
   	xhttp.onreadystatechange = function() {
+                
     		if (xhttp.readyState == 4 && xhttp.status == 200) {
-			var obj = JSON.parse(xhttp.responseText)
-			for(i = 0; i < obj.length; i++){
-                        	createDiv(obj[i]);			
+                        if(xhttp.responseURL.toString().includes("/getDevices")){
+				var obj = JSON.parse(xhttp.responseText)
+				for(i = 0; i < obj.length; i++){
+                        		createDiv(obj[i]);			
+				}
+				setTimeout(stopLoading, 1000);
+			}else{
+				window.location = xhttp.responseURL.toString();
 			}
-			setTimeout(stopLoading, 1000);
-			
     		}
   	};
   	xhttp.open("GET", url_str, true);

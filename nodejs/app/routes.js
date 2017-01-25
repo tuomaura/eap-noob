@@ -53,7 +53,8 @@ module.exports = function(app, passport) {
         if(len != 1 || device_info == undefined)
         {
 		console.log("Its wrong Query");
-		res.json({"error":"Wrong Query."});
+		//res.json({"error":"Wrong Query."});
+                res.render('deviceAdd.ejs',{url : configDB.url});
         }else{
 		var deviceDetails = new Array();
 		var i= 0;
@@ -88,7 +89,7 @@ module.exports = function(app, passport) {
     });
 
     
-    app.get('/insertDevice', function(req, res) {
+    app.get('/insertDevice',isLoggedIn,function(req, res) {
     	//console.log(req);
         var peer_id = req.query.PeerId;
         var queryObject = url.parse(req.url,true).query;
@@ -141,7 +142,7 @@ module.exports = function(app, passport) {
 	}
     });
 
-    app.get('/python', function(req, res) {
+    app.get('/python',isLoggedIn, function(req, res) {
 
         // render the page and pass in any flash data if it exists
         //console.log(req.session.returnTo)i;
@@ -328,7 +329,7 @@ module.exports = function(app, passport) {
      	res.redirect('/profile');
        }
     });
-    app.get('/stateUpdate', function(req, res) {
+    app.get('/stateUpdate',isLoggedIn, function(req, res) {
         var peer_id = req.query.PeerId;
         var state = req.query.State;
         var queryObject = url.parse(req.url,true).query;
@@ -352,7 +353,7 @@ module.exports = function(app, passport) {
 	}
     });
 
-    app.get('/deleteDeviceTemp', function(req, res) {
+    app.get('/deleteDeviceTemp',isLoggedIn, function(req, res) {
         var peer_id = req.query.PeerId;
         var queryObject = url.parse(req.url,true).query;
         var len = Object.keys(queryObject).length;
