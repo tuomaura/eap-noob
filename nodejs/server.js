@@ -58,11 +58,11 @@ require('./app/routes.js')(app, passport); // load our routes and pass in our ap
   	db.close();
   });
 
-https.createServer(options, app).listen(8080, function () {
+/*https.createServer(options, app).listen(8080, function () {
    console.log('Started!');
-});
+});*/
 
 
-//app.listen(port);
+app.listen(port);
 
 console.log('App is running on port ' + port);

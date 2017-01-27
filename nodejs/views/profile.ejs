@@ -125,6 +125,7 @@
 			 <strong id = <%=id_val%> value1 = <%=deviceInfo[j].peer_id%> value2 = <%=deviceInfo[j].state_num%> >Device Status: <%= deviceInfo[j].state %></strong><br>
 			 <div> </div>
 			 <button onclick="openNav(this)" value1 = <%=deviceInfo[j].noob%> value2 = <%=deviceInfo[j].hoob%> value3 = <%=deviceInfo[j].peer_id%>>QR Code</button>
+			 <button onclick="sendNFC(this)" value1 = <%=deviceInfo[j].noob%> value2 = <%=deviceInfo[j].hoob%> value3 = <%=deviceInfo[j].peer_id%>>NFC Send</button>
 			 <button onclick="deleteDeviceTemp(this)" value = <%=deviceInfo[j].peer_id%>>Remove</button> 
                     </p>
             </div>
@@ -158,6 +159,13 @@
 </div>
 
 <script>
+
+function sendNFC(btn) {
+        var url_str = "<%=url%>";
+        var val = url_str + "/?PeerID=" + btn.getAttribute("value3")+"&Noob=" + btn.getAttribute("value1") + "&Hoob=" + btn.getAttribute("value2");
+        Android.sendOOB(val);
+}
+
 function UpdateSoftware(peer_id){
 
 }
@@ -359,8 +367,8 @@ callTimers();
 /* Open when someone clicks on the span element */
 function openNav(btn) {
     document.getElementById("myNav").style.width = "100%";
-    
-    var val = "https://127.0.0.1:8080/?PeerID="+btn.getAttribute("value3")+"&Noob=" + btn.getAttribute("value1") + "&Hoob=" + btn.getAttribute("value2");
+    var url_str = "<%=url%>";
+    var val = url_str + "/?PeerID=" + btn.getAttribute("value3")+"&Noob=" + btn.getAttribute("value1") + "&Hoob=" + btn.getAttribute("value2");
     var overlay = document.getElementById("overlay");
     overlay.setAttribute("style", "background-color: white;")
     var content = document.createElement('div');
