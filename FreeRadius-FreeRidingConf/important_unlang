@@ -1,0 +1,53 @@
+CREATE TABLE logg(
+   ID INT PRIMARY KEY        NOT NULL,
+   CalledStationId           TEXT    NOT NULL,
+   NasPortId                 TEXT    NOT NULL
+);
+
+pre-proxy {
+if (request:called-Station-Id == "6C-19-8F-83-C2-90:Noob2"|| request:Called-Station-Id == "6C-19-8F-83-C2-80:Noob1") {
+    # keyword "update"
+
+    # followed by instructions to add the Reply-Message
+    # attribute to the "reply" list, with contents
+    # "Hello, bob"
+    update proxy-request {
+        NAS-Identifier := "%{sql:SELECT NasPortId FROM logg WHERE CalledStationId = '%{called-Station-Id}'}"
+    }
+}
+else{
+    #echo "Hello here" 
+    update proxy-request {
+        NAS-Identifier := 56
+    }
+
+}
+}
+
+pre-proxy {
+
+if ("%{sql:SELECT count(*) FROM logg WHERE CalledStationId = '%{called-Station-Id}'}" == 1) {
+
+    # keyword "update"
+
+    # followed by instructions to add the Reply-Message
+    # attribute to the "reply" list, with contents
+    # "Hello, bob"
+    update proxy-request {
+        NAS-Identifier := "%{sql:SELECT NasPortId FROM logg WHERE CalledStationId = '%{called-Station-Id}'}"
+    }
+}
+}
+
+pre-proxy {
+
+    # keyword "update"
+
+    # followed by instructions to add the Reply-Message
+    # attribute to the "reply" list, with contents
+    # "Hello, bob"
+    update proxy-request {
+        NAS-Identifier := "%{sql:SELECT NasPortId FROM logg WHERE CalledStationId = '%{called-Station-Id}'}"
+    }
+}
+
