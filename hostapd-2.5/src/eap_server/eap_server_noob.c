@@ -1006,7 +1006,7 @@ static int eap_noob_create_db(struct eap_noob_serv_context * data)
 
 	if(SQLITE_OK != sqlite3_open_v2(data->db_name,&data->servDB,SQLITE_OPEN_READWRITE,NULL)){
 
-		wpa_printf(MSG_ERROR, "EAP-NOOB: No DB found,new DB will be created");
+		wpa_printf(MSG_ERROR, "EAP-NOOB: No DB found, new DB will be created");
 		
 		if(SQLITE_OK != sqlite3_close(data->servDB)){
                         wpa_printf(MSG_DEBUG, "EAP-NOOB:Error closing DB before creating table");
@@ -1334,9 +1334,9 @@ static int eap_noob_serv_ctxt_init( struct eap_noob_serv_context * data, struct 
 
 		/* Setup DB */
 		/* DB file name for the server */
-		data->db_name = (char *) os_strdup("peer_connection_db");
+		data->db_name = (char *) os_strdup(DB_NAME);
 		/* DB Table name */
-		data->db_table_name = (char *) os_strdup("peers_connected");
+		data->db_table_name = (char *) os_strdup(PEER_TABLE);
 
 		
 		if (sm->identity) {

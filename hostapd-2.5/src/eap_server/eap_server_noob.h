@@ -138,9 +138,9 @@ typedef json_error_t 	noob_json_error_t;
 #define TYPE_HINT_PARAMS        (PEERID_RCVD|HINT_RCVD)
 
 #define CONF_PARAMS             (DIRECTION_RCVD|CSUITE_RCVD|VERSION_RCVD|SERV_NAME_RCVD|SERV_URL_RCVD)
-
+#define DB_NAME			"peer_connection_db"
 #define DEVICE_TABLE		"devices"
-
+#define PEER_TABLE		"peers_connected"
 /*SQL query to create peer connection database*/
 #define CREATE_CONNECTION_TABLE "CREATE TABLE IF NOT EXISTS peers_connected(\
                                 PeerID TEXT PRIMARY KEY,\

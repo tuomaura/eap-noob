@@ -7,13 +7,12 @@
  */
 
 #include "utils/includes.h"
-
+#include <sqlite3.h>
 #include "utils/common.h"
 #include "utils/wpabuf.h"
 #include "crypto/md5.h"
 #include "crypto/crypto.h"
 #include "radius.h"
-
 
 /**
  * struct radius_msg - RADIUS message structure for new and parsed messages
@@ -649,6 +648,78 @@ struct radius_attr_hdr *radius_msg_add_attr(struct radius_msg *msg, u8 type,
 	return attr;
 }
 
+//raghu
+#if 1
+void radius_store_record(struct  radius_msg * msg, int len)
+{
+
+
+	char record[4][128] = {0};
+	char * pos = NULL;
+	struct radius_hdr *hdr;
+	int curr = 0;
+	int end = 0;
+	unsigned char attr_id = 0;
+	unsigned char attr_len = 0;
+	unsigned char user_name_present = 0;
+	char * query = NULL;
+	char * sql_error = NULL;
+	char attr_count = 0;
+	hdr = (struct radius_hdr *) msg->buf->buf;
+	curr = 20; // code+ID+len+authenticator
+	pos = (char *) (wpabuf_mhead_u8(msg->buf) + sizeof(struct radius_hdr));
+	end = be_to_host16(hdr->length);
+	sqlite3 * servDB = NULL;
+	while(curr<end)
+	{
+		attr_id = *pos;
+		attr_len = *(pos+1);
+	
+
+		if(attr_id == 30 || attr_id == 31 || attr_id == 32)
+		{
+			memcpy(record[attr_id -30], pos+2, attr_len-2);
+			if(attr_id == 30 || attr_id == 31)
+				attr_count += attr_id; 
+		}
+		else if(attr_id == 1)
+		{
+			memcpy(record[3], pos+2, attr_len-2);
+			record[3][attr_len-1] = '\0';
+			if(0 != strcmp(record[3],"noob"))
+			{
+				record[3][attr_len-5] = '\0';
+				user_name_present = 1;
+			}
+		}
+		pos += attr_len;
+		curr += attr_len;
+	}
+
+
+	// store only if called-station-id, calling-station-id and username are present.
+	if (attr_count == 61 && user_name_present == 1 )
+	{
+		if(NULL != ( query = (char *)malloc(500)))
+		{
+			snprintf(query, 500, "INSERT INTO radius (user_name, called_st_id, calling_st_id, NAS_id) VALUES ('%s','%s','%s','%s')", 
+				record[3], record[0],record[1], record[2]);
+
+			if(SQLITE_OK == sqlite3_open_v2(DB_NAME, &servDB,SQLITE_OPEN_READWRITE,NULL))
+			{
+        			if(SQLITE_OK != sqlite3_exec(servDB, query,NULL, NULL, &sql_error))
+					printf("SQL ERROR : %s\n", sql_error);
+                		sqlite3_close(servDB);
+			} 
+			free(query);
+		}
+
+	}
+	//printf("First : %s Second : %s Third : %s Fourth : %s \n ", record[0], record[1], record[2], record[3]);
+}
+
+#endif
+
 
 /**
  * radius_msg_parse - Parse a RADIUS message
@@ -672,6 +743,7 @@ struct radius_msg * radius_msg_parse(const u8 *data, size_t len)
 
 	hdr = (struct radius_hdr *) data;
 
+	
 	msg_len = be_to_host16(hdr->length);
 	if (msg_len < sizeof(*hdr) || msg_len > len) {
 		wpa_printf(MSG_INFO, "RADIUS: Invalid message length");

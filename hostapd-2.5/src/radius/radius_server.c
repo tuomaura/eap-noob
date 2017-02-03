@@ -35,6 +35,8 @@
  */
 #define RADIUS_MAX_MSG_LEN 3000
 
+
+//static void radius_store_record(struct  radius_msg * , int );
 static const struct eapol_callbacks radius_server_eapol_cb;
 
 struct radius_client;
@@ -1257,6 +1259,7 @@ static void radius_server_receive_auth(int sock, void *eloop_ctx,
 	os_free(buf);
 	buf = NULL;
 
+	radius_store_record(msg,len);
 	if (wpa_debug_level <= MSG_MSGDUMP) {
 		radius_msg_dump(msg);
 	}
@@ -1368,7 +1371,6 @@ static void radius_server_receive_acct(int sock, void *eloop_ctx,
 
 	os_free(buf);
 	buf = NULL;
-
 	if (wpa_debug_level <= MSG_MSGDUMP) {
 		radius_msg_dump(msg);
 	}
@@ -1820,7 +1822,28 @@ radius_server_init(struct radius_server_conf *conf)
 	} else {
 		data->acct_sock = -1;
 	}
+//raghu
+#if 1
 
+	sqlite3 * servDB;
+	char * sql_error = NULL;
+
+ 	if(SQLITE_OK != sqlite3_open_v2(DB_NAME, &servDB, SQLITE_OPEN_READWRITE,NULL)){
+
+                printf("RADIUS: No DB found,new DB willbe created\n");
+
+                if(SQLITE_OK != sqlite3_open(DB_NAME, &servDB)){
+                        printf("EAP-NOOB: NEW DB creation failed\n");
+                        return 0;
+                }
+
+                if(SQLITE_OK != sqlite3_exec(servDB, CREATE_RADIUS_TABLE, NULL,NULL, &sql_error)){
+                        printf("radius creation failed %s\n",sql_error);
+                }
+
+        }
+
+#endif
 	return data;
 }
 
