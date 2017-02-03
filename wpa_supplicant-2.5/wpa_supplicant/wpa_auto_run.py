@@ -23,7 +23,7 @@ target_file = config_file+'.tmp'
 noob_conf_file='eapoob.conf'
 keyword = 'Direction'
 oob_out_file = '/tmp/noob_output.txt'
-
+oob_file = 'file.txt'
 
 def change_config(peerID):
 
@@ -105,6 +105,26 @@ def parse_qr_code(url):
 
 	change_config(params['PeerID'][0])
 
+def read_nfc_card(arg):
+	no_message = True
+	print("In new thread")
+	cmd = "./read_through_nfc >"+oob_out_file
+	#runbash(cmd)
+	subprocess.Popen(cmd,shell=True)
+
+	while no_message:
+        	time.sleep(2)
+        	oob_output = open(oob_out_file,'r')
+        	for line in oob_output:
+                	if 'Noob' in line and 'Hoob' in line and 'PeerID' in line:
+                        	no_message = False
+        	oob_output.close()
+
+	subprocess.Popen("sudo killall read_through_nfc",shell=True)
+	cmd = 'rm -f '+oob_out_file
+	runbash(cmd)
+	print (line)
+	parse_qr_code(line)
 
 def read_qr_code(arg):
 	no_message = True
@@ -134,7 +154,7 @@ def update_file(signum, frame):
 	con = sqlite3.connect(db_name)
 	c = con.cursor()
 
-	file = open("file.txt", "wb")
+	file = open(oob_file, "wb")
 	for row in c.execute('select ssid,ServInfo,PeerID,Noob,Hoob,err_code from connections where show_OOB = 1'):
 		#print (row[0] + '\n')
 		servinfo = json.loads(row[1])
@@ -180,10 +200,11 @@ def prepare(iface):
 	#now start your own wpa_supplicant
 	
 	print ("start wpa_supplicant")
-	cmd = 'rm -f '+config_file+' touch '+config_file+' ; rm -f '+db_name
+	cmd = 'rm -f '+config_file+' touch '+config_file+' ; rm -f '+db_name+' ; rm -f '+oob_file
+
 	runbash(cmd)		
 	conf_file = open(config_file,'w')
-	conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=120\n\n")
+	conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=12000\n\n")
 	conf_file.close()
 	cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant "
 	subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
@@ -267,16 +288,36 @@ def check_if_table_exists():
 		if out is not None and out[0] == conn_tbl:
 			return
 		time.sleep(3)
+
+def send_via_NFC(path):
+	print("Sending through NFC")
+	while(False == os.path.isfile(oob_file)):
+		pass	
+	time.sleep(1)	
+	fd = open(oob_file, "r")
+	line = fd.readline().split(',')
+	fd.close()			
+	
+	print(line)
+	url = line[2].split('&')
+	new_url = url[0]+'\\&'+url[1]+'\\&'+url[2]
+	cmd = 'python '+path+'examples/beam.py --mode i send link '+ new_url +'" oob URL "'
+	print (cmd)
+	ret = runbash(cmd)
+	print (ret)
+
 def main():
 
 	interface=None
 	no_result=0
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-i', '--interface', dest='interface')
+	parser.add_argument('-i', '--interface', dest='interface',help='Name of the wireless interface')
+	parser.add_argument('-p', '--path', dest='path', help='absolute path to home directory of nfcpy')
+	parser.add_argument('-n','--nfc', dest='nfc', action='store_const',const='nfc', help='oob message transfer through nfc')
 	args = parser.parse_args()
 
 	if args.interface is None:
-		print('Usage:wpa_auto_run.py -i <interface>')
+		print('Usage:wpa_auto_run.py -i <interface> [-p <path>] [-n]')
 		return
 
 	if not(check_wpa()):
@@ -304,10 +345,18 @@ def main():
 
 	if direction is '2':
 		print("Server to peer direction")
-		_thread.start_new_thread(read_qr_code,(None,))
+		if args.nfc == 'nfc':
+			print("through nfc")
+			_thread.start_new_thread(read_nfc_card,(None,))
+		else:  
+			_thread.start_new_thread(read_qr_code,(None,))
 	elif direction is '1':
 		print("Peer to server direction")
-		launch_browser()
+		if args.path is None:
+			update_file(None,None)
+			launch_browser()
+		else:
+			_thread.start_new_thread(send_via_NFC,(args.path,))
 	else:
 		print("No direction specified")
 		terminate_supplicant()
@@ -324,7 +373,7 @@ def main():
 	print ("***************************************EAP AUTH SUCCESSFUL *****************************************************")	
 	cmd = 'sudo ifconfig '+interface+' 0.0.0.0 up ; dhclient '+interface   
 	runbash(cmd)
-	webbrowser.open_new_tab('https://www.youtube.com')
+	webbrowser.open_new_tab('https://www.youtube.com/watch?v=YlHHTmIkdis')
 
 if __name__=='__main__':
     main()
