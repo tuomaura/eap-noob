@@ -102,11 +102,14 @@ module.exports = function(app, passport) {
     	   console.log('req received');
 
 	    db = new sqlite3.Database(conn_str);
-            db.get('SELECT count(*) AS rowCount, PeerID, serv_state, PeerInfo, errorCode FROM peers_connected WHERE PeerID = ?', peer_id, function(err, row) {
+            db.get('SELECT count(*) AS rowCount, PeerID, serv_state, PeerInfo, errorCode FROM peers_connected WHERE PeerID = ? AND UserName IS NULL', peer_id, function(err, row) {
             	
                 if (err){res.json({"status": "failed"});}
 		else if(row.rowCount != 1) {console.log(row.length);res.json({"status": "refresh"});}
-		else {
+		else{
+			db.get('SELECT a.accessLevel AS al1, b.accessLevel AS al2 FROM roleAccessLevel a,fqdnACLevel b WHERE b.fqdn = (SELECT NAS_id FROM radius WHERE user_name = ?) and a.role = (SELECT c.role FROM users c WHERE username = ?)', peer_id,req.user.username, function(err, row1) {
+		if(err){res.json({"status": "failed"});}
+		else if(row1.al1 >= row1.al2){
 
 			var options = {
   				mode: 'text',
@@ -137,6 +140,9 @@ module.exports = function(app, passport) {
 				}
         		});
 		}
+		
+		else{res.json({"status":"deny"});}
+});}
             });
 
 	}

@@ -172,8 +172,13 @@ function postAddDevice(peer_id){
     	
    				}	
 			}
+			else if (obj.status == "deny"){
+				div_alert.innerHTML = "Permission Denied ! Please contact Admin.";
+				div_alert.style.display='block';
+				setTimeout(hideAlert, 6000);				
+			}
 			else{
-				div_alert.innerHTML = "Device Adding Unsuccessful";
+				div_alert.innerHTML = "Device Adding Unsuccessful.";
 				div_alert.style.display='block';
 				setTimeout(hideAlert, 6000);				
 			}
