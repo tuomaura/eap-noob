@@ -294,7 +294,7 @@ module.exports = function(app, passport) {
 	});
 
     // process QR-code
-    app.get('/QRcode/',isLoggedIn, function (req, res) {
+    app.get('/sendOOB/',isLoggedIn, function (req, res) {
         var peer_id = req.query.PeerId;
         var noob = req.query.Noob;
         var hoob = req.query.Hoob;
@@ -323,18 +323,26 @@ module.exports = function(app, passport) {
         }else{
 
      	   db = new sqlite3.Database(conn_str);
-     	
-            db.serialize(function() {
-       		 var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, userName = ?, serv_state = ? WHERE PeerID = ?");
-       		 stmt.run(1234,noob,hoob,req.user.username,2,peer_id);
-		 stmt.finalize();
-    	    });
 
-	db.close();
-	req.flash('profileMessage','Received Successfully');
-     	res.redirect('/profile');
+	   db.get('SELECT a.accessLevel AS al1, b.accessLevel AS al2 FROM roleAccessLevel a,fqdnACLevel b WHERE b.fqdn = (SELECT NAS_id FROM radius WHERE user_name = ?) and a.role = (SELECT c.role FROM users c WHERE username = ?)', peer_id,req.user.username, function(err, row1) {
+		if(err){res.json({"ProfileMessage": "Failed because of Error!"});}
+		else if(row1.al1 >= row1.al2){
+     	
+            		db.serialize(function() {
+       		 		var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, userName = ?, serv_state = ? WHERE PeerID = ?");
+       		 		stmt.run(1234,noob,hoob,req.user.username,2,peer_id);
+		 		stmt.finalize();
+    	    		});
+
+			db.close();
+			req.flash('profileMessage','Received Successfully');
+     			res.redirect('/profile');
+               }
+	       else{req.flash('profileMessage','Access denied! Please contact admin.'); res.redirect('/profile'); }
+           });
        }
     });
+
     app.get('/stateUpdate',isLoggedIn, function(req, res) {
         var peer_id = req.query.PeerId;
         var state = req.query.State;
