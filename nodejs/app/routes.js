@@ -107,7 +107,7 @@ module.exports = function(app, passport) {
                 if (err){res.json({"status": "failed"});}
 		else if(row.rowCount != 1) {console.log(row.length);res.json({"status": "refresh"});}
 		else{
-			db.get('SELECT a.accessLevel AS al1, b.accessLevel AS al2 FROM roleAccessLevel a,fqdnACLevel b WHERE b.fqdn = (SELECT NAS_id FROM radius WHERE user_name = ?) and a.role = (SELECT c.role FROM users c WHERE username = ?)', peer_id,req.user.username, function(err, row1) {
+			db.get('SELECT a.accessLevel AS al1, b.accessLevel AS al2 FROM roleAccessLevel a,fqdnACLevel b WHERE (b.fqdn = (SELECT NAS_id FROM radius WHERE user_name = ?)  OR b.fqdn = (SELECT d.fqdn FROM roleBasedAC d WHERE calledSID = (SELECT called_st_id FROM radius WHERE user_name = ?))) and a.role = (SELECT c.role FROM users c WHERE username = ?)', peer_id,peer_id,req.user.username, function(err, row1) {
 		if(err){res.json({"status": "failed"});}
 		else if(row1.al1 >= row1.al2){
 
@@ -324,7 +324,7 @@ module.exports = function(app, passport) {
 
      	   db = new sqlite3.Database(conn_str);
 
-	   db.get('SELECT a.accessLevel AS al1, b.accessLevel AS al2 FROM roleAccessLevel a,fqdnACLevel b WHERE b.fqdn = (SELECT NAS_id FROM radius WHERE user_name = ?) and a.role = (SELECT c.role FROM users c WHERE username = ?)', peer_id,req.user.username, function(err, row1) {
+	   db.get('SELECT a.accessLevel AS al1, b.accessLevel AS al2 FROM roleAccessLevel a,fqdnACLevel b WHERE (b.fqdn = (SELECT NAS_id FROM radius WHERE user_name = ?) OR b.fqdn = (SELECT d.fqdn FROM roleBasedAC d WHERE calledSID = (SELECT called_st_id FROM radius WHERE user_name = ?))) and a.role = (SELECT c.role FROM users c WHERE username = ?)', peer_id,peer_id,req.user.username, function(err, row1) {
 		if(err){res.json({"ProfileMessage": "Failed because of Error!"});}
 		else if(row1.al1 >= row1.al2){
      	
