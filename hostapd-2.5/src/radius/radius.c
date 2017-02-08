@@ -654,6 +654,8 @@ void radius_store_record(struct  radius_msg * msg, struct eap_sm * sm)
 {
 
 
+   if(sm->currentMethod == EAP_TYPE_NOOB && sm->respId == 0){
+
 	char record[4][128] = {0};
 	char * pos = NULL;
 	struct radius_hdr *hdr;
@@ -661,16 +663,16 @@ void radius_store_record(struct  radius_msg * msg, struct eap_sm * sm)
 	int end = 0;
 	unsigned char attr_id = 0;
 	unsigned char attr_len = 0;
-	unsigned char user_name_present = 0;
-	char * query = NULL;
-	char * sql_error = NULL;
+	//unsigned char user_name_present = 0;
+	//char * query = NULL;
+	//char * sql_error = NULL;
 	char attr_count = 0;
         int temp_len;
 	hdr = (struct radius_hdr *) msg->buf->buf;
 	curr = 20; // code+ID+len+authenticator
 	pos = (char *) (wpabuf_mhead_u8(msg->buf) + sizeof(struct radius_hdr));
 	end = be_to_host16(hdr->length);
-	sqlite3 * servDB = NULL;
+	//sqlite3 * servDB = NULL;
 	while(curr<end)
 	{
 		attr_id = *pos;
@@ -690,8 +692,9 @@ void radius_store_record(struct  radius_msg * msg, struct eap_sm * sm)
 			record[3][attr_len-1] = '\0';
 			if(0 != strcmp(record[3],"noob"))
 			{
-				record[3][attr_len-5] = '\0';
-				user_name_present = 1;
+				return;
+				//record[3][attr_len-5] = '\0';
+				//user_name_present = 1;
 			}
 		}
 		pos += attr_len;
@@ -718,7 +721,12 @@ void radius_store_record(struct  radius_msg * msg, struct eap_sm * sm)
         memset(sm->rad_attr->nasId, '\0', temp_len +1);
 	strncpy(sm->rad_attr->nasId,record[2],temp_len);
 
-        printf("***********Values: %s---%s-----%s\n", sm->rad_attr->calledSID,sm->rad_attr->callingSID,sm->rad_attr->nasId);
+	
+
+        //printf("***********Method Type:%d\n", sm->currentMethod);
+
+
+        //printf("***********Values: %s---%s-----%s\n", sm->rad_attr->calledSID,sm->rad_attr->callingSID,sm->rad_attr->nasId);
 #if 0
 	// store only if called-station-id, calling-station-id and username are present.
 	if (attr_count == 61 && user_name_present == 1 )
@@ -740,6 +748,7 @@ void radius_store_record(struct  radius_msg * msg, struct eap_sm * sm)
 	}
 #endif
 	//printf("First : %s Second : %s Third : %s Fourth : %s \n ", record[0], record[1], record[2], record[3]);
+	}
 }
 
 #endif

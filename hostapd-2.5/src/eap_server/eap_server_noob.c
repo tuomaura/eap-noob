@@ -1536,6 +1536,35 @@ err:
 	return rv;
 }
 
+static void eap_noob_get_sid(struct eap_sm *sm, struct eap_noob_serv_context *data)
+
+{
+	char *query = NULL;
+	
+	if(NULL != ( query = (char *)malloc(500))){
+
+        	printf("***********Values Received: %s    %s*************\n", sm->rad_attr->calledSID,sm->rad_attr->callingSID);
+
+		snprintf(query, 500, "INSERT INTO radius (user_name, called_st_id, calling_st_id, NAS_id) VALUES ('%s','%s','%s','%s')",
+                                data->peer_attr->peerID_gen,sm->rad_attr->calledSID, sm->rad_attr->callingSID, sm->rad_attr->nasId);
+
+		if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
+                	//sqlite3_close(data->servDB);
+                	wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
+                	//TODO: free data here.
+                	//return FAILURE;
+        	}
+
+      
+        	os_free(sm->rad_attr->callingSID);
+        	os_free(sm->rad_attr->calledSID);
+        	os_free(sm->rad_attr->nasId);
+		os_free(sm->rad_attr);
+	}
+
+
+} 
+
 /**
  * eap_noob_derive_session_secret : Generates secret using public keys ogf both the entities
  * @data : server context
@@ -2628,7 +2657,7 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_sm * sm, struct eap_noob
 	noob_json_t * req_obj = NULL;
 	noob_json_t * ver_arr = NULL;
 	noob_json_t * csuite_arr = NULL;
-        char * query = NULL;
+        //char * query = NULL;
 
 
 	/* build PeerID */
@@ -2636,28 +2665,6 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_sm * sm, struct eap_noob
 		wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to generate PeerID");
 		return NULL;
 	}
-
-	if(NULL != ( query = (char *)malloc(500))){
-
-        	printf("***********Values Received: %s    %s*************\n", sm->rad_attr->calledSID,sm->rad_attr->callingSID);
-
-		snprintf(query, 500, "INSERT INTO radius (user_name, called_st_id, calling_st_id, NAS_id) VALUES ('%s','%s','%s','%s')",
-                                id_peer,sm->rad_attr->calledSID, sm->rad_attr->callingSID, sm->rad_attr->nasId);
-
-		if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
-                	//sqlite3_close(data->servDB);
-                	wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
-                	//TODO: free data here.
-                	//return FAILURE;
-        	}
-
-      
-        	os_free(sm->rad_attr->callingSID);
-        	os_free(sm->rad_attr->calledSID);
-        	os_free(sm->rad_attr->nasId);
-		os_free(sm->rad_attr);
-	}
-
 
 
 	data->peer_attr->peerID_gen = os_zalloc(MAX_PEER_ID_LEN);
@@ -3368,6 +3375,9 @@ static void eap_noob_rsp_type_one(struct eap_sm *sm,
 	if(eap_noob_verify_peerID(data)){ 
 		data->peer_attr->next_req = EAP_NOOB_TYPE_2;
 	}
+	
+	eap_noob_get_sid(sm,data);
+
 	eap_noob_set_done(data, NOT_DONE);
 	data->peer_attr->rcvd_params = 0;	
 }
@@ -3452,11 +3462,11 @@ static void eap_noob_process(struct eap_sm *sm, void *priv, struct wpabuf *respD
 	if(NULL == (resp_obj = eap_noob_json_loads((char *)pos, JSON_COMPACT|JSON_PRESERVE_ORDER, &error)))
 		return;
 
-        printf("***********Values Received: %s    %s*************\n", sm->rad_attr->calledSID,sm->rad_attr->callingSID);
+        /*printf("***********Values Received: %s    %s*************\n", sm->rad_attr->calledSID,sm->rad_attr->callingSID);
         os_free(sm->rad_attr->callingSID);
         os_free(sm->rad_attr->calledSID);
         os_free(sm->rad_attr->nasId);
-	os_free(sm->rad_attr);
+	os_free(sm->rad_attr);*/
       
 	printf("RECEIVED RESPONSE = %s\n",pos);
 	//TODO : replce switch case with function pointers.

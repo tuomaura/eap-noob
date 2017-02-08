@@ -1074,7 +1074,9 @@ static int radius_server_request(struct radius_server_data *data,
 		client->counters.packets_dropped++;
 		return -1;
 	}
+
         
+	if(sess->eap->currentMethod == EAP_TYPE_NOOB && sess->eap->respId == 0)
 	radius_store_record(msg,sess->eap);//abcd
 
 	RADIUS_DUMP("Received EAP data", wpabuf_head(eap), wpabuf_len(eap));
