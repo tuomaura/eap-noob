@@ -103,6 +103,13 @@ struct eap_method {
 	u8 * (*getSessionId)(struct eap_sm *sm, void *priv, size_t *len);
 };
 
+struct radius_attr_eap{
+
+	char * calledSID;
+	char * callingSID;
+        char * nasId;
+};
+
 /**
  * struct eap_sm - EAP server state machine data
  */
@@ -215,6 +222,10 @@ struct eap_sm {
 #ifdef CONFIG_TESTING_OPTIONS
 	u32 tls_test_flags;
 #endif /* CONFIG_TESTING_OPTIONS */
+
+	/*For EAP-NOOB*/
+	struct radius_attr_eap * rad_attr;
+
 };
 
 int eap_user_get(struct eap_sm *sm, const u8 *identity, size_t identity_len,

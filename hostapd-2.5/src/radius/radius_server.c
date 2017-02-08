@@ -1074,6 +1074,8 @@ static int radius_server_request(struct radius_server_data *data,
 		client->counters.packets_dropped++;
 		return -1;
 	}
+        
+	radius_store_record(msg,sess->eap);//abcd
 
 	RADIUS_DUMP("Received EAP data", wpabuf_head(eap), wpabuf_len(eap));
 
@@ -1259,7 +1261,7 @@ static void radius_server_receive_auth(int sock, void *eloop_ctx,
 	os_free(buf);
 	buf = NULL;
 
-	radius_store_record(msg,len);
+
 	if (wpa_debug_level <= MSG_MSGDUMP) {
 		radius_msg_dump(msg);
 	}
@@ -1823,7 +1825,7 @@ radius_server_init(struct radius_server_conf *conf)
 		data->acct_sock = -1;
 	}
 //raghu
-#if 1
+#if 0
 
 	sqlite3 * servDB;
 	char * sql_error = NULL;

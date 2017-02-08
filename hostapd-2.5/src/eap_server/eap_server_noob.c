@@ -1025,6 +1025,15 @@ static int eap_noob_create_db(struct eap_noob_serv_context * data)
 			return FAILURE;
 		}
 
+		if(FAILURE == eap_noob_exec_query(CREATE_RADIUS_TABLE, NULL,NULL,data)){
+			//sqlite3_close(data->servDB);
+			wpa_printf(MSG_ERROR, "EAP-NOOB: connections Table creation failed");
+			//TODO: free data here.
+			return FAILURE;
+		}
+
+		
+
 	}else{
 
 		/*check for the peer ID inside the DB*/	
@@ -1393,6 +1402,7 @@ static void * eap_noob_init(struct eap_sm *sm)
 	struct eap_noob_serv_context * data;
 
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: INIT SERVER");
+
 	if(NULL == (data = os_zalloc( sizeof (struct eap_noob_serv_context))))
 	{
 		wpa_printf(MSG_DEBUG, "EAP-NOOB: INIT SERVER Fail to Allocate Memory");
@@ -2602,7 +2612,7 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_noob_serv_context *data,
  * Returns: Pointer to allocated EAP-Request packet, or NULL if not.
  **/
 
-static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context *data, u8 id)
+static struct wpabuf * eap_noob_req_type_one(struct eap_sm * sm, struct eap_noob_serv_context *data, u8 id)
 {
 	/* (Type=1,PeerId,CryptoSuites,Dirs,ServerInfo) */
 
@@ -2618,6 +2628,7 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context *data,
 	noob_json_t * req_obj = NULL;
 	noob_json_t * ver_arr = NULL;
 	noob_json_t * csuite_arr = NULL;
+        char * query = NULL;
 
 
 	/* build PeerID */
@@ -2625,6 +2636,29 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context *data,
 		wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to generate PeerID");
 		return NULL;
 	}
+
+	if(NULL != ( query = (char *)malloc(500))){
+
+        	printf("***********Values Received: %s    %s*************\n", sm->rad_attr->calledSID,sm->rad_attr->callingSID);
+
+		snprintf(query, 500, "INSERT INTO radius (user_name, called_st_id, calling_st_id, NAS_id) VALUES ('%s','%s','%s','%s')",
+                                id_peer,sm->rad_attr->calledSID, sm->rad_attr->callingSID, sm->rad_attr->nasId);
+
+		if(FAILURE == eap_noob_exec_query(query, NULL,NULL,data)){
+                	//sqlite3_close(data->servDB);
+                	wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
+                	//TODO: free data here.
+                	//return FAILURE;
+        	}
+
+      
+        	os_free(sm->rad_attr->callingSID);
+        	os_free(sm->rad_attr->calledSID);
+        	os_free(sm->rad_attr->nasId);
+		os_free(sm->rad_attr);
+	}
+
+
 
 	data->peer_attr->peerID_gen = os_zalloc(MAX_PEER_ID_LEN);
 	strcat(data->peer_attr->peerID_gen, id_peer);
@@ -2718,7 +2752,7 @@ static struct wpabuf * eap_noob_buildReq(struct eap_sm *sm, void *priv, u8 id)
 			return eap_noob_err_msg(data,id);
 
 		case EAP_NOOB_TYPE_1:
-			return eap_noob_req_type_one(data, id); // 1st IE Request
+			return eap_noob_req_type_one(sm,data, id); // 1st IE Request
 
 		case EAP_NOOB_TYPE_2:
 			return eap_noob_req_type_two(data, id); // 2nd IE Request
@@ -3402,7 +3436,6 @@ static void eap_noob_process(struct eap_sm *sm, void *priv, struct wpabuf *respD
 
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: PROCESS SERVER");
 
-
 	struct eap_noob_serv_context *data = priv;
 	const u8 *pos;
 	size_t len;
@@ -3419,6 +3452,12 @@ static void eap_noob_process(struct eap_sm *sm, void *priv, struct wpabuf *respD
 	if(NULL == (resp_obj = eap_noob_json_loads((char *)pos, JSON_COMPACT|JSON_PRESERVE_ORDER, &error)))
 		return;
 
+        printf("***********Values Received: %s    %s*************\n", sm->rad_attr->calledSID,sm->rad_attr->callingSID);
+        os_free(sm->rad_attr->callingSID);
+        os_free(sm->rad_attr->calledSID);
+        os_free(sm->rad_attr->nasId);
+	os_free(sm->rad_attr);
+      
 	printf("RECEIVED RESPONSE = %s\n",pos);
 	//TODO : replce switch case with function pointers.
 	switch (data->peer_attr->recv_msg) {

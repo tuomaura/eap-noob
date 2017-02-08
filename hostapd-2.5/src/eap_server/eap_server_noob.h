@@ -172,7 +172,11 @@ typedef json_error_t 	noob_json_error_t;
 				errorCode INTEGER)" 
 
 
-
+#define CREATE_RADIUS_TABLE "CREATE TABLE IF NOT EXISTS radius(\
+                                        called_st_id TEXT,\
+                                        calling_st_id  TEXT,\
+                                        NAS_id TEXT,\
+                                        user_name TEXT PRIMARY KEY)"
 
 enum{COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW}; //Flag used during KDF and MAC generation
 enum {UNREG, WAITING, OOB, RECONNECT,REGISTERED};

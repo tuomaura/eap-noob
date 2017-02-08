@@ -13,7 +13,7 @@
 #include "crypto/md5.h"
 #include "crypto/crypto.h"
 #include "radius.h"
-
+#include <string.h>
 /**
  * struct radius_msg - RADIUS message structure for new and parsed messages
  */
@@ -650,7 +650,7 @@ struct radius_attr_hdr *radius_msg_add_attr(struct radius_msg *msg, u8 type,
 
 //raghu
 #if 1
-void radius_store_record(struct  radius_msg * msg, int len)
+void radius_store_record(struct  radius_msg * msg, struct eap_sm * sm)
 {
 
 
@@ -665,6 +665,7 @@ void radius_store_record(struct  radius_msg * msg, int len)
 	char * query = NULL;
 	char * sql_error = NULL;
 	char attr_count = 0;
+        int temp_len;
 	hdr = (struct radius_hdr *) msg->buf->buf;
 	curr = 20; // code+ID+len+authenticator
 	pos = (char *) (wpabuf_mhead_u8(msg->buf) + sizeof(struct radius_hdr));
@@ -678,6 +679,7 @@ void radius_store_record(struct  radius_msg * msg, int len)
 
 		if(attr_id == 30 || attr_id == 31 || attr_id == 32)
 		{
+			//memset(record[attr_id - 30], '\0', sizeof(record[attr_id - 30]));
 			memcpy(record[attr_id -30], pos+2, attr_len-2);
 			if(attr_id == 30 || attr_id == 31)
 				attr_count += attr_id; 
@@ -695,8 +697,29 @@ void radius_store_record(struct  radius_msg * msg, int len)
 		pos += attr_len;
 		curr += attr_len;
 	}
+        sm->rad_attr = (struct radius_attr_eap *) malloc(sizeof(struct radius_attr_eap));
 
+	temp_len = os_strlen(record[0]);
+	sm->rad_attr->calledSID = (char *)malloc(temp_len+1);
+        memset(sm->rad_attr->calledSID, '\0', temp_len +1);
+        strncpy(sm->rad_attr->calledSID,record[0],temp_len);
+	
+	
 
+	temp_len = os_strlen(record[1]);
+        //printf("**********************DEBUG LOG*************** %d---%s\n",temp_len,record[1]);
+	sm->rad_attr->callingSID = (char *)malloc(temp_len+1);
+        memset(sm->rad_attr->callingSID, '\0', temp_len +1);
+	strncpy(sm->rad_attr->callingSID,record[1],temp_len);
+
+	temp_len = os_strlen(record[2]);
+        //printf("**********************DEBUG LOG*************** %d---%s\n",temp_len,record[1]);
+	sm->rad_attr->nasId = (char *)malloc(temp_len+1);
+        memset(sm->rad_attr->nasId, '\0', temp_len +1);
+	strncpy(sm->rad_attr->nasId,record[2],temp_len);
+
+        printf("***********Values: %s---%s-----%s\n", sm->rad_attr->calledSID,sm->rad_attr->callingSID,sm->rad_attr->nasId);
+#if 0
 	// store only if called-station-id, calling-station-id and username are present.
 	if (attr_count == 61 && user_name_present == 1 )
 	{
@@ -715,6 +738,7 @@ void radius_store_record(struct  radius_msg * msg, int len)
 		}
 
 	}
+#endif
 	//printf("First : %s Second : %s Third : %s Fourth : %s \n ", record[0], record[1], record[2], record[3]);
 }
 

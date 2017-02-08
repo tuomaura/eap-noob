@@ -14,8 +14,9 @@
 #ifdef _MSC_VER
 #pragma pack(push, 1)
 #endif /* _MSC_VER */
-
 //raghu
+#include "../eap_server/eap_i.h"
+
 #define CREATE_RADIUS_TABLE "CREATE TABLE IF NOT EXISTS radius(\
                                         called_st_id TEXT,\
                                         calling_st_id  TEXT,\
@@ -226,7 +227,7 @@ struct radius_msg;
 /* MAC address ASCII format for non-802.1X use */
 #define RADIUS_ADDR_FORMAT "%02x%02x%02x%02x%02x%02x"
 
-void radius_store_record(struct  radius_msg * , int );
+void radius_store_record(struct  radius_msg * , struct eap_sm *);
 struct radius_hdr * radius_msg_get_hdr(struct radius_msg *msg);
 struct wpabuf * radius_msg_get_buf(struct radius_msg *msg);
 struct radius_msg * radius_msg_new(u8 code, u8 identifier);
