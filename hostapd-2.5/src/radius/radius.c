@@ -653,9 +653,6 @@ struct radius_attr_hdr *radius_msg_add_attr(struct radius_msg *msg, u8 type,
 void radius_store_record(struct  radius_msg * msg, struct eap_sm * sm)
 {
 
-
-   if(sm->currentMethod == EAP_TYPE_NOOB && sm->respId == 0){
-
 	char record[4][128] = {0};
 	char * pos = NULL;
 	struct radius_hdr *hdr;
@@ -748,7 +745,6 @@ void radius_store_record(struct  radius_msg * msg, struct eap_sm * sm)
 	}
 #endif
 	//printf("First : %s Second : %s Third : %s Fourth : %s \n ", record[0], record[1], record[2], record[3]);
-	}
 }
 
 #endif
