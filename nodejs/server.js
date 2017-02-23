@@ -76,7 +76,7 @@ require('./app/routes.js')(app, passport); // load our routes and pass in our ap
 	db.run('INSERT INTO roleBasedAC(calledSID,fqdn) VALUES ("6C-19-8F-83-C2-80:Noob1","guest.aalto.fi")');
 
 
-  	db.run('CREATE TABLE  IF NOT EXISTS users ( id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, role INTEGER DEFAULT 1, FOREIGN KEY(role) REFERENCES roles(role_id) );');
+  	db.run('CREATE TABLE  IF NOT EXISTS users ( id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, role INTEGER DEFAULT 1, isAdmin BOOLEAN DEFAULT FALSE,  FOREIGN KEY(role) REFERENCES roles(role_id) );');
   	db.run('CREATE TABLE  IF NOT EXISTS devices (PeerID TEXT, serv_state INTEGER, PeerInfo TEXT, Noob TEXT, Hoob TEXT, Hint TEXT,errorCode INTEGER ,UserName TEXT, PRIMARY KEY (PeerID, UserName));');
 
 
@@ -85,11 +85,11 @@ require('./app/routes.js')(app, passport); // load our routes and pass in our ap
   	db.close();
   });
 
-/*https.createServer(options, app).listen(8080, function () {
+https.createServer(options, app).listen(8080, function () {
    console.log('Started!');
-});*/
+});
 
 
-app.listen(port);
+//app.listen(port);
 
-console.log('App is running on port ' + port);
+//console.log('App is running on port ' + port);

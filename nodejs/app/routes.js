@@ -7,7 +7,13 @@ var db;
 var configDB = require('../config/database.js');
 var conn_str = configDB.dbPath;
 
+var rad_cli_path = configDB.radCliPath;
+
 var PythonShell = require('python-shell');
+
+
+var fs = require('fs');
+var lineReader = require('line-reader');
 
 var url = require('url');
 var state_array = ['Unregistered','OOB Waiting', 'OOB Received' ,'Reconnect Exchange', 'Registered'];
@@ -271,7 +277,75 @@ module.exports = function(app, passport) {
     });
 
     app.get('/addDevice',isLoggedIn, function(req, res) {
-        res.render('deviceAdd.ejs',{url : configDB.url});
+        res.render('deviceAdd.ejs',{url : configDB.url, user : req.user});
+    });
+
+    app.get('/configRadClients',isLoggedIn,isAdmin, function(req, res) {
+
+
+	
+	var radiusClients = new Array();
+	var j = 0;
+	var splitStr = new Array();
+
+	lineReader.eachLine(rad_cli_path, function(line,last) {
+  		if(!line.startsWith('#')){
+                        splitStr = line.split("\t");
+                        radiusClients[j] = new Object();
+                        radiusClients[j].ip_addr = splitStr[0];
+                        radiusClients[j].secret = splitStr[1];
+                        console.log(splitStr[0] + "," +splitStr[1]);
+                        j++;
+                }
+		if(last){
+			
+        		res.render('configRadClients.ejs',{url : configDB.url, clients : radiusClients});
+		}
+		});
+
+    });
+
+    app.get('/saveRadClients',isLoggedIn,isAdmin, function(req, res) { //need to add length validation for all values
+	
+    	console.log(req.query.RadiusClients);
+        var clients =  JSON.parse(req.query.RadiusClients);
+        var queryObject = url.parse(req.url,true).query;
+        var len = Object.keys(queryObject).length;
+	
+        if(len != 1 || clients == undefined)
+        {
+		res.json({"status":"failed"});
+        }else if(clients.length == 0){
+		var i = 0, n = clients.length;
+                var str = "# RADIUS client configuration for the RADIUS server\n";
+
+		var stream = fs.createWriteStream(rad_cli_path);
+                stream.once('open', function(fd) {
+                        stream.write(str);
+                        stream.end();
+                        res.json({"status":"success"});
+                });
+		console.log(str);
+	
+	}else{
+		var i = 0, n = clients.length;
+		var str = "# RADIUS client configuration for the RADIUS server\n";
+
+		for (i = 0; i<n; i++){
+			str += clients[i].ip_addr + "\t" + clients[i].secret + "\n";
+		}
+
+		var stream = fs.createWriteStream("/home/shiva/Desktop/eap-noob/hostapd-2.5/hostapd/hostapd.radius_clients");
+		stream.once('open', function(fd) {
+  			stream.write(str);
+  			stream.end();
+			res.json({"status":"success"});
+		});
+
+		console.log(str);
+		
+	}
+
     });
 
     // process the signup form
@@ -429,7 +503,7 @@ module.exports = function(app, passport) {
 
 // route middleware to make sure a user is logged in
 function isLoggedIn(req, res, next) {
-
+	console.log("called islogged");
     // if user is authenticated in the session, carry on 
     if (req.isAuthenticated())
         return next();
@@ -447,4 +521,14 @@ function isLoggedIn(req, res, next) {
     if(hoob != undefined)  str = str + '&Hoob=' + hoob;
     req.session.returnTo = str;
     res.redirect('/login');
+}
+
+// route middleware to make sure a user is admin
+function isAdmin(req, res, next) {
+	console.log("Called is Admin " + req.user.isAdmin + req.user.username);
+    // if user is authenticated and is admin, carry on 
+    if  (req.user.isAdmin == "TRUE")
+        return next();
+
+    res.redirect('/profile');
 }

@@ -37,7 +37,7 @@ module.exports = function(passport) {
 	// used to deserialize the user
 	passport.deserializeUser(function(id, done) {
 			db = new sqlite3.Database(conn_str);
-			db.get('SELECT id, username, password FROM users WHERE id = ?', id, function(err, row) {
+			db.get('SELECT id, username, password, isAdmin FROM users WHERE id = ?', id, function(err, row) {
 
 				db.close();
 				if (!row) return done(null, false);
@@ -61,7 +61,7 @@ function(req, email, password, done) { // callback with email and password from 
 // find a user whose email is the same as the forms email
 // we are checking to see if the user trying to login already exists
 db = new sqlite3.Database(conn_str);
-db.get('SELECT id, username, password FROM users WHERE username = ?', email, function(err, row) {
+db.get('SELECT id, username, password, isAdmin FROM users WHERE username = ?', email, function(err, row) {
 
 		db.close();
 		if(err) return done(err);
@@ -100,7 +100,7 @@ process.nextTick(function() {
 	// find a user whose email is the same as the forms email
 	// we are checking to see if the user trying to login already exists
 	db = new sqlite3.Database(conn_str);
-	db.get('SELECT id, username, password FROM users WHERE username = ?', email, function(err, row) {
+	db.get('SELECT id FROM users WHERE username = ?', email, function(err, row) {
 
 		db.close();
 		if(err) return done(err);
@@ -111,7 +111,7 @@ process.nextTick(function() {
 		var stmt = db.prepare("INSERT INTO users(username,password) VALUES(?,?)");
 		stmt.run(email,hashPassword(password));
 		stmt.finalize();
-		db.get('SELECT id, username, password FROM users WHERE username = ?', email, function(err, row) {
+		db.get('SELECT id, username, password, isAdmin FROM users WHERE username = ?', email, function(err, row) {
 			if (!row) return done(null, false);
 			else return done(null,row);
 			});

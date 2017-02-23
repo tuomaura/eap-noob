@@ -13,28 +13,30 @@
           word-wrap:break-word; 
         }
 
-	input[type=text] {
-	    width: 130px;
-	    box-sizing: border-box;
-	    border: 2px solid #ccc;
+	.search-box {
+	    
+	    width: 50%;
+	    height: 34px;
+	    padding: 6px 12px;
+	    font-size: 14px;
+	    line-height: 1.428571429;
+	    color: #555;
+	    vertical-align: middle;
+	    background-color: #fff;
+	    background-image: none;
+	    border: 1px solid #ccc;
 	    border-radius: 4px;
-	    font-size: 16px;
-	    background-color: white;
-	    background-image: url('/images/searchicon.png');
-	    background-position: 10px 10px; 
-	    background-repeat: no-repeat;
-	    padding: 12px 20px 12px 40px;
-	    -webkit-transition: width 0.4s ease-in-out;
-	    transition: width 0.4s ease-in-out;
+	    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+	    box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+	    -webkit-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
 	}
-	input[type=text]:focus {
-    		width: 80%;
-	}
+	
         .button {
                 position:relative;
                 padding:13px 10px 11px 16px;
 		left:-8px;
-		border-radius: 0 4px 4px 0;
+		border-radius: 4px 4px 4px 4px;
                 border:2px solid #207cca;
                 background-color:#207cca;
 		font-weight: bold;
@@ -65,17 +67,14 @@
 	  -webkit-animation: spin 2s linear infinite;
 	  animation: spin 2s linear infinite;
 	}
-
 	@-webkit-keyframes spin {
 	  0% { -webkit-transform: rotate(0deg); }
 	  100% { -webkit-transform: rotate(360deg); }
 	}
-
 	@keyframes spin {
 	  0% { transform: rotate(0deg); }
 	  100% { transform: rotate(360deg); }
 	}
-
 	/* Add animation to "page content" */
 	.animate-bottom {
 	  position: relative;
@@ -84,17 +83,14 @@
 	  animation-name: animatebottom;
 	  animation-duration: 1s
 	}
-
 	@-webkit-keyframes animatebottom {
 	  from { bottom:-100px; opacity:0 } 
 	  to { bottom:0px; opacity:1 }
 	}
-
 	@keyframes animatebottom { 
 	  from{ bottom:-100px; opacity:0 } 
 	  to{ bottom:0; opacity:1 }
 	}
-
 	#myDiv {
 	  display: none;
 	  text-align: center;
@@ -110,12 +106,17 @@
     <div class="page-header text-center">
         <h1><span class="fa fa-anchor"></span> Search and configure new device</h1>
 	<a href="/profile" class="btn btn-default btn-sm">Home</a>
+	<% if (user && user.isAdmin == "TRUE") { %>
+		<a href="/configRadClients" class="btn btn-default btn-sm">Client Settings</a>
+	<% } %>
         <a href="/logout" class="btn btn-default btn-sm">Logout</a>
     </div>
     <div class="alert alert-danger" id ="message_div" style = "display:none"></div>
     <form align="center">
-	<input id = "searchTextbox" type="text" name="search" onkeydown="if (event.keyCode == 13) { event.preventDefault(); getDevices(); }" placeholder="Search..">
-	<input type="button" value="Search" class="button" onclick="getDevices()">   
+	<input id = "searchTextbox" type="text" class="search-box"  name="search" onkeydown="if (event.keyCode == 13) { event.preventDefault(); getDevices(); }" placeholder="Search..">
+	<br>
+	<br>
+	<input type="button" value="Search" class="button" onclick="getDevices()">  
     </form>
    <br>
    <div class="row">
@@ -164,7 +165,6 @@ function postAddDevice(peer_id){
 				setTimeout(hideAlert, 6000);
 			}
 			else if(obj.status == "refresh"){
-
 				var retVal = confirm("Stale Page. Do you want to refresh the page ?");
    				if (retVal == true) {
 	    				window.location.reload();
@@ -195,9 +195,7 @@ function addDevice(button){
 	} else {
 	    	
 	}
-
 }
-
 function getDevices(){
 	startLoading();
         clearPage();
@@ -221,13 +219,9 @@ function getDevices(){
   	};
   	xhttp.open("GET", url_str, true);
   	xhttp.send();
-
 }
-
 function createDiv(deviceInfo){
-
 var mydiv = document.getElementById("col");
-
 var device = document.createElement('div');
 var head = document.createElement('h3');
 var para = document.createElement('p');
@@ -245,24 +239,16 @@ var device_name = document.createTextNode(deviceInfo.peer_name);
 var device_mac = document.createTextNode(deviceInfo.peer_num);
 var device_ssid = document.createTextNode(deviceInfo.peer_ssid);
 var device_bssid = document.createTextNode(deviceInfo.peer_bssid);
-
 device.setAttribute("id",deviceInfo.peer_id);
 device.setAttribute("class","well");
-
 btn.setAttribute("value",deviceInfo.peer_id);
 btn.setAttribute("onclick","addDevice(this)");
 btn.innerHTML = "Add"
-
 head.innerHTML = "Device Information";
-
 str1.innerHTML = "Device Name :";
-
 str2.innerHTML = "Device Mac :";
-
 str3.innerHTML = "SSID :";
-
 str4.innerHTML = "BSSID :";
-
 para.appendChild(str1);
 para.appendChild(device_name);
 para.appendChild(nl1);
@@ -277,10 +263,8 @@ para.appendChild(device_bssid);
 para.appendChild(nl4);
 para.appendChild(nl5);
 para.appendChild(btn);
-
 device.appendChild(head);
 device.appendChild(para);
-
 mydiv.appendChild(device);
 }
 </script>

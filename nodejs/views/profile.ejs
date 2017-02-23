@@ -92,6 +92,9 @@
 
     <div class="page-header text-center">
         <h1><span class="fa fa-anchor"></span> IoT Command and Control Center</h1>
+	<% if (user && user.isAdmin == "TRUE") { %>
+		<a href="/configRadClients" class="btn btn-default btn-sm">Client Settings</a>
+	<% } %>
 	<a href="/addDevice" class="btn btn-default btn-sm">Add Device</a>
         <a href="/logout" class="btn btn-default btn-sm">Logout</a>
     </div>
