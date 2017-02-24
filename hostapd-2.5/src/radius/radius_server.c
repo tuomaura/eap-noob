@@ -19,6 +19,9 @@
 #include "ap/ap_config.h"
 #include "crypto/tls.h"
 #include "radius_server.h"
+#include "../utils/includes.h"
+#include "../utils/common.h"
+#include "../utils/eloop.h"
 
 /**
  * RADIUS_SESSION_TIMEOUT - Session timeout in seconds
@@ -41,6 +44,12 @@ static const struct eapol_callbacks radius_server_eapol_cb;
 
 struct radius_client;
 struct radius_server_data;
+
+struct radius_clients_reconfig{  //abcd
+	struct radius_server_data *data;
+	char *client_file;
+	int ipv6; 
+};
 
 /**
  * struct radius_server_counters - RADIUS server statistics counters
@@ -1685,6 +1694,17 @@ radius_server_read_clients(const char *client_file, int ipv6)
 	return clients;
 }
 
+void radius_reconfigure_clients(int sig, void *signal_ctx){//abcd
+
+	printf("####################Signal Received and Updated Radius Clients################################\n");
+	struct radius_clients_reconfig * reconfig = signal_ctx;
+	
+	//printf("###################File Name = %s################################\n",reconfig->client_file);
+	os_free(reconfig->data->clients); 
+	reconfig->data->clients = radius_server_read_clients(reconfig->client_file,reconfig->ipv6);
+
+}
+
 
 /**
  * radius_server_init - Initialize RADIUS server
@@ -1699,6 +1719,10 @@ struct radius_server_data *
 radius_server_init(struct radius_server_conf *conf)
 {
 	struct radius_server_data *data;
+
+	struct radius_clients_reconfig *reconfig;
+
+	reconfig = os_zalloc(sizeof(*reconfig));
 
 #ifndef CONFIG_IPV6
 	if (conf->ipv6) {
@@ -1777,9 +1801,19 @@ radius_server_init(struct radius_server_conf *conf)
 	if (conf->dump_msk_file)
 		data->dump_msk_file = os_strdup(conf->dump_msk_file);
 #endif /* CONFIG_RADIUS_TEST */
+	
 
+	
 	data->clients = radius_server_read_clients(conf->client_file,
 						   conf->ipv6);
+
+	reconfig->client_file = os_strdup(conf->client_file);
+	reconfig->ipv6 = conf->ipv6;
+	reconfig->data = data;
+
+
+	eloop_register_signal(SIGUSR2,radius_reconfigure_clients, reconfig); //abcd
+
 	if (data->clients == NULL) {
 		wpa_printf(MSG_ERROR, "No RADIUS clients configured");
 		radius_server_deinit(data);
