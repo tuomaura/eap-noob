@@ -367,6 +367,60 @@ module.exports = function(app, passport) {
 	}  
 	});
 
+
+    app.get('/regLater', function (req, res) {
+	console.log("Called Later");
+	if(req.session.returnTo){
+	    	var queryObject = url.parse(req.session.returnTo,true).query;
+
+		delete req.session.returnTo;
+
+		var peer_id = queryObject["PeerId"];
+        	var noob = queryObject["Noob"];
+        	var hoob = queryObject["Hoob"];
+
+		if(Object.keys(queryObject).length != 3 || peer_id == undefined || noob == undefined || hoob == undefined){
+			req.flash('loginMessage','Wrong OOB query!');
+			res.redirect('/login');
+		
+		}else if(noob.length != 22 || hoob.length != 22){
+     	   		console.log("Updating Error!!!" + peer_id);
+     	   		db = new sqlite3.Database(conn_str);
+     	
+            		db.serialize(function() {
+       		 		var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, errorCode = ?, serv_state = ? WHERE PeerID = ?");
+       		 		stmt.run(1234,"","",3,2,peer_id);
+		 		stmt.finalize();
+    	    		});
+
+			db.close();
+			req.flash('loginMessage','Invalid Data');
+     			res.redirect('/login');		
+		
+		}else{
+     	
+            		db.serialize(function() {
+       		 		var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, serv_state = ? WHERE PeerID = ?");
+       		 		stmt.run(1234,noob,hoob,2,peer_id);
+		 		stmt.finalize();
+    	    		});
+
+			db.close();
+			req.flash('loginMessage','Received Successfully');
+     			res.redirect('/login');
+               }
+
+	}else{
+		
+		req.flash('loginMessage','Wrong OOB query!');
+		res.redirect('/login');
+
+	}
+
+
+
+    });
+
     // process QR-code
     app.get('/sendOOB/',isLoggedIn, function (req, res) {
         var peer_id = req.query.PeerId;
@@ -503,7 +557,7 @@ module.exports = function(app, passport) {
 
 // route middleware to make sure a user is logged in
 function isLoggedIn(req, res, next) {
-	console.log("called islogged");
+	//console.log("called islogged");
     // if user is authenticated in the session, carry on 
     if (req.isAuthenticated())
         return next();
@@ -516,6 +570,8 @@ function isLoggedIn(req, res, next) {
 
     var hoob = req.query.Hoob;
 
+    if(str == "/sendOOB/") req.flash('loginMessage','Login to register device now or click \"Deliver OOB\" to register later');
+
     if(peer_id != undefined)  str = str + '?PeerId=' + peer_id;
     if(noob != undefined)  str = str + '&Noob=' + noob;
     if(hoob != undefined)  str = str + '&Hoob=' + hoob;
@@ -525,7 +581,7 @@ function isLoggedIn(req, res, next) {
 
 // route middleware to make sure a user is admin
 function isAdmin(req, res, next) {
-	console.log("Called is Admin " + req.user.isAdmin + req.user.username);
+	//console.log("Called is Admin " + req.user.isAdmin + req.user.username);
     // if user is authenticated and is admin, carry on 
     if  (req.user.isAdmin == "TRUE")
         return next();
