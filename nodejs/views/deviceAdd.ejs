@@ -34,7 +34,7 @@
 	
         .button {
                 position:relative;
-                padding:13px 10px 11px 16px;
+                padding:8px 10px 8px 10px;
 		left:-8px;
 		border-radius: 4px 4px 4px 4px;
                 border:2px solid #207cca;
@@ -108,8 +108,16 @@
 	<a href="/profile" class="btn btn-default btn-sm">Home</a>
 	<% if (user && user.isAdmin == "TRUE") { %>
 		<a href="/configRadClients" class="btn btn-default btn-sm">Client Settings</a>
+		<a href="/accessControl" class="btn btn-default btn-sm">Access Control</a>
 	<% } %>
-        <a href="/logout" class="btn btn-default btn-sm">Logout</a>
+	
+	<% if (user && user.isAdmin == "TRUE") { %>
+		<br>
+		<a href="/manage" class="btn btn-default btn-sm" style="margin-top:5px">Manage</a>
+		<a href="/logout" class="btn btn-default btn-sm" style="margin-top:5px">Logout</a>
+	<% }else{ %>
+        	<a href="/logout" class="btn btn-default btn-sm">Logout</a>
+	<% } %>
     </div>
     <div class="alert alert-danger" id ="message_div" style = "display:none"></div>
     <form align="center">

@@ -280,6 +280,14 @@ module.exports = function(app, passport) {
         res.render('deviceAdd.ejs',{url : configDB.url, user : req.user});
     });
 
+    app.get('/accessControl',isLoggedIn, isAdmin, function(req, res) {
+        res.render('accessControl.ejs',{url : configDB.url, user : req.user});
+    });
+
+    app.get('/manage',isLoggedIn, isAdmin, function(req, res) {
+        res.render('management.ejs',{url : configDB.url, user : req.user});
+    });
+
     app.get('/configRadClients',isLoggedIn,isAdmin, function(req, res) {
 
 
