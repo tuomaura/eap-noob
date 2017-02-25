@@ -1,0 +1,329 @@
+<!-- views/accessControl.ejs -->
+<!doctype html>
+<html>
+<head>
+    <title>Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+
+    <style>
+	/* Center the loader */
+	#loader {
+	  position: absolute;
+	  left: 50%;
+	  top: 50%;
+	  z-index: 1;
+	  width: 150px;
+	  height: 150px;
+	  margin: -75px 0 0 -75px;
+	  border: 16px solid #f3f3f3;
+	  border-radius: 50%;
+	  border-top: 16px solid #3498db;
+	  width: 120px;
+	  height: 120px;
+	  -webkit-animation: spin 2s linear infinite;
+	  animation: spin 2s linear infinite;
+	}
+	@-webkit-keyframes spin {
+	  0% { -webkit-transform: rotate(0deg); }
+	  100% { -webkit-transform: rotate(360deg); }
+	}
+	@keyframes spin {
+	  0% { transform: rotate(0deg); }
+	  100% { transform: rotate(360deg); }
+	}
+	/* Add animation to "page content" */
+	.animate-bottom {
+	  position: relative;
+	  -webkit-animation-name: animatebottom;
+	  -webkit-animation-duration: 1s;
+	  animation-name: animatebottom;
+	  animation-duration: 1s
+	}
+	@-webkit-keyframes animatebottom {
+	  from { bottom:-100px; opacity:0 } 
+	  to { bottom:0px; opacity:1 }
+	}
+	@keyframes animatebottom { 
+	  from{ bottom:-100px; opacity:0 } 
+	  to{ bottom:0; opacity:1 }
+	}
+	
+    </style>
+
+    <style>
+        body { 
+          padding-top:80px; 
+          word-wrap:break-word; 
+        }
+	
+	form {
+  		text-align: center;
+	}
+
+	.input-box {
+	    
+	    width: 25%;
+	    height: 34px;
+	    padding: 6px 12px;
+	    font-size: 14px;
+	    line-height: 1.428571429;
+	    color: #555;
+	    vertical-align: middle;
+	    background-color: #fff;
+	    background-image: none;
+	    border: 1px solid #ccc;
+	    border-radius: 4px;
+	    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+	    box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+	    -webkit-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+	}
+    </style>
+
+    <style>
+	.panel-heading .accordion-toggle:after {
+	    /* symbol for "opening" panels */
+	    font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
+	    content: "\e114";    /* adjust as needed, taken from bootstrap.css */
+	    float: right;        /* adjust as needed */
+	    color: grey;         /* adjust as needed */
+	}
+	.panel-heading .accordion-toggle.collapsed:after {
+	    /* symbol for "collapsed" panels */
+	    content: "\e080";    /* adjust as needed, taken from bootstrap.css */
+	}
+
+
+    </style>
+   
+</head>
+<body>
+
+<div id="loader" style = "display:none"></div>
+
+<div class="container" id = "container">
+
+    <div class="page-header text-center">
+        <h1><span class="fa fa-anchor"></span> Manage Users and Devices</h1>
+	<a href="/profile" class="btn btn-default btn-sm">Home</a>
+	<a href="/addDevice" class="btn btn-default btn-sm">Add Device</a>
+	<a href="/configRadClients" class="btn btn-default btn-sm">Client Settings</a>
+	<br>
+	<a href="/accessControl" class="btn btn-default btn-sm" style="margin-top:5px">Access Control</a>
+        <a href="/logout" class="btn btn-default btn-sm" style="margin-top:5px">Logout</a>
+    </div>
+    <div class="alert alert-danger" id ="message_div" style = "display:none"></div>
+
+    <!-- Latest compiled and minified Bootstrap CSS -->
+
+
+<div class = "container">
+
+  
+  <div class="panel-group" id="accordion">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+          Manage Users
+        </a>
+      </h4>
+    </div>
+    <div id="collapseOne" class="panel-collapse collapse in">
+      <div class="panel-body">
+       
+      </div>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+             Manage Unclaimed Devices
+        </a>
+      </h4>
+    </div>
+    <div id="collapseTwo" class="panel-collapse collapse">
+      <div class="panel-body">
+     
+      </div>
+    </div>
+  </div>
+ 
+  </div>
+  </div>
+</div>
+  
+  
+</div> <!-- end container -->
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+   
+</div>
+
+<script>
+$(document).ready(function() {
+    var wrapper = $(".input_fields_wrap");
+    $(wrapper).on("click",".remove_field", function(e){ //user click on remove text
+        e.preventDefault(); $(this).parent('div').remove();
+    })
+});
+
+function addInputField(){
+
+	var divNode = document.getElementById("clientsDiv");
+	var x = $('#clientsDiv > div').size();
+	var newClient = document.createElement('div');
+	var ip = document.createElement('input');
+	var secret = document.createElement('input');
+	var remv = document.createElement('a');
+
+	ip.setAttribute("type","text");
+	ip.setAttribute("id","ip" + x);
+	ip.setAttribute("name","ipText");
+	ip.setAttribute("class","input-box");
+	ip.setAttribute("placeholder","IP Address");
+	
+
+	secret.setAttribute("type","text");
+	secret.setAttribute("id","secret" + x);
+	secret.setAttribute("name","secretText");
+	secret.setAttribute("class","input-box");
+	secret.setAttribute("placeholder","Secret");
+	
+
+	remv.setAttribute("href","#");
+	remv.setAttribute("id","remv" + x);
+	remv.setAttribute("class","remove_field");
+	remv.innerHTML = "Remove";
+	
+	newClient.appendChild(ip);
+	newClient.appendChild(secret);
+	newClient.appendChild(remv);
+
+ 	divNode.appendChild(newClient);
+
+}
+
+function hideAlert(){	
+	var alert_div = document.getElementById('message_div');
+	if(alert_div)
+	alert_div.style.display='none';
+}
+function startLoading(){
+	document.getElementById("loader").style.display = "block";
+  	document.getElementById("container").style.display = "none";
+}
+function stopLoading(){
+
+	document.getElementById("loader").style.display = "none";
+  	document.getElementById("container").style.display = "block";
+	setTimeout(hideAlert, 6000);
+}
+function clearPage(){
+	var myNode = document.getElementById("col");
+	while (myNode.firstChild) {
+        	myNode.removeChild(myNode.firstChild);
+	}
+}
+function postUpdateClients(clients){
+	var url_str = "<%=url%>";
+	url_str = url_str + "/saveRadClients/?RadiusClients=" + clients; 
+	console.log(clients);
+        var xhttp = new XMLHttpRequest();
+  	xhttp.onreadystatechange = function() {
+    		if (xhttp.readyState == 4 && xhttp.status == 200) {
+			var obj = JSON.parse(xhttp.responseText);
+			var div_alert = document.getElementById('message_div');
+			if(obj.status == "success"){
+				div_alert.innerHTML = "Radius Clients Saved Successfully";
+				div_alert.style.display='block';
+				setTimeout(stopLoading, 1000);
+		
+			}
+			else if(obj.status == "refresh"){
+
+				var retVal = confirm("Stale Page. Do you want to refresh the page ?");
+   				if (retVal == true) {
+	    				window.location.reload();
+   				} else {
+    	
+   				}	
+			}
+			else if (obj.status == "deny"){
+				div_alert.innerHTML = "Permission Denied ! Please contact Admin.";
+				div_alert.style.display='block';
+				setTimeout(hideAlert, 6000);				
+			}
+			else{
+				div_alert.innerHTML = "Radius Clients Saving Unsuccessful.";
+				div_alert.style.display='block';
+				setTimeout(hideAlert, 6000);				
+			}
+			
+    		}
+  	};
+  	xhttp.open("GET", url_str, true);
+  	xhttp.send();
+}
+
+function cancelSave(){
+	var retVal = confirm("Are you sure you want to cancel all changes ?");
+	
+	if (retVal == true) {
+		window.location.reload();	
+	} else {
+	    	
+	}
+}
+
+function saveClients(){
+	var retVal = confirm("Are you sure you want to save ?");
+	if (retVal == true) {
+		startLoading();
+		var radiusClients = new Array();
+		var x = $('#clientsDiv > div').size() - 1;
+		var ip;
+		var secr;
+		var ip_val,secr_val;
+		for(var i = 0,j=0 ; i<=x ;i++){
+
+			ip = "ip" + i;
+			secr = "secret" + i;
+			//console.log(ip + " "+ secr + " " + x);
+			ip_val = document.getElementById(ip).value;
+			secr_val = document.getElementById(secr).value;
+			if(!checkBlank(ip_val) && !checkBlank(secr_val)){
+				radiusClients[j] = new Object();
+				radiusClients[j].ip_addr = ip_val;
+				radiusClients[j].secret = secr_val;
+				console.log(radiusClients[j]);
+				j++;
+			}else{
+			    	$(document.getElementById(ip)).parent('div').remove();
+			}
+
+		}
+		//console.log(radiusClients[0]);
+		postUpdateClients(JSON.stringify(radiusClients));	
+	} else {
+	    	
+	}
+
+}
+
+function checkBlank(str) {
+	console.log(str.length == 0 || !str.trim());
+    return (str.length == 0 || !str.trim());
+};
+
+</script>
+</body>
+</html>
