@@ -15,6 +15,19 @@ var PythonShell = require('python-shell');
 var fs = require('fs');
 var lineReader = require('line-reader');
 
+var parse = require('csv-parse');
+
+var multer  =   require('multer');
+var storage =   multer.diskStorage({
+  destination: function (req, file, callback) {
+    callback(null, './uploads');
+  },
+  filename: function (req, file, callback) {
+    callback(null, file.fieldname +'.csv');
+  }
+});
+var upload = multer({ storage : storage}).single('logFile');
+
 var url = require('url');
 var state_array = ['Unregistered','OOB Waiting', 'OOB Received' ,'Reconnect Exchange', 'Registered'];
 var error_info = [ "No error",
@@ -174,8 +187,54 @@ module.exports = function(app, passport) {
     app.get('/signup', function(req, res) {
 
         res.render('signup.ejs', { message: req.flash('signupMessage') });
+
     });
 
+    app.post('/logReport',function(req,res){
+	console.log("RECEIVED LOG");
+    	upload(req,res,function(err) {
+        	if(err) {
+			 console.log("Error"+err);
+            		 res.json({"status":"Error uploading file."});
+        	}
+
+        res.json({"src":"130.233.193.111"});
+	db = new sqlite3.Database(conn_str);
+        db.serialize(function() {
+                db.run("begin transaction");
+                //var stmt = db.prepare("insert into data values (?)");
+                // Three different methods of doing a bulk insert
+                var inputFile = './uploads/logFile.csv'
+                var parser = parse({delimiter: '\t'}, function (err, data) {
+                        // when all countries are available,then process them
+                        // note: array element at index 0 contains the row of headers that we should skip
+                        data.forEach(function(line) {
+                                // create country object out of parsed fields
+                                db.run("insert or ignore into logs (time,src,dns) values (?,?,?)", line[0],line[1],line[2]);
+                                //process.exit(1);
+                                //console.log(line[0]);
+                        });
+                });
+                
+                // read the inputFile, feed the contents to the parser
+                fs.createReadStream(inputFile).pipe(parser);
+    
+         	db.run("commit");
+        });
+
+
+    	});
+	
+    });
+
+/*
+    app.post('/logReport', function(req, res) {
+	//var file = req.files.file;
+	console.log(req);
+	console.log("Received");
+	res.json({"status":"Success"});
+    });
+*/
 
     // =====================================
     // PROFILE SECTION =====================
@@ -187,7 +246,6 @@ module.exports = function(app, passport) {
 	var parseJson;
 	var parseJson1;
 	var d = new Date();
-	var seconds = Math.ceil(d.getTime() / 1000);
 	var val = 0;
 	var dev_status = ['Up to date','Update required','Obsolete, update now!']
 	console.log(seconds);
