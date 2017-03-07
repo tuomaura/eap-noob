@@ -56,9 +56,10 @@ require('./app/routes.js')(app, passport); // load our routes and pass in our ap
         db.run('DROP TABLE IF EXISTS roleAccessLevel');
         db.run('DROP TABLE IF EXISTS fqdnACLevel');
         db.run('DROP TABLE IF EXISTS roleBasedAC');
+        db.run('DROP TABLE IF EXISTS logs');
 
 	
-  	db.run('CREATE TABLE  IF NOT EXISTS logs ( id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT, src TEXT, dns TEXT, UNIQUE(src,dns));');	
+  	db.run('CREATE TABLE  IF NOT EXISTS logs ( id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT, src TEXT, dns TEXT,srcMAC TEXT, UNIQUE(src,dns,srcMAC));');	
 
   	db.run('CREATE TABLE  IF NOT EXISTS roles ( role_id INTEGER PRIMARY KEY, roleDesc TEXT);');	
 	db.run('INSERT INTO roles VALUES (1,"Student")');

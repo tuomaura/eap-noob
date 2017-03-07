@@ -210,7 +210,7 @@ module.exports = function(app, passport) {
                         // note: array element at index 0 contains the row of headers that we should skip
                         data.forEach(function(line) {
                                 // create country object out of parsed fields
-                                db.run("insert or ignore into logs (time,src,dns) values (?,?,?)", line[0],line[1],line[2]);
+                                db.run("insert or ignore into logs (time,src,dns,srcMAC) values (?,?,?,?)", line[0],line[1],line[2],line[3]);
                                 //process.exit(1);
                                 //console.log(line[0]);
                         });
