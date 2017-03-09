@@ -20,7 +20,8 @@
     "base64url": "~2.0.0",
     "python-shell": "~0.4.0",
     "multer": "1.3.0",
-    "line-reader":"*"
+    "line-reader":"*",
+    "csv-parse":"*"
   },
   "scripts": {
     "start": "node server.js"

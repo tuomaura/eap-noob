@@ -248,7 +248,6 @@ module.exports = function(app, passport) {
 	var d = new Date();
 	var val = 0;
 	var dev_status = ['Up to date','Update required','Obsolete, update now!']
-	console.log(seconds);
 	i = 0;
 	j = 0;
 	db = new sqlite3.Database(conn_str);
