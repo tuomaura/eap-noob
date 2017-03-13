@@ -10,26 +10,40 @@ import ast
 import httplib, urllib
 import requests
 import json
+from ConfigParser import SafeConfigParser
+import sys
 
 global path
+global url
+global interface
+global ipv4_net
+global ipv6_net
+global freq
 
 def sendFile(secs):
 	print "sent file"
-	global path
+	global path, freq, url, ipv4_net, ipv6_net, interface
 	if os.path.isfile('send.csv'):
 		os.remove('send.csv')
 	os.mknod('send.csv')
-	cmd = "sudo tshark -T fields -n -r "+ path + " -E separator=/t -e frame.time -e ip.src -e dns.qry.name -e eth.src > send.csv"
+	cmd = "sudo tshark -2 -R \"udp.port eq 53\" -T fields -n -r "+ path + " -E separator=/t -e frame.time_epoch -e eth.src -e ip.src -e dns.qry.name|uniq -f 1 > send.csv"
 	convert = subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
 	convert.wait()
-	url = 'https://130.233.193.102:8080/logReport'
+	cmd = "sudo tshark -2 -R \"!(udp.port eq 53) && ip\" -T fields -n -r "+ path + " -E separator=/t -e frame.time_epoch -e eth.src -e ip.src -e ip.dst|uniq -f 1 >> send.csv"
+	convert = subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
+	convert.wait()
+	cmd = "sudo tshark -2 -R \"!(udp.port eq 53) && ipv6\" -T fields -n -r "+ path + " -E separator=/t -e frame.time_epoch -e eth.src -e ipv6.src -e ipv6.dst|uniq -f 1  >> send.csv"
+	convert = subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
+	convert.wait()
+
 	files = {'logFile': open('send.csv', 'rb')}
 	r = requests.post(url, files=files,verify=False)
 	src = r.json()	
 	os.remove('send.csv')
+	'''
 	if src["src"] is not None:
 		block_ip(src["src"])
-	
+	'''
 	send = threading.Timer(secs, sendFile,[secs])
 	send.daemon = True
 	send.start()
@@ -79,32 +93,75 @@ def sigint_handler(signum, frame):
 
 def startCapture(cmd):	
 	subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
+
+def parseConfig(file_path):
+	global path, freq, url, ipv4_net, ipv6_net, interface
+	parser = SafeConfigParser()
+	parser.read(file_path)
+	section = "firewall_config"
+	if(parser.has_section(section)):
+        	for candidate in [ 'capt_interface', 'capt_path', 'dest_url', 'send_freq','net_ipv4_addr','net_ipv6_addr']:
+                	if(parser.has_option(section, candidate)):
+                        	if(candidate == "capt_path"):
+					path = parser.get(section, candidate)
+
+                        	elif(candidate == "capt_interface"):
+					interface = parser.get(section, candidate)
+
+                        	elif(candidate == "dest_url"):
+					url = parser.get(section, candidate)
+
+                        	elif(candidate == "send_freq"):
+					freq = parser.get(section, candidate)
+
+                        	elif(candidate == "net_ipv4_addr"):
+					ipv4_net = parser.get(section, candidate)
+
+                        	elif(candidate == "net_ipv6_addr"):
+					ipv6_net = parser.get(section, candidate)
+                	else:
+                        	print candidate + " not found."
+                        	return 0
+
+	else:
+        	print "No section found : [firewall_config]"
+		return 0
+	return 1
+
         
 def main():
-	global path
+	global path, freq, url, ipv4_net, ipv6_net, interface
         parser = argparse.ArgumentParser()
-        parser.add_argument('-i', '--interface', dest='interface',help='Name of the interface to monitor')
-        parser.add_argument('-p', '--path', dest='path', help='absolute path to target capture file with filename')
-        parser.add_argument('-u','--url', dest='url', help='server url to send the captured file')
-        parser.add_argument('-t', '--minutes', dest='mins',help='Frequency of sending file to server')
+        parser.add_argument('-c', '--configuration', dest='config',help='Configuration file path')
         args = parser.parse_args()
 
-        if (args.interface is None or  args.path is None or args.url is None or args.mins is None):
-                print('Usage:firewall.py -i <interface> -p <output file path> -u <server url> -t <frequency of sending in minutes>')
+        if (args.config is None):
+                print('Usage:firewall.py -c <configuration file path>')
                 return
-	cmd = "sudo tshark -i " + args.interface + " -f \"dst port 53\" -n -T fields -e frame.time -e ip.src -e dns.qry.name -e eth.src -w " + args.path
+
+	if(parseConfig(args.config) == 0):
+		return
+
+	cmd = "sudo tshark -i " + interface + " -f \"dst net not " + ipv4_net + " && dst net not " + ipv6_net
+	cmd += " && dst net not 255.255.255.255 && not multicast && !(arp or icmp)\""
+	cmd += " -n -T fields -e frame.time -e eth.src -e ip.src -e ip.dst -e ipv6.src -e ipv6.dst -e dns.qry.name"
+	cmd += " -w " + path
+
+
+
 	print cmd
-	path = args.path
+	
 	signal.signal(signal.SIGINT, sigint_handler)
-	secs = ast.literal_eval(args.mins) * 60
-	send = threading.Timer(secs, sendFile,[secs])
+	
+	freq = ast.literal_eval(freq) * 60
+	send = threading.Timer(freq, sendFile,[freq])
 	send.daemon = True
 	send.start()
-	
+	'''
 	capture = threading.Thread(target = startCapture, args= (cmd,))
 	capture.daemon = True
 	capture.start()
-
+	'''
 	while True:
     		time.sleep(5)
 
