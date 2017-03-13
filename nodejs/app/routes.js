@@ -26,6 +26,7 @@ var storage =   multer.diskStorage({
     callback(null, file.fieldname +'.csv');
   }
 });
+//var sleep = require('sleep');
 var upload = multer({ storage : storage}).single('logFile');
 
 var url = require('url');
@@ -210,16 +211,29 @@ module.exports = function(app, passport) {
                         // note: array element at index 0 contains the row of headers that we should skip
                         data.forEach(function(line) {
                                 // create country object out of parsed fields
-                                db.run("insert or ignore into logs (time,src,dns,srcMAC) values (?,?,?,?)", line[0],line[1],line[2],line[3]);
+                                db.run("insert or ignore into logs (time,srcMAC,src,dst) values (?,?,?,?)", line[0],line[1],line[2],line[3]);
                                 //process.exit(1);
-                                //console.log(line[0]);
+                                console.log(line[3]);
                         });
+			//sleep.sleep(30);
+			fs.exists(inputFile, function(exists) {
+  				if(exists) {
+    					//Show in green
+    					console.log('File exists. Deleting now ...');
+    					fs.unlink(inputFile);
+  				} else {
+    					//Show in red
+    					console.log('File not found, so not deleting.');
+  				}
+			});
                 });
                 
                 // read the inputFile, feed the contents to the parser
                 fs.createReadStream(inputFile).pipe(parser);
     
          	db.run("commit");
+
+
         });
 
 
