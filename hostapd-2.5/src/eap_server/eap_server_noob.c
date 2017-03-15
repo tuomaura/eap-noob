@@ -1541,7 +1541,10 @@ static void eap_noob_get_sid(struct eap_sm *sm, struct eap_noob_serv_context *da
 {
 	char *query = NULL;
 	
-	if(NULL != ( query = (char *)malloc(500))){
+	if(NULL != ( query = (char *)malloc(500)) && (NULL != sm->rad_attr) 
+		&&(NULL != sm->rad_attr->calledSID)  
+		&& (NULL != sm->rad_attr->callingSID) 
+		&& (NULL != sm->rad_attr->nasId)){
 
         	printf("***********Values Received: %s    %s*************\n", sm->rad_attr->calledSID,sm->rad_attr->callingSID);
 
@@ -1865,7 +1868,8 @@ static int eap_noob_cal_pow(u32 num, u32 pow)
 static int eap_noob_get_minsleep(struct eap_noob_serv_context *data)
 {
 	//TODO:  Include actual implementation for calculating the waiting time.
-	return (int)((eap_noob_cal_pow(2,data->peer_attr->minslp_count))* (rand()%8) + 1) % 3600 ;
+	//return (int)((eap_noob_cal_pow(2,data->peer_attr->minslp_count))* (rand()%8) + 1) % 3600 ;
+	return 60;
 }
 
 /**
