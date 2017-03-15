@@ -1,4 +1,4 @@
-<!-- views/accessControl.ejs -->
+<!-- views/management.ejs -->
 <!doctype html>
 <html>
 <head>
@@ -121,38 +121,82 @@
 
   
   <div class="panel-group" id="accordion">
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-          Manage Users
-        </a>
-      </h4>
-    </div>
-    <div id="collapseOne" class="panel-collapse collapse in">
-      <div class="panel-body">
+  	<div class="panel panel-default">
+    		<div class="panel-heading">
+     			<h4 class="panel-title">
+        			<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+          				Manage Users
+        			</a>
+      			</h4>
+    		</div>
+    		<div id="collapseOne" class="panel-collapse collapse in">
+      			<div class="panel-body">
        
-      </div>
-    </div>
-  </div>
+      			</div>
+    		</div>
+  	</div>
 
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
-             Manage Unclaimed Devices
-        </a>
-      </h4>
-    </div>
-    <div id="collapseTwo" class="panel-collapse collapse">
-      <div class="panel-body">
+  	<div class="panel panel-default">
+    		<div class="panel-heading">
+      			<h4 class="panel-title">
+        			<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+             				Manage Devices
+        			</a>
+      			</h4>
+    		</div>
+    		<div id="collapseTwo" class="panel-collapse collapse">
+      			<div class="panel-body">
+				<strong>To block DNS requests please enter the domain string or enter IP address to block the access to a specific server.</strong><br>
+				<input type="text" name="dns_ip"><br>
+				<input id = "dns" type="radio" name="block_type" value="DNS"> Domain String<br>
+				<input id = "serv_ip" type="radio" name="block_type" value="dest_IP"> IP Address<br>
+				<button id = "dest_filter" onclick="">Save</button><br> <br>
+				<div class="panel-group" id="inneraccordion">
+				<% if (macs && macs.length > 0) { %>
+					<%count = 0%>
+					<% for(var i = 0; i < macs.length; i++){ %>
+						<div class="panel panel-default">
+						<div class="panel-heading">
+     							<h4 class="panel-title">
+        							<a class="accordion-toggle" data-toggle="collapse" data-parent="#inneraccordion" href=<%="#" + i%>>
+          								Device@<%= macs[i].srcMAC %>
+        							</a>
+      							</h4>
+    						</div>
+						<div id=<%=i%> class="panel-collapse collapse in">
+      							<div class="panel-body">
+							
+							<% for(var j = 0; j < ips[i].length; j++) {%>
+								<strong>With IP Address</strong>: <%= ips[i][j].src %><br>
+								<strong>Accessed Servers(@DateTime)</strong><br>
+								<% for(var k = 0; k < dests[count].length; k++) {%>
+									<%var epoch = parseFloat(dests[count][k].time)%>
+									<%var myDate = new Date(0)%>
+									<%myDate.setUTCSeconds(epoch);%>
+									<%= dests[count][k].dst + " (D:" + myDate.toISOString().substring(0, 10) +" T:"+ myDate.getHours() +":"+myDate.getMinutes()+":"+myDate.getSeconds() + ")"%> 
+									<br>
+									
+								<% } %>
+								<br>
+								<%count++%>
+							<% } %>
+							<input type="checkbox" name="mac_block" value="MAC"> Block this device by MAC<br>
+							<input type="checkbox" name="ip_block" value="IP"> Block this device by IP<br>
+							<button onclick="">Save</button>
+       
+      							</div>
+    						</div>	
+						</div>
+
+					<% } %>
+
+				<% } %>
+				</div>
      
-      </div>
-    </div>
-  </div>
- 
-  </div>
-</div>
+      			</div>
+    		</div>
+  	</div>
+   </div>
   
   
 </div> <!-- end container -->

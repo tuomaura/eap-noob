@@ -356,7 +356,80 @@ module.exports = function(app, passport) {
     });
 
     app.get('/manage',isLoggedIn, isAdmin, function(req, res) {
-        res.render('management.ejs',{url : configDB.url, user : req.user});
+		
+	    var macs = new Array();
+	    var ip = new Array();
+	    var dest = new Array();
+
+	    db = new sqlite3.Database(conn_str);
+	    
+            db.all('SELECT DISTINCT srcMAC FROM logs', function(err, rows) {
+
+            	//db.close();
+                if (err){db.close();res.render('management.ejs',{url : configDB.url, user : req.user});}
+		else {
+			macs = rows;
+			//console.log(macs.length);
+			//console.log(macs[0].srcMAC);
+			
+			function ip_loop(row_num,col_num,col,row,count){
+				if(row >= row_num){res.render('management.ejs',{url : configDB.url, user : req.user, macs : macs, ips : ip, dests : dest}); return ;}
+				db.all('SELECT time,dst FROM logs WHERE src = ?',ip[row][col].src,function(err,rows2){
+                                                                if(err) {res.render('management.ejs',{url : configDB.url, user : req.user});return;}
+                                                                else{
+                                                                    
+										dest [count] = new Array();
+										dest[count] = rows2;
+										//console.log(rows2);
+										//console.log(ip[row][col].src);
+										count ++; col ++;
+										if(col >= col_num){
+											row++;
+											if(row >= row_num){
+												//console.log(ip) ;
+												//console.log(dest);
+												res.render('management.ejs',{url : configDB.url, user : req.user, macs : macs, ips : ip, dests : dest});
+												return;
+											} 
+											col = 0;
+											col_num = ip[row].length;
+
+										}
+										return ip_loop(row_num,col_num,col,row,count);
+                                                                }
+                                                        });
+
+
+
+			}
+			function init_ip_loop(){
+				return ip_loop(macs.length,ip[0].length,0,0,0);
+			
+			}
+			function macs_loop (low,max){
+				if(low >= max) return init_ip_loop();	
+				db.all('SELECT DISTINCT src FROM logs WHERE srcMAC = ?',macs[low].srcMAC, function(err, rows1){
+                                        if (err){ res.render('management.ejs',{url : configDB.url, user : req.user});return; }
+                                        else{
+						ip[low] = new Array();
+						ip[low] = rows1;	
+						//console.log(ip[low]);
+						//console.log(low);
+						low++;
+						return macs_loop(low,macs.length);
+					}
+				});
+
+			}
+			macs_loop(0,macs.length);
+
+			db.close();
+			//console.log(macs);
+			//res.render('management.ejs',{url : configDB.url, user : req.user, macs : macs, ips : ip, dests : dest});
+		}
+
+            });
+
     });
 
     app.get('/configRadClients',isLoggedIn,isAdmin, function(req, res) {
