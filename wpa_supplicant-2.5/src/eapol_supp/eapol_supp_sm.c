@@ -7,7 +7,7 @@
  */
 
 #include "includes.h"
-
+#include <time.h>
 #include "common.h"
 #include "state_machine.h"
 #include "wpabuf.h"
@@ -18,6 +18,10 @@
 #include "eap_peer/eap.h"
 #include "eap_peer/eap_proxy.h"
 #include "eapol_supp_sm.h"
+
+#include "../eap_peer/eap_i.h"
+#include "../../wpa_supplicant/wpa_supplicant_i.h"
+
 
 #define STATE_MACHINE_DATA struct eapol_sm
 #define STATE_MACHINE_DEBUG_PREFIX "EAPOL"
@@ -274,8 +278,29 @@ SM_STATE(SUPP_PAE, CONNECTING)
 	}
 	eapol_enable_timer_tick(sm);
 	sm->eapolEap = FALSE;
+
+/*
 	if (send_start)
 		eapol_sm_txStart(sm);
+*/
+	//raghu
+
+	struct wpa_supplicant *wpa_s = (struct wpa_supplicant *) sm->eap->msg_ctx;
+	const char * driver = wpa_s->driver->name;
+	struct timespec tv;
+	clock_gettime(CLOCK_BOOTTIME, &tv);
+
+	if (send_start){
+		if((0 == strcmp(driver,"wired")) && (sm->eap->selectedMethod == 90) && 
+		    (tv.tv_sec < sm->eap->disabled_wired)){
+
+			printf("*********Not starting till: %ld\n",sm->eap->disabled_wired);
+		}else{
+                	eapol_sm_txStart(sm);	
+			printf("*********starting sent: %ld\n",tv.tv_sec);
+
+		}
+}
 }
 
 
@@ -1245,6 +1270,11 @@ int eapol_sm_rx_eapol(struct eapol_sm *sm, const u8 *src, const u8 *buf,
 	int res = 1;
 	size_t plen;
 
+		
+	const struct wpa_supplicant *wpa_s = (struct wpa_supplicant *) sm->eap->msg_ctx;
+        const char * driver = wpa_s->driver->name;
+        struct timespec tv;
+
 	if (sm == NULL)
 		return 0;
 	sm->dot1xSuppEapolFramesRx++;
@@ -1292,6 +1322,30 @@ int eapol_sm_rx_eapol(struct eapol_sm *sm, const u8 *src, const u8 *buf,
 
 	switch (hdr->type) {
 	case IEEE802_1X_TYPE_EAP_PACKET:
+
+		//krishna
+        	clock_gettime(CLOCK_BOOTTIME, &tv);
+        	//printf("Before Receiving Current: %ld\n",tv.tv_sec);
+        	//printf("Before Receiving Block Till: %ld\n",sm->eap->disabled_wired);
+
+		const struct eap_hdr *ehdr =
+			(const struct eap_hdr *) (hdr + 1);
+
+        	//printf("################Request Id: %d\n",ehdr->identifier);
+
+		if (plen >= sizeof(*ehdr) && ehdr->code == 1 && ehdr->identifier == 1) {
+
+			wpa_printf(MSG_DEBUG, "EAPOL: Header Check success for waiting time");
+
+                	if(((0 == strcmp(driver,"wired")) && (sm->eap->selectedMethod == 90) &&
+                	(sm->eap->disabled_wired > 0) && (tv.tv_sec < sm->eap->disabled_wired))){
+                               
+                		printf("###########Neglecting Packet till: %ld\n",sm->eap->disabled_wired);
+                		//printf("###########Neglecting Packet: %ld\n",tv.tv_sec);
+                        	break;
+        		}
+		}
+
 		if (sm->conf.workaround) {
 			/*
 			 * An AP has been reported to send out EAP message with

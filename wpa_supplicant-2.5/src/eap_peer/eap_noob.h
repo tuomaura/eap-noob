@@ -197,6 +197,7 @@ struct eap_noob_peer_context{
         char * db_name;
         char * db_table_name;
 	sqlite3 * peerDB;
+	int wired;
 };
 
 
@@ -393,7 +394,7 @@ static int eap_noob_create_db(struct eap_sm *sm,struct eap_noob_peer_context * d
 static void eap_noob_assign_config(char * conf_name,char * conf_value,struct eap_noob_peer_data * data);
 static void eap_noob_parse_config(char * buff,struct eap_noob_peer_data * data);
 static int eap_noob_handle_incomplete_conf(struct eap_noob_peer_context * data);
-static int eap_noob_prepare_peer_info_obj(struct eap_noob_peer_data * data);
+//static int eap_noob_prepare_peer_info_obj(struct eap_noob_peer_data * data);
 static int eap_noob_read_config(struct eap_sm *sm,struct eap_noob_peer_context * data);
 static int eap_noob_peer_ctxt_alloc(struct eap_sm *sm,  struct eap_noob_peer_context * data);
 static int eap_noob_peer_ctxt_init(struct eap_sm *sm,  struct eap_noob_peer_context * data);

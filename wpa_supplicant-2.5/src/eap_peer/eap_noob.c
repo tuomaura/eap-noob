@@ -1315,9 +1315,18 @@ static void eap_noob_assign_waittime(struct eap_sm *sm,struct eap_noob_peer_cont
 
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB ASSIGN WAIT TIME");
 	clock_gettime(CLOCK_BOOTTIME, &tv);
+#if 1
+	if(0 == strcmp(wpa_s->driver->name,"wired")){
+		sm->disabled_wired = tv.tv_sec + data->serv_attr->minsleep;
+		printf("\n ************************EAP-NOOB: disabled untill = %ld\n",sm->disabled_wired);
+		data->wired = 1;	
+		return;
+	}	
+#endif
+	sm->disabled_wired = 0;
 	wpa_s->current_ssid->disabled_until.sec = tv.tv_sec + data->serv_attr->minsleep;
 	wpa_blacklist_add(wpa_s, wpa_s->current_ssid->bssid);
-	printf("\n %s  *******************************************EAP-NOOB: now : %ld  disabled untill = %ld\n",wpa_s->current_ssid->ssid,tv.tv_sec ,wpa_s->current_ssid->disabled_until.sec);
+	printf("\n %s  ************************EAP-NOOB: now : %ld  disabled untill = %ld\n",wpa_s->current_ssid->ssid,tv.tv_sec ,wpa_s->current_ssid->disabled_until.sec);
 
 }
 
@@ -1492,18 +1501,17 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)
 			else if (os_strcmp(azColName[count], "Vers") == 0) {
 				//data->version[0] = (int) strtol(argv[count], NULL, 10);
 				eap_noob_decode_vers_array(argv[count], data);
-				printf("***************VERSION = %d\n", data->version[0]);
 			}
 			else if (os_strcmp(azColName[count], "Verp") == 0) {
 				peer->peer_attr->version = (int) strtol(argv[count], NULL, 10);
 			}
 			else if (os_strcmp(azColName[count], "state") == 0) {
 				data->state = (int) strtol(argv[count], NULL, 10);
+				printf("****************state = %d\n",data->state);
 			}
 			else if (os_strcmp(azColName[count], "Csuites") == 0) {
 				//data->cryptosuite[0] = (int) strtol(argv[count], NULL, 10);
 				eap_noob_decode_csuites_array(argv[count], data);
-				printf("****************CSUITE = %d\n",data->version[0]);
 			}
 			else if (os_strcmp(azColName[count], "Csuitep") == 0) {
 				peer->peer_attr->cryptosuite = (int) strtol(argv[count], NULL, 10);
@@ -2938,7 +2946,7 @@ static int eap_noob_create_db(struct eap_sm *sm,struct eap_noob_peer_context * d
 
 	}else{
 
-		if(wpa_s->current_ssid->ssid){
+		if((wpa_s->current_ssid->ssid) || (0 == strcmp(wpa_s->driver->name,"wired"))){
 
 			//TODO: add row check condition here	
 			os_snprintf(buff,100,"SELECT COUNT(*) from %s WHERE ssid ='%s'",data->db_table_name,
@@ -3077,6 +3085,7 @@ static int eap_noob_handle_incomplete_conf(struct eap_noob_peer_context * data)
  * @data : peer context
  * Returns : SUCCESS/FAILURE
 **/
+/*
 static int eap_noob_prepare_peer_info_obj(struct eap_noob_peer_data * data)
 {
 	//To-Do: Send Peer Info and Server Info during fast reconnect only if they have changed
@@ -3103,7 +3112,7 @@ static int eap_noob_prepare_peer_info_obj(struct eap_noob_peer_data * data)
 
 	return SUCCESS;
 }
-
+*/
 /**
  * eap_noob_read_config : read configuraions from config file
  * @data : peer context
