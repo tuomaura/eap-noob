@@ -24,7 +24,7 @@
 #define EAP_NOOB_NONCE_LEN      	16
 #define EAP_SHARED_SECRET_LEN   	32
 #define ECDH_KDF_MAX 			(1 << 30)
-
+#define MAX_URL_LEN			60
 #define ALGORITHM_ID			"EAP-NOOB"
 #define ALGORITHM_ID_LEN    		8
 
@@ -35,12 +35,13 @@
 #define MAX_CONF_LEN			500
 #define MAX_INFO_LEN			500
 
-#define KDF_LEN				192
+#define KDF_LEN				288
 #define MSK_LEN     			64
 #define EMSK_LEN			64
+#define AMSK_LEN			64
 #define KZ_LEN				32
-#define KMS_LEN				16
-#define KMP_LEN				16
+#define KMS_LEN				32
+#define KMP_LEN				32
 #define MAC_LEN				16
 #define FIXED_LENGTH             	6
 
@@ -118,7 +119,7 @@
 #define TYPE_FIVE_PARAMS        	(PEERID_RCVD|CSUITE_RCVD|INFO_RCVD)
 #define TYPE_SIX_PARAMS         	(PEERID_RCVD|NONCE_RCVD)
 #define TYPE_SEVEN_PARAMS       	(PEERID_RCVD|MAC_RCVD)
-#define TYPE_HINT_PARAMS			(PEERID_RCVD)
+#define TYPE_HINT_PARAMS		(PEERID_RCVD)
 #define CONF_PARAMS			(DIRECTION_RCVD|CSUITE_RCVD|VERSION_RCVD|PEER_NAME_RCVD|PEER_ID_NUM_RCVD)
 
 
@@ -233,6 +234,8 @@ struct eap_noob_ecdh_kdf_out{
 	char * msk_b64;
 	u8 * emsk;
 	char * emsk_b64;
+	u8 * amsk;
+	char * amsk_b64;
 	u8 * kms;
 	char * kms_b64;
 	u8 * kmp;

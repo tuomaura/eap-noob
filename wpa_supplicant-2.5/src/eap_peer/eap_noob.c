@@ -247,7 +247,7 @@ static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state){
 
 	const EVP_MD *md = EVP_sha256();
 	int counter = 0;
-	unsigned char * out = os_zalloc(192);
+	unsigned char * out = os_zalloc(KDF_LEN);
 
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Algorith ID:",ALGORITHM_ID,ALGORITHM_ID_LEN);
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Nonce_Peer",data->serv_attr->kdf_nonce_data->nonce_peer,EAP_NOOB_NONCE_LEN);
@@ -275,6 +275,7 @@ static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state){
 	if(out != NULL){
 		data->serv_attr->kdf_out->msk = os_zalloc(MSK_LEN);
 		data->serv_attr->kdf_out->emsk = os_zalloc(EMSK_LEN);
+		data->serv_attr->kdf_out->amsk = os_zalloc(AMSK_LEN);
 		data->serv_attr->kdf_out->kms = os_zalloc(KMS_LEN);
 		data->serv_attr->kdf_out->kmp = os_zalloc(KMP_LEN);
 		data->serv_attr->kdf_out->kz = os_zalloc(KZ_LEN);
@@ -283,6 +284,8 @@ static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state){
 		counter += MSK_LEN;
 		memcpy(data->serv_attr->kdf_out->emsk, out + counter, EMSK_LEN);
 		counter += EMSK_LEN;
+		memcpy(data->serv_attr->kdf_out->amsk, out + counter, AMSK_LEN);
+		counter += AMSK_LEN;
 		memcpy(data->serv_attr->kdf_out->kms, out + counter, KMS_LEN);
 		counter += KMS_LEN;
 		memcpy(data->serv_attr->kdf_out->kmp, out + counter, KMP_LEN);
@@ -1400,6 +1403,20 @@ static void eap_noob_config_change(struct eap_sm *sm , struct eap_noob_peer_cont
 
 }
 
+#if 0
+int eap_noob_ascii_check(char * str, int len)
+{
+	int count = 0;
+
+	for(;count <len; count++){
+		if(1 == (str[count] & 0x08))
+		return FAILURE;
+	}
+
+	return SUCCESS;
+}
+
+#endif
 /**
  * eap_noob_db_entry_check : check for an peerID entry inside the DB
  * @priv : server context
@@ -1407,7 +1424,8 @@ static void eap_noob_config_change(struct eap_sm *sm , struct eap_noob_peer_cont
  * @argv : argument 2d array
  * @azColName : colomn name 2d array 
 **/
-int eap_noob_db_entry_check(void * priv , int argc, char **argv, char **azColName){
+int eap_noob_db_entry_check(void * priv , int argc, char **argv, char **azColName)
+{
 
 	struct eap_noob_serv_data *data = priv;
 
@@ -2654,6 +2672,8 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_sm *sm,noob_json_t * req
 		u8 id){
 
 	struct wpabuf *resp = NULL;
+	char * url = NULL;
+	char url_cpy[2 * MAX_URL_LEN] = {0};
 
 
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB PROCESS REQ TYPE 1");
@@ -2675,11 +2695,18 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_sm *sm,noob_json_t * req
 		return resp;
 	}
 
-	if(NULL == os_strstr(data->serv_attr->serv_info, "https://")){
+	//checks on the received URL
+	url = os_strstr(data->serv_attr->serv_info, "https://");
+	strcpy(url_cpy,url);
+	url_cpy[strlen(url_cpy)-2] = '\0';
+
+	if(NULL == url || strlen(url_cpy) > MAX_URL_LEN ){
+		//FAILURE == eap_noob_ascii_check(url_cpy,strlen(url_cpy))){
 		data->serv_attr->err_code = E1003;
 		resp = eap_noob_err_msg(data,id);
 		return resp;
 	}
+
 
 	data->peer_attr->peerID = os_malloc(strlen(data->serv_attr->peerID)+1);
 	os_memcpy(data->peer_attr->peerID,data->serv_attr->peerID,strlen(data->serv_attr->peerID)+1);
