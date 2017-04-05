@@ -1846,7 +1846,7 @@ static int eap_noob_get_key(struct eap_noob_serv_context *data)
  	BN_CTX_free(ctx);
 	return 1;
 }
-
+/*
 static int eap_noob_cal_pow(u32 num, u32 pow)
 {
     long  p;
@@ -1864,7 +1864,7 @@ static int eap_noob_cal_pow(u32 num, u32 pow)
 
     return (int)r;
 }
-
+*/
 static int eap_noob_get_minsleep(struct eap_noob_serv_context *data)
 {
 	//TODO:  Include actual implementation for calculating the waiting time.
@@ -1940,7 +1940,7 @@ static void eap_noob_gen_KDF(struct eap_noob_serv_context * data, int state){
 
         const EVP_MD *md = EVP_sha256();
         int counter = 0;
-        unsigned char * out = os_zalloc(192);
+        unsigned char * out = os_zalloc(KDF_LEN);
 
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: ALGORITH ID:",ALGORITHM_ID,ALGORITHM_ID_LEN);
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Peer_NONCE:",data->peer_attr->kdf_nonce_data->nonce_peer,EAP_NOOB_NONCE_LEN);
@@ -1969,6 +1969,7 @@ static void eap_noob_gen_KDF(struct eap_noob_serv_context * data, int state){
         if(out != NULL){
                 data->peer_attr->kdf_out->msk = os_zalloc(MSK_LEN);
                 data->peer_attr->kdf_out->emsk = os_zalloc(EMSK_LEN);
+                data->peer_attr->kdf_out->amsk = os_zalloc(AMSK_LEN);
                 data->peer_attr->kdf_out->kms = os_zalloc(KMS_LEN);
                 data->peer_attr->kdf_out->kmp = os_zalloc(KMP_LEN);
                 data->peer_attr->kdf_out->kz = os_zalloc(KZ_LEN);
@@ -1977,6 +1978,8 @@ static void eap_noob_gen_KDF(struct eap_noob_serv_context * data, int state){
                 counter += MSK_LEN;
                 memcpy(data->peer_attr->kdf_out->emsk, out + counter, EMSK_LEN);
                 counter += EMSK_LEN;
+                memcpy(data->peer_attr->kdf_out->amsk, out + counter, AMSK_LEN);
+                counter += AMSK_LEN;
                 memcpy(data->peer_attr->kdf_out->kms, out + counter, KMS_LEN);
                 counter += KMS_LEN;
                 memcpy(data->peer_attr->kdf_out->kmp, out + counter, KMP_LEN);

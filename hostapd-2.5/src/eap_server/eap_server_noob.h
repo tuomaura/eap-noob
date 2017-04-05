@@ -41,12 +41,13 @@ typedef json_error_t 	noob_json_error_t;
 #define MAX_PEER_ID_LEN 	60
 #define MAX_LINE_SIZE		1000
 
-#define KDF_LEN			192
+#define KDF_LEN			288
 #define MSK_LEN     		64
 #define EMSK_LEN		64
+#define AMSK_LEN		64
 #define KZ_LEN			32
-#define KMS_LEN			16
-#define KMP_LEN			16
+#define KMS_LEN			32
+#define KMP_LEN			32
 #define MAC_LEN			16
 #define FIXED_LENGTH             6
 
@@ -216,6 +217,8 @@ struct eap_noob_ecdh_kdf_out{
         char * msk_b64;
         u8 * emsk;
         char * emsk_b64;
+        u8 * amsk;
+	char * amsk_b64;
         u8 * kms;
         char * kms_b64;
         u8 * kmp;
