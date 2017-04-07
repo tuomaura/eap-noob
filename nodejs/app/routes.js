@@ -9,6 +9,8 @@ var conn_str = configDB.dbPath;
 
 var rad_cli_path = configDB.radCliPath;
 
+var enableAC = parseInt(configDB.enableAccessControl,10);
+
 var PythonShell = require('python-shell');
 
 
@@ -129,7 +131,7 @@ module.exports = function(app, passport) {
 		else{
 			db.get('SELECT a.accessLevel AS al1, b.accessLevel AS al2 FROM roleAccessLevel a,fqdnACLevel b WHERE (b.fqdn = (SELECT NAS_id FROM radius WHERE user_name = ?)  OR b.fqdn = (SELECT d.fqdn FROM roleBasedAC d WHERE calledSID = (SELECT called_st_id FROM radius WHERE user_name = ?))) and a.role = (SELECT c.role FROM users c WHERE username = ?)', peer_id,peer_id,req.user.username, function(err, row1) {
 		if(err){res.json({"status": "failed"});}
-		else if(row1.al1 >= row1.al2){
+		else if(enableAC == 0 || row1.al1 >= row1.al2){
 
 			var options = {
   				mode: 'text',
@@ -260,6 +262,7 @@ module.exports = function(app, passport) {
 	var parseJson;
 	var parseJson1;
 	var d = new Date();
+	var seconds = Math.ceil(d.getTime() / 1000);
 	var val = 0;
 	var dev_status = ['Up to date','Update required','Obsolete, update now!']
 	i = 0;
@@ -602,11 +605,19 @@ module.exports = function(app, passport) {
 
         }else{
 
+
+  	   var hash = crypto.createHash('sha256');
+           var hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
+           //console.log(hash_str);
+           hash.update(hash_str);
+           var hint =  base64url.encode(hash.digest());
+	   console.log("Eabled Value: "+ enableAC);
+
      	   db = new sqlite3.Database(conn_str);
 
 	   db.get('SELECT a.accessLevel AS al1, b.accessLevel AS al2 FROM roleAccessLevel a,fqdnACLevel b WHERE (b.fqdn = (SELECT NAS_id FROM radius WHERE user_name = ?) OR b.fqdn = (SELECT d.fqdn FROM roleBasedAC d WHERE calledSID = (SELECT called_st_id FROM radius WHERE user_name = ?))) and a.role = (SELECT c.role FROM users c WHERE username = ?)', peer_id,peer_id,req.user.username, function(err, row1) {
 		if(err){res.json({"ProfileMessage": "Failed because of Error!"});}
-		else if(row1.al1 >= row1.al2){
+		else if(enableAC == 0 || row1.al1 >= row1.al2){
      	
             		db.serialize(function() {
        		 		var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, userName = ?, serv_state = ? WHERE PeerID = ?");

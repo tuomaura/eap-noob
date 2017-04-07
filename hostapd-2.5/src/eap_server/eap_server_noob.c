@@ -569,6 +569,18 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)
 				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB hoob %s",data->oob_data->hoob_b64);
 				data->oob_data->hoob_len = eap_noob_Base64Decode(data->oob_data->hoob_b64, &data->oob_data->hoob, &len);
 			}
+		
+				
+			else if (os_strcmp(azColName[count], "hint_peer") == 0  && os_strlen(argv[count]) > 0) {
+				if(NULL != data->oob_data->hint_b64)
+					os_free(data->oob_data->hint_b64);
+
+				data->oob_data->hint_b64 = os_malloc(os_strlen(argv[count]));
+				strcpy(data->oob_data->hint_b64, argv[count]);
+				wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB noob %d",(int)os_strlen(argv[count]));
+				data->oob_data->hint_len = eap_noob_Base64Decode(data->oob_data->hint_b64, &data->oob_data->hint, &len);
+			}	
+					
 			else if (os_strcmp(azColName[count], "OOB_RECEIVED_FLAG") == 0 && (data->peer_state != RECONNECT && data->serv_state != RECONNECT )) { 
 				//TODO: This has to be properly checked and not only oob received flag
 				data->oob_recv = (int) strtol(argv[count],NULL,10);
@@ -784,7 +796,7 @@ int eap_noob_hint_request_check(void * priv , int argc, char **argv, char **azCo
 	int res = 0;
 	struct eap_noob_serv_context *data = priv;
 
-	if((res = strtol(argv[0],NULL,10)) > 1){
+	if((res = strtol(argv[0],NULL,10)) > 1 && data->peer_attr->dir == SERV_TO_PEER){
 		data->peer_attr->hint_required = TRUE;		
 	}else{
 		data->peer_attr->hint_required = FALSE;
@@ -2445,10 +2457,10 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_noob_serv_context *data
         	}
 
 	 	
-		if(0 != strcmp((char *)hoob, (char *)data->peer_attr->oob_data->hoob)){
+		/*if(0 != strcmp((char *)hoob, (char *)data->peer_attr->oob_data->hoob)){
 			eap_noob_set_error(data->peer_attr,E4001);
 			return eap_noob_err_msg(data,id);
-		}
+		}*/
 	}
 	 /*generate KDF*/
         eap_noob_gen_KDF(data,COMPLETION_EXCHANGE);
@@ -2465,6 +2477,7 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_noob_serv_context *data
 
 		eap_noob_json_object_set_new(req_obj,TYPE,eap_noob_json_integer(EAP_NOOB_TYPE_4));
 		eap_noob_json_object_set_new(req_obj,PEERID,eap_noob_json_string(data->peer_attr->peerID_gen));	
+		eap_noob_json_object_set_new(req_obj,HINT,eap_noob_json_string(data->peer_attr->oob_data->hint_b64));	
 		eap_noob_json_object_set_new(req_obj,MACs,eap_noob_json_string(mac_b64));	
 
 		req_json = eap_noob_json_dumps(req_obj,JSON_COMPACT);
@@ -2946,6 +2959,7 @@ static void  eap_noob_decode_obj(struct eap_noob_peer_data * data ,noob_json_t *
 
 	size_t decode_length;
 	size_t decode_length_nonce;
+	size_t len;
 	int retval_int = 0;
 	const char* retval_char = NULL;
 	noob_json_error_t error;
@@ -3009,7 +3023,15 @@ static void  eap_noob_decode_obj(struct eap_noob_peer_data * data ,noob_json_t *
 					data->rcvd_params |= PEERID_RCVD;
 				}
 				else if(0 == strcmp(key, HINT)){
+
+					if(data->oob_data->hint_b64 != NULL)
+						os_free(data->oob_data->hint_b64);
+					if(data->oob_data->hint != NULL)
+						os_free(data->oob_data->hint_b64);
+					
+
 					data->oob_data->hint_b64 = os_strdup(retval_char);
+					data->oob_data->hint_len = eap_noob_Base64Decode(data->oob_data->hint_b64, &data->oob_data->hint, &len);
 					data->rcvd_params |= HINT_RCVD;
 				}
 				else if(0 == strcmp(key, PEER_SERIAL_NUM)){
@@ -3393,9 +3415,10 @@ static void eap_noob_rsp_type_one(struct eap_sm *sm,
 static int eap_noob_exec_hint_queries(struct eap_noob_serv_context * data)
 {
 	char * query = os_malloc(MAX_LINE_SIZE);
+	//To-Do: send error if NoodID not found
 
 	if(query){
-		snprintf(query,MAX_LINE_SIZE,"SELECT * from %s where PeerID='%s' and  Hint='%s'",DEVICE_TABLE,
+		snprintf(query,MAX_LINE_SIZE,"SELECT Noob, Hoob from %s where PeerID='%s' and  Hint='%s'",DEVICE_TABLE,
 			data->peer_attr->peerID_gen,data->peer_attr->oob_data->hint_b64);
 		printf("Query = %s\n",query);
 		if(eap_noob_exec_query(query, eap_noob_callback,data,data)){

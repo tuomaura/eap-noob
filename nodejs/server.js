@@ -79,6 +79,8 @@ require('./app/routes.js')(app, passport); // load our routes and pass in our ap
   	db.run('CREATE TABLE  IF NOT EXISTS roleBasedAC ( id INTEGER PRIMARY KEY AUTOINCREMENT, calledSID TEXT, fqdn TEXT, FOREIGN KEY (fqdn) REFERENCES fqdnACLevel(fqdn));');
 	db.run('INSERT INTO roleBasedAC(calledSID,fqdn) VALUES ("6C-19-8F-83-C2-90:Noob2","iot.aalto.fi")');
 	db.run('INSERT INTO roleBasedAC(calledSID,fqdn) VALUES ("6C-19-8F-83-C2-80:Noob1","guest.aalto.fi")');
+  	
+	db.run('CREATE TABLE IF NOT EXISTS radius (calling_st_id  TEXT, NAS_id TEXT, user_name TEXT PRIMARY KEY);');	
 
 
   	db.run('CREATE TABLE  IF NOT EXISTS users ( id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, role INTEGER DEFAULT 1, isAdmin BOOLEAN DEFAULT FALSE,  FOREIGN KEY(role) REFERENCES roles(role_id) );');

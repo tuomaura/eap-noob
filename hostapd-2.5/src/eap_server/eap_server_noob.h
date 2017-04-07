@@ -170,7 +170,8 @@ typedef json_error_t 	noob_json_error_t;
 				UserName TEXT DEFAULT NULL,\
 				DevUpdate INTEGER ,\
 				sleepTime UNSIGNED BIG INT,\
-				errorCode INTEGER)" 
+				errorCode INTEGER,\
+				hint_peer TEXT)" 
 
 
 #define CREATE_RADIUS_TABLE "CREATE TABLE IF NOT EXISTS radius(\

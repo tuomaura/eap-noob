@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 
 import subprocess
 import signal
@@ -9,11 +9,13 @@ import sqlite3
 import json
 import sys, getopt
 import argparse
-from urllib.parse import urlparse
+from urlparse import urlparse
 import urllib
 import os.path
 import re
-import _thread
+import thread
+import base64
+import hashlib
 
 global conf_file
 db_name = 'peer_connection_db'
@@ -89,7 +91,7 @@ def exec_query(cmd, qtype):
 def url_to_db(params):
 	
 	cmd = 'UPDATE connections SET noob ='+'\''+ params['Noob'][0]+'\''+' ,hoob =\''+params['Hoob'][0]+'\''+' where PeerID=\''+params['PeerID'][0]+'\'' 
-	#print (cmd)
+	print (cmd)
 
 	exec_query(cmd,0)
 
@@ -147,10 +149,126 @@ def read_qr_code(arg):
 	print (line)
 	parse_qr_code(line) 
 
+def get_noob():
+        noob = os.urandom(16)
+        #noob_64 = base64.urlsafe_b64encode(noob +'=' * (4 - (len(noob) % 4)))
+        noob_64 = base64.urlsafe_b64encode(noob)
+	noob_64 = noob_64.strip('=')
+        return noob_64
+
+def exe_db_query(query):
+        
+        res = os.path.isfile(db_name)   
+      
+        if True != res:
+                return ret_obj(None, None, "No database file found")
+        
+        # create a DB connection 
+        db_conn = sqlite3.connect(db_name)
+
+        # check if DB cannot be accessed
+        if db_conn is None:
+                return ret_obj(None, None, "DB busy")
+      
+        out = []        
+        db_cur = db_conn.cursor()       
+      
+        db_cur.execute(query)
+
+        out = db_cur.fetchone()
+
+        db_conn.close()
+
+        return out
+
+
+def get_hoob(peer_id, noob_b64):
+
+	query = 'select Vers,Verp,PeerID,Csuites,Dirs,ServInfo,Csuitep,\
+	Dirp,PeerInfo, pub_key_serv,nonce_serv, pub_key_peer, nonce_peer  \
+	from connections where PeerID ='+'\''+str(peer_id)+'\''
+
+	out = exe_db_query(query)
+
+	if out is None:
+		return ret_obj(None, None, "No recored found")
+
+	Dir = int(1) and int(3)
+
+	hoob_arr = []
+
+        # Add Dir to list
+	hoob_arr.append(Dir)
+
+        # Add params selected from DB to list
+	for item in range (0,len(out)):
+		hoob_arr.append(out[item])
+
+        # Add noob to list
+	hoob_arr.append(noob_b64)
+
+        #convert it to string
+	hoob_str = json.dumps(hoob_arr)
+
+        # create hoob by hashing the hoob string
+	hoob = hashlib.sha256(hoob_str).hexdigest()
+        # convert it into URL safe Base64 type
+	#hoob_b64 = base64.urlsafe_b64encode(hoob[0:16] +'=' * (4 - (len(hoob[0:16]) % 4)));
+	hoob_b64 = base64.urlsafe_b64encode(hoob[0:16])
+	hoob_b64 = hoob_b64.strip('=')
+
+	noob_id = hashlib.sha256(noob_b64).hexdigest()
+	#noob_id_b64 = base64.urlsafe_b64encode(noob_id[0:16] +'=' * (4 - (len(noob_id[0:16]) % 4)));
+	noob_id_b64 = base64.urlsafe_b64encode(noob_id[0:16])
+	noob_id_b64 = noob_id_b64.strip('=')
+	return hoob_b64 , noob_b64, noob_id_b64
+
+
+def create_oob(peer_id):
+
+	con = sqlite3.connect(db_name)
+	c = con.cursor()
+	print peer_id
+	# check if peerID is NULL
+	if peer_id is None:
+		return ret_obj(None, None, "Peer ID NULL")
+
+        #First, get noob
+	noob = get_noob()
+
+        #Now, generate and return hoob
+	hoob,noob,noob_id = get_hoob(peer_id,noob)
+
+	print hoob
+	
+	print noob
+
+	print noob_id
+
+	#query = 'UPDATE connections SET Noob ='+'\''+ noob+'\''+' ,Hoob =\''+hoob+'\''+',show_OOB =\''+1+'\''+',gen_OOB =\''+0+'\''+' where PeerID=\''+peer_id+'\''
+	#exec_query(cmd,0)	
+
+	c.execute('UPDATE connections SET Noob = ? ,Hoob = ?, hint_server = ?, show_OOB = ?, gen_OOB = ? WHERE PeerID= ? ',(noob,hoob,noob_id,1,0,peer_id))
+	con.commit()
+	con.close()
+
+
+def gen_oob():
+
+	con = sqlite3.connect(db_name)
+	c = con.cursor()
+	for row in c.execute('select PeerID from connections where gen_OOB = 1'):
+		#print (row[0] + '\n')
+		peer_id = row[0]
+		create_oob(peer_id)
+	con.close()
+	return
+	
 
 def update_file(signum, frame):
 
 	#print ('Updating File')
+	gen_oob()
 	con = sqlite3.connect(db_name)
 	c = con.cursor()
 
@@ -206,7 +324,7 @@ def prepare(iface):
 	conf_file = open(config_file,'w')
 	conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=12000\n\n")
 	conf_file.close()
-	cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant "
+	cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant -dd"
 	subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
 
 def network_scan():
@@ -347,12 +465,13 @@ def main():
 		print("Server to peer direction")
 		if args.nfc == 'nfc':
 			print("through nfc")
-			_thread.start_new_thread(read_nfc_card,(None,))
+			thread.start_new_thread(read_nfc_card,(None,))
 		else:  
-			_thread.start_new_thread(read_qr_code,(None,))
+			thread.start_new_thread(read_qr_code,(None,))
 	elif direction is '1':
 		print("Peer to server direction")
 		if args.path is None:
+			gen_oob()
 			update_file(None,None)
 			launch_browser()
 		else:
@@ -367,7 +486,8 @@ def main():
 		if check_result():
 			no_result =1
 		time.sleep(5)
-		if direction is '1':
+		if direction is '1':	
+			gen_oob()
 			update_file(None,None)
 
 	print ("***************************************EAP AUTH SUCCESSFUL *****************************************************")	

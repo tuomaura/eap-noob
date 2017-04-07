@@ -34,6 +34,7 @@
 #define MAX_PEER_ID_LEN 		60
 #define MAX_CONF_LEN			500
 #define MAX_INFO_LEN			500
+#define MAX_LINE_SIZE           	1000
 
 #define KDF_LEN				288
 #define MSK_LEN     			64
@@ -111,6 +112,7 @@
 #define MINSLP_RCVD             	0x0200
 #define PEER_NAME_RCVD			0x0400
 #define PEER_ID_NUM_RCVD		0x0800
+#define HINT_RCVD               	0x1000
 
 #define TYPE_ONE_PARAMS         	(PEERID_RCVD|VERSION_RCVD|CSUITE_RCVD|DIRECTION_RCVD|INFO_RCVD) 
 #define TYPE_TWO_PARAMS         	(PEERID_RCVD|NONCE_RCVD|PKEY_RCVD)
@@ -159,7 +161,9 @@ typedef json_error_t 	noob_json_error_t;
 					pub_key_serv TEXT,\
 					pub_key_peer TEXT,\
 					err_code INTEGER,\
-					show_OOB INTEGER)"  
+					show_OOB INTEGER,\
+					gen_OOB INTEGER,\
+					hint_server TEXT)"  
 
 /*SQL Query to check peerID data*/
 
@@ -271,6 +275,10 @@ struct eap_noob_oob_data{
 	u8 * noob;
 	char * hoob_b64;
 	u8 * hoob;
+
+	char * hint_b64;
+	size_t hint_len;
+	u8 * hint;
 };
 
 
@@ -338,8 +346,8 @@ static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state);
 static noob_json_t * eap_noob_prepare_peer_info_json(struct eap_sm *sm,struct eap_noob_peer_config_params * data);
 static char * eap_noob_prepare_mac_arr(const struct eap_noob_peer_context * data, int type, int state);
 static u8 * eap_noob_gen_MAC(const struct eap_noob_peer_context * data,int type, u8 * key, int keylen, int state);
-static int eap_noob_get_noob(struct eap_noob_peer_context *data);
-static int eap_noob_send_oob(struct eap_noob_peer_context *data);
+//static int eap_noob_get_noob(struct eap_noob_peer_context *data);
+//static int eap_noob_send_oob(struct eap_noob_peer_context *data);
 size_t eap_noob_calcDecodeLength(const char* b64input);
 int eap_noob_Base64Decode(char* b64message, unsigned char** buffer, size_t* length);
 int eap_noob_Base64Encode(const unsigned char* buffer, size_t length, char** b64text);
@@ -350,8 +358,8 @@ int eap_noob_ECDH_KDF_X9_63(unsigned char *out, size_t outlen,
                 const unsigned char * partyVinfo, size_t partyVinfo_len,
                 const unsigned char * suppPrivinfo, size_t suppPrivinfo_len,
                 const EVP_MD *md);
-static char * eap_noob_prepare_hoob_arr(const struct eap_noob_peer_context * data);
-static int eap_noob_get_hoob(struct eap_noob_peer_context *data,unsigned char *out, size_t outlen);
+//static char * eap_noob_prepare_hoob_arr(const struct eap_noob_peer_context * data);
+//static int eap_noob_get_hoob(struct eap_noob_peer_context *data,unsigned char *out, size_t outlen);
 static int eap_noob_derive_secret(struct eap_noob_peer_context *data, size_t *secret_len);
 static int eap_noob_get_key(struct eap_noob_serv_data *data);
 static void eap_noob_verify_param_len(struct eap_noob_serv_data * data);
