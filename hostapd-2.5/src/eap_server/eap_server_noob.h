@@ -126,7 +126,7 @@ typedef json_error_t 	noob_json_error_t;
 #define SERV_NAME_RCVD		0x0400
 #define SERV_URL_RCVD		0x0800
 #define HINT_RCVD		0x1000
-#define WE_COUNT_RCVD		0x200
+#define WE_COUNT_RCVD		0x2000
 
 
 
