@@ -72,7 +72,7 @@ typedef json_error_t 	noob_json_error_t;
 #define NOT_DONE		0
 
 /*Maximum allowed waiting exchages*/
-#define MAX_WAIT_EXCHNG_TRIES 	10
+//#define MAX_WAIT_EXCHNG_TRIES 	10
 
 /*keywords for json encoding and decoding*/
 
@@ -126,6 +126,7 @@ typedef json_error_t 	noob_json_error_t;
 #define SERV_NAME_RCVD		0x0400
 #define SERV_URL_RCVD		0x0800
 #define HINT_RCVD		0x1000
+#define WE_COUNT_RCVD		0x200
 
 
 
@@ -138,7 +139,7 @@ typedef json_error_t 	noob_json_error_t;
 #define TYPE_SEVEN_PARAMS       (PEERID_RCVD|MAC_RCVD)
 #define TYPE_HINT_PARAMS        (PEERID_RCVD|HINT_RCVD)
 
-#define CONF_PARAMS             (DIRECTION_RCVD|CSUITE_RCVD|VERSION_RCVD|SERV_NAME_RCVD|SERV_URL_RCVD)
+#define CONF_PARAMS             (DIRECTION_RCVD|CSUITE_RCVD|VERSION_RCVD|SERV_NAME_RCVD|SERV_URL_RCVD|WE_COUNT_RCVD)
 #define DB_NAME			"peer_connection_db"
 #define DEVICE_TABLE		"devices"
 #define PEER_TABLE		"peers_connected"

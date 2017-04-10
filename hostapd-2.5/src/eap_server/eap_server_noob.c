@@ -52,6 +52,7 @@
  * eap_noob_json_array - Wrapper function for creating JSON array.
  * Returns: reference to new array if successful or NULL otherwise.
  **/
+static int max_we_count;
 
 
 static noob_json_t * eap_noob_json_array()
@@ -1134,6 +1135,12 @@ static void eap_noob_assign_config(char * conf_name,char * conf_value,struct eap
                 data->config_params |= SERV_URL_RCVD;
                 printf("FILE  READ= %s\n",data->serv_config_params->Serv_URL);
         }
+	else if(0 == strcmp("Max_WE", conf_name)){
+		max_we_count = (int) strtol(conf_value, NULL, 10);
+		data->config_params |= WE_COUNT_RCVD;
+                printf("FILE  READ= %d\n",max_we_count);	
+
+	}
 
 }
 
@@ -1193,10 +1200,11 @@ static int eap_noob_handle_incomplete_conf(struct eap_noob_serv_context * data)
                 return FAILURE;
         }
 
-        //set default values
+        //set default values if not provided via config
 	data->server_attr->version[0] = VERSION_ONE;
 	data->server_attr->cryptosuite[0] = SUITE_ONE;
 	data->server_attr->dir = BOTH_DIR;
+	max_we_count = 5;
 
         return SUCCESS;
 }
@@ -3293,7 +3301,7 @@ static void eap_noob_rsp_type_three(struct eap_sm *sm,
 
 		data->peer_attr->minslp_count++;
 
-		if(MAX_WAIT_EXCHNG_TRIES == data->peer_attr->minslp_count){
+		if(max_we_count == data->peer_attr->minslp_count){
 			eap_noob_set_error(data->peer_attr,E2001);
                 	eap_noob_set_done(data, NOT_DONE);
                 	return;
