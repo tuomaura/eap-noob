@@ -5,26 +5,31 @@ import hashlib
 import os
 import base64
 import sys, getopt
-
-db_name = "peer_connection_db"
+import argparse
+#db_name = "peer_connection_db"
 
 def main(argv):
 
-	peerId = ''
-	try:
-		opts, args = getopt.getopt(argv,"h:o:",["getoob=","help="])
-	except getopt.GetoptError:
-		print 'oobmessage.py -o <peerId>'
-		return;
-	for opt, arg in opts:
-		if opt == '-h':
-			print 'oobmessage.py -o <peerId>'
-			return;
-		elif opt in ("-o", "--getoob"):
-			peerId = arg
-			print get_oob_message(peerId)
-        
- 
+	peerId=None
+	path=None
+	noob=None
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-p', '--path', dest='path', help='absolute path to peer_connection_db')
+        parser.add_argument('-i','--id', dest='peerId', help='Assigned PeerId of the device')
+        parser.add_argument('-n','--gethoob', dest='noob', help='Received noob value')
+        args = parser.parse_args()
+	
+	peerId = args.peerId
+	path = args.path
+	noob = args.noob
+
+	if peerId is not None and path is not None and noob is None:
+		print get_oob_message(peerId,path)
+	elif peerId is not None and path is not None and noob is not None:
+		print get_hoob(peerId,noob,path)
+ 	else:
+		print('oobmessage.py -o <peerId> -p <path> [-n <noob>]')
 
 def ret_obj(noob, hoob, err):
 	obj = {}
@@ -35,22 +40,24 @@ def ret_obj(noob, hoob, err):
 
 def get_noob():
 	noob = os.urandom(16)
-	noob_64 = base64.urlsafe_b64encode(noob +'=' * (4 - (len(noob) % 4)))
+	#noob_64 = base64.urlsafe_b64encode(noob +'=' * (4 - (len(noob) % 4)))
+	noob_64 = base64.urlsafe_b64encode(noob)
+	noob_64 = noob_64.strip('=')
 	return noob_64
 
-def exe_db_query(query):
+def exe_db_query(query,path):
 
-	res = os.path.isfile(db_name)
+	res = os.path.isfile(path)
 
 	if True != res:
-		return ret_obj(None, None, "No database file found")
+		return None
  
 	# create a DB connection 
-	db_conn = sqlite3.connect(db_name)
+	db_conn = sqlite3.connect(path)
 
 	# check if DB cannot be accessed
 	if db_conn is None:		 
-		return ret_obj(None, None, "DB busy")
+		return None
 
  	out = []	
 	db_cur = db_conn.cursor() 	
@@ -63,16 +70,16 @@ def exe_db_query(query):
 
 	return out
 
-def get_hoob(peer_id, noob_b64):
+def get_hoob(peer_id, noob_b64,path):
       
 	query = 'select Vers,Verp,PeerID,Csuites,Dirs,ServInfo,Csuitep,\
         Dirp,PeerInfo, pub_key_serv,nonce_serv, pub_key_peer, nonce_peer  \
         from peers_connected where PeerID ='+'\''+str(peer_id)+'\''	
 	
-	out = exe_db_query(query)
+	out = exe_db_query(query, path)
 
 	if out is None:
-		return ret_obj(None, None, "No recored found")
+		return ret_obj(None, None, "No DB or no recored found")
 
         Dir = int(1) and int(3)	
 
@@ -94,11 +101,15 @@ def get_hoob(peer_id, noob_b64):
 	# create hoob by hashing the hoob string
 	hoob = hashlib.sha256(hoob_str).hexdigest()	
 	# convert it into URL safe Base64 type
-	hoob_b64 = base64.urlsafe_b64encode(hoob[0:16] +'=' * (4 - (len(hoob[0:16]) % 4)));
+	#hoob_b64 = base64.urlsafe_b64encode(hoob[0:16] +'=' * (4 - (len(hoob[0:16]) % 4)));
+	hoob_b64 = base64.urlsafe_b64encode(hoob[0:16]);
+	hoob_b64 = hoob_b64.strip('=')
+	f = open("log.txt","w")
+	f.write(hoob_str);
+	f.write(hoob_b64);
+	return ret_obj( noob_b64 , hoob_b64 , None)
 
-	return ret_obj( hoob_b64 , noob_b64 , None)
-
-def get_oob_message(peer_id):
+def get_oob_message(peer_id, path):
 
         # check if peerID is NULL
 	if peer_id is None:
@@ -108,7 +119,7 @@ def get_oob_message(peer_id):
 	noob = get_noob()
 	
 	#Now, generate and return hoob
-	return get_hoob(peer_id,noob)
+	return get_hoob(peer_id,noob,path)
 
 def get_peer_context(peer_id):
 	print peer_id

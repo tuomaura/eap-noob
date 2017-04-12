@@ -138,7 +138,7 @@ module.exports = function(app, passport) {
   				pythonPath: '/usr/bin/python',
   				pythonOptions: ['-u'],
   				scriptPath: configDB.ooblibPath,
-  				args: ['-o', peer_id]
+  				args: ['-i', peer_id, '-p', conn_str]
 			};
 			var parseJ;
         		PythonShell.run('oobmessage.py', options, function (err,results) {
@@ -150,6 +150,8 @@ module.exports = function(app, passport) {
 					var hash = crypto.createHash('sha256');
 					var hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
 					//console.log(hash_str);
+                			//console.log('noob:', noob);
+                			//console.log('hoob:', hoob);
   					hash.update(hash_str);
   					var hint =  base64url.encode(hash.digest());
 					//console.log(hint.slice(0,22));
@@ -605,17 +607,38 @@ module.exports = function(app, passport) {
 
         }else{
 
-
-  	   var hash = crypto.createHash('sha256');
-           var hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
-           //console.log(hash_str);
-           hash.update(hash_str);
-           var hint =  base64url.encode(hash.digest());
-	   console.log("Eabled Value: "+ enableAC);
-
-     	   db = new sqlite3.Database(conn_str);
-
-	   db.get('SELECT a.accessLevel AS al1, b.accessLevel AS al2 FROM roleAccessLevel a,fqdnACLevel b WHERE (b.fqdn = (SELECT NAS_id FROM radius WHERE user_name = ?) OR b.fqdn = (SELECT d.fqdn FROM roleBasedAC d WHERE calledSID = (SELECT called_st_id FROM radius WHERE user_name = ?))) and a.role = (SELECT c.role FROM users c WHERE username = ?)', peer_id,peer_id,req.user.username, function(err, row1) {
+		var options = {
+  			mode: 'text',
+  			pythonPath: '/usr/bin/python',
+  			pythonOptions: ['-u'],
+  			scriptPath: configDB.ooblibPath,
+  			args: ['-i', peer_id, '-p', conn_str,'-n', noob]
+		};
+			
+		var parseJ;
+        	PythonShell.run('oobmessage.py', options, function (err,results) {
+                	if (err){console.log("results : ",results); res.json({"status": "failed"});}
+			else{
+				parseJ = JSON.parse(results);
+				var hoob_cal = parseJ['hoob'];
+				var err = parseJ['err'];
+				if(hoob != hoob_cal){ 
+					req.flash('OOBMessage','Wrong OOB received!');
+					console.log(" Unrecognized Hoob received"); 
+					return; 
+				}
+			}	
+		});
+  	   	
+		var hash = crypto.createHash('sha256');
+        	var hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
+		hash.update(hash_str);
+        	var hint =  base64url.encode(hash.digest());
+		console.log("Eabled Value: "+ enableAC);
+		
+     		db = new sqlite3.Database(conn_str);
+	
+		db.get('SELECT a.accessLevel AS al1, b.accessLevel AS al2 FROM roleAccessLevel a,fqdnACLevel b WHERE (b.fqdn = (SELECT NAS_id FROM radius WHERE user_name = ?) OR b.fqdn = (SELECT d.fqdn FROM roleBasedAC d WHERE calledSID = (SELECT called_st_id FROM radius WHERE user_name = ?))) and a.role = (SELECT c.role FROM users c WHERE username = ?)', peer_id,peer_id,req.user.username, function(err, row1) {
 		if(err){res.json({"ProfileMessage": "Failed because of Error!"});}
 		else if(enableAC == 0 || row1.al1 >= row1.al2){
      	

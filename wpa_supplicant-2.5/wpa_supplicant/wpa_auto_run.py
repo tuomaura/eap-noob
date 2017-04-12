@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import subprocess
 import signal
@@ -9,11 +9,12 @@ import sqlite3
 import json
 import sys, getopt
 import argparse
-from urlparse import urlparse
+#from urlparse import urlparse
+from urllib.parse import urlparse
 import urllib
 import os.path
 import re
-import thread
+import _thread
 import base64
 import hashlib
 
@@ -102,10 +103,10 @@ def parse_qr_code(url):
 	params = urllib.parse.parse_qs(url_comp.query)
 
 	#print(params)	
-	
-	url_to_db(params)
-
-	change_config(params['PeerID'][0])
+	if True == check_hoob(params):
+		url_to_db(params)
+		change_config(params['PeerID'][0])	
+		print("OOB updated")
 
 def read_nfc_card(arg):
 	no_message = True
@@ -149,12 +150,6 @@ def read_qr_code(arg):
 	print (line)
 	parse_qr_code(line) 
 
-def get_noob():
-        noob = os.urandom(16)
-        #noob_64 = base64.urlsafe_b64encode(noob +'=' * (4 - (len(noob) % 4)))
-        noob_64 = base64.urlsafe_b64encode(noob)
-	noob_64 = noob_64.strip('=')
-        return noob_64
 
 def exe_db_query(query):
         
@@ -191,10 +186,9 @@ def get_hoob(peer_id, noob_b64):
 	out = exe_db_query(query)
 
 	if out is None:
-		return ret_obj(None, None, "No recored found")
+		return None
 
 	Dir = int(1) and int(3)
-
 	hoob_arr = []
 
         # Add Dir to list
@@ -210,25 +204,32 @@ def get_hoob(peer_id, noob_b64):
         #convert it to string
 	hoob_str = json.dumps(hoob_arr)
 
-        # create hoob by hashing the hoob string
-	hoob = hashlib.sha256(hoob_str).hexdigest()
-        # convert it into URL safe Base64 type
-	#hoob_b64 = base64.urlsafe_b64encode(hoob[0:16] +'=' * (4 - (len(hoob[0:16]) % 4)));
-	hoob_b64 = base64.urlsafe_b64encode(hoob[0:16])
-	hoob_b64 = hoob_b64.strip('=')
+	hoob_enc = hoob_str.encode('utf-8')
+	hoob = hashlib.sha256(hoob_enc).hexdigest()
+	hoob_b64 = base64.urlsafe_b64encode(hoob[0:16].encode('utf-8'))
+	#hoob_b64 = hoob_b64.encode('utf-8')
+	hoob_b64 = str(hoob_b64, 'utf-8').strip('=')
+	return hoob_b64
 
-	noob_id = hashlib.sha256(noob_b64).hexdigest()
-	#noob_id_b64 = base64.urlsafe_b64encode(noob_id[0:16] +'=' * (4 - (len(noob_id[0:16]) % 4)));
-	noob_id_b64 = base64.urlsafe_b64encode(noob_id[0:16])
-	noob_id_b64 = noob_id_b64.strip('=')
-	return hoob_b64 , noob_b64, noob_id_b64
+def get_noob_id(noob_b64):
 
+	noob_id_str = noob_b64+"noobid" 	
+	noob_id_enc = noob_id_str.encode('utf-8')
+	noob_id = hashlib.sha256(noob_id_enc).hexdigest()
+	noob_id_b64 = base64.urlsafe_b64encode(noob_id[0:16].encode('utf-8'))
+	noob_id_b64 = str(noob_id_b64,'utf-8').strip('=')
+	return noob_id_b64	
+
+def get_noob():
+	noob = os.urandom(16)
+	#noob_64 = base64.urlsafe_b64encode(noob +'=' * (4 - (len(noob) % 4)))
+	noob_64 = base64.urlsafe_b64encode(noob)
+	noob_64 = str(noob_64,'utf-8').strip('=')
+	return noob_64
 
 def create_oob(peer_id):
-
 	con = sqlite3.connect(db_name)
 	c = con.cursor()
-	print peer_id
 	# check if peerID is NULL
 	if peer_id is None:
 		return ret_obj(None, None, "Peer ID NULL")
@@ -236,14 +237,11 @@ def create_oob(peer_id):
         #First, get noob
 	noob = get_noob()
 
+	#get noob_id
+	noob_id =  get_noob_id(noob) 
+
         #Now, generate and return hoob
-	hoob,noob,noob_id = get_hoob(peer_id,noob)
-
-	print hoob
-	
-	print noob
-
-	print noob_id
+	hoob = get_hoob(peer_id,noob)
 
 	#query = 'UPDATE connections SET Noob ='+'\''+ noob+'\''+' ,Hoob =\''+hoob+'\''+',show_OOB =\''+1+'\''+',gen_OOB =\''+0+'\''+' where PeerID=\''+peer_id+'\''
 	#exec_query(cmd,0)	
@@ -264,6 +262,17 @@ def gen_oob():
 	con.close()
 	return
 	
+
+def check_hoob(params):
+
+	if params['PeerID'][0] is not None:
+		out = get_hoob(params['PeerID'][0], params['Noob'][0])
+
+		if (out) == (params['Hoob'][0].strip('\n')):
+			return True
+
+		print("Hoob mismatch")
+		return False
 
 def update_file(signum, frame):
 
@@ -324,7 +333,7 @@ def prepare(iface):
 	conf_file = open(config_file,'w')
 	conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=12000\n\n")
 	conf_file.close()
-	cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant -dd"
+	cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant"
 	subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
 
 def network_scan():
@@ -465,9 +474,9 @@ def main():
 		print("Server to peer direction")
 		if args.nfc == 'nfc':
 			print("through nfc")
-			thread.start_new_thread(read_nfc_card,(None,))
+			_thread.start_new_thread(read_nfc_card,(None,))
 		else:  
-			thread.start_new_thread(read_qr_code,(None,))
+			_thread.start_new_thread(read_qr_code,(None,))
 	elif direction is '1':
 		print("Peer to server direction")
 		if args.path is None:
