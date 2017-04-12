@@ -38,7 +38,7 @@ def set_max_oob_tries():
 	for line in noob_conf:
 		if '#' != line[0] and oob_try_keyword in line:
 			parts = re.sub('[\s+]', '', line)
-			max_oob_tries = (int) (parts[len(oob_try_keyword)+1])
+			max_oob_tries = int ((parts[len(oob_try_keyword)+1]))
 
 def change_config(peerID):
 
@@ -280,7 +280,7 @@ def check_hoob(params):
 	if params['P'][0] is not None:
 		query = 'select OobRetries from connections where PeerID ='+'\''+str(params['P'][0])+'\''
 		out = exe_db_query(query)
-		num_tries = out[0]
+		num_tries = int(out[0])
 		
 		if(num_tries >= max_oob_tries):
 			print("Max oob tries reached")
@@ -490,6 +490,7 @@ def main():
 	prepare(interface)
 	time.sleep(2)
 	network_scan()
+	set_max_oob_tries()
 	
 	while True:
 		ssid_list = get_result()
@@ -503,7 +504,7 @@ def main():
 	direction = get_direction()
 	check_if_table_exists()
 	
-	set_max_oob_tries()
+
 
 	if direction is '2':
 		print("Server to peer direction")
