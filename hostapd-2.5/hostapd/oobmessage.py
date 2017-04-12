@@ -18,24 +18,30 @@ def main(argv):
         parser.add_argument('-p', '--path', dest='path', help='absolute path to peer_connection_db')
         parser.add_argument('-i','--id', dest='peerId', help='Assigned PeerId of the device')
         parser.add_argument('-n','--gethoob', dest='noob', help='Received noob value')
+        parser.add_argument('-t','--MaxOobTries', dest='oobTries', help='Maximum oob tries')
+        parser.add_argument('-r','--recvHoob', dest='recvHoob', help='Received Hoob')
         args = parser.parse_args()
 	
 	peerId = args.peerId
 	path = args.path
 	noob = args.noob
+	recv_hoob = args.recvHoob
+	max_tries = int(args.oobTries)
 
 	if peerId is not None and path is not None and noob is None:
 		print get_oob_message(peerId,path)
-	elif peerId is not None and path is not None and noob is not None:
-		print get_hoob(peerId,noob,path)
+	elif peerId is not None and path is not None and noob is not None and recv_hoob is not None and max_tries is not None:
+		print get_hoob_comp_res(peerId,noob,path,max_tries,recv_hoob)
  	else:
 		print('oobmessage.py -o <peerId> -p <path> [-n <noob>]')
 
-def ret_obj(noob, hoob, err):
+def ret_obj(noob, hoob, err, result = None):
 	obj = {}
 	obj['noob'] = noob;
 	obj['hoob'] = hoob;
 	obj['err'] = err;
+	obj['res'] = result
+
 	return json.dumps(obj)
 
 def get_noob():
@@ -107,7 +113,42 @@ def get_hoob(peer_id, noob_b64,path):
 	f = open("log.txt","w")
 	f.write(hoob_str);
 	f.write(hoob_b64);
+
 	return ret_obj( noob_b64 , hoob_b64 , None)
+
+def get_hoob_comp_res(peerId,noob,path,max_tries, recv_hoob):
+
+	query = 'select OobRetries from peers_connected where PeerID ='+'\''+str(peerId)+'\''
+	out = exe_db_query(query,path)
+	num_tries = int(out[0])
+
+	if(num_tries >= max_tries):
+		return ret_obj(None, None, None, '8000') # code for max_tries reached
+
+	obj = json.loads(get_hoob(peerId, noob, path))
+
+	if (obj['hoob'] is not None):
+		if(obj['hoob'] == recv_hoob):
+			return ret_obj(None, None, None, '8001') # code for success
+		else:
+			num_tries += 1
+			db_conn = sqlite3.connect(path)
+
+			# check if DB cannot be accessed
+        		if db_conn is None:
+				return ret_obj(None, None, None, '8003') # code for internal error
+
+			db_cur = db_conn.cursor()
+			db_cur.execute('UPDATE peers_connected SET OobRetries = ? WHERE PeerID= ? ',(num_tries,peerId))
+        		db_conn.commit()
+        		db_conn.close()
+                		
+			return ret_obj(None, None, None, '8002') # code for failure
+
+	else:
+		return ret_obj(None, None, None, '8003') # code for internal error
+		
+			
 
 def get_oob_message(peer_id, path):
 

@@ -27,6 +27,18 @@ noob_conf_file='eapoob.conf'
 keyword = 'Direction'
 oob_out_file = '/tmp/noob_output.txt'
 oob_file = 'file.txt'
+max_oob_tries = 4
+oob_try_keyword = 'OobRetries'
+
+
+def set_max_oob_tries():
+
+	noob_conf = open(noob_conf_file, 'r')
+
+	for line in noob_conf:
+		if '#' != line[0] and oob_try_keyword in line:
+			parts = re.sub('[\s+]', '', line)
+			max_oob_tries = (int) (parts[len(oob_try_keyword)+1])
 
 def change_config(peerID):
 
@@ -266,10 +278,31 @@ def gen_oob():
 def check_hoob(params):
 
 	if params['PeerID'][0] is not None:
+		query = 'select OobRetries from connections where PeerID ='+'\''+str(params['PeerID'][0])+'\''
+		out = exe_db_query(query)
+		num_tries = out[0]
+		
+		if(num_tries >= max_oob_tries):
+			print("Max oob tries reached")
+			return False
+
 		out = get_hoob(params['PeerID'][0], params['Noob'][0])
 
 		if (out) == (params['Hoob'][0].strip('\n')):
 			return True
+
+		num_tries += 1
+		db_conn = sqlite3.connect(db_name)
+
+                # check if DB cannot be accessed
+		if db_conn is None:
+			print("Some DB error")
+			return False
+
+		db_cur = db_conn.cursor()
+		db_cur.execute('UPDATE connections SET OobRetries = ? WHERE PeerID= ? ',(num_tries,params['PeerID'][0]))
+		con.commit()
+		con.close()
 
 		print("Hoob mismatch")
 		return False
@@ -290,8 +323,8 @@ def update_file(signum, frame):
 			file.write("Error code: "+str(row[5]))
 		
 		line = (row[0].encode(encoding='UTF-8') + b',' + servinfo['ServName'].encode(encoding='UTF-8') + b',' 
-		+ servinfo['ServUrl'].encode(encoding='UTF-8')+b'/?PeerId='+row [2].encode(encoding='UTF-8') + 
-		b'&Noob=' + row[3].encode(encoding='UTF-8')+ b'&Hoob=' + row[4].encode(encoding='UTF-8') + b'\n')
+		+ servinfo['ServUrl'].encode(encoding='UTF-8')+b'/?P='+row [2].encode(encoding='UTF-8') + 
+		b'&N=' + row[3].encode(encoding='UTF-8')+ b'&H=' + row[4].encode(encoding='UTF-8') + b'\n')
 		file.write(line)
 	file.close()
 	con.close()
@@ -469,6 +502,8 @@ def main():
 
 	direction = get_direction()
 	check_if_table_exists()
+	
+	set_max_oob_tries()
 
 	if direction is '2':
 		print("Server to peer direction")

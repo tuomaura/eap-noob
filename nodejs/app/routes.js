@@ -11,6 +11,9 @@ var rad_cli_path = configDB.radCliPath;
 
 var enableAC = parseInt(configDB.enableAccessControl,10);
 
+var OobRetries =  parseInt(configDB.OobRetries,10);
+
+
 var PythonShell = require('python-shell');
 
 
@@ -580,9 +583,9 @@ module.exports = function(app, passport) {
 
     // process QR-code
     app.get('/sendOOB/',isLoggedIn, function (req, res) {
-        var peer_id = req.query.PeerId;
-        var noob = req.query.Noob;
-        var hoob = req.query.Hoob;
+        var peer_id = req.query.P;
+        var noob = req.query.N;
+        var hoob = req.query.H;
         var queryObject = url.parse(req.url,true).query;
         var len = Object.keys(queryObject).length;
 	
@@ -599,58 +602,75 @@ module.exports = function(app, passport) {
        		 var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, errorCode = ?, userName = ?, serv_state = ? WHERE PeerID = ?");
        		 stmt.run(1234,"","",3,req.user.username,2,peer_id);
 		 stmt.finalize();
+		 req.flash('profileMessage','Invalid Data');
+     		 res.redirect('/profile');
     	    });
 
 	db.close();
-	req.flash('profileMessage','Invalid Data');
-     	res.redirect('/profile');
+
 
         }else{
+  	   	
+		var hash = crypto.createHash('sha256');
+        	var hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
+		hash.update(hash_str);
+        	var hint =  base64url.encode(hash.digest());
 
 		var options = {
   			mode: 'text',
   			pythonPath: '/usr/bin/python',
   			pythonOptions: ['-u'],
   			scriptPath: configDB.ooblibPath,
-  			args: ['-i', peer_id, '-p', conn_str,'-n', noob]
+  			args: ['-i', peer_id, '-p', conn_str,'-n', noob,'-t', OobRetries, '-r',hoob]
 		};
-			
+		
 		var parseJ;
-        	PythonShell.run('oobmessage.py', options, function (err,results) {
-                	if (err){console.log("results : ",results); res.json({"status": "failed"});}
-			else{
-				parseJ = JSON.parse(results);
-				var hoob_cal = parseJ['hoob'];
-				var err = parseJ['err'];
-				if(hoob != hoob_cal){ 
-					req.flash('OOBMessage','Wrong OOB received!');
-					console.log(" Unrecognized Hoob received"); 
-					return; 
-				}
-			}	
-		});
-  	   	
-		var hash = crypto.createHash('sha256');
-        	var hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
-		hash.update(hash_str);
-        	var hint =  base64url.encode(hash.digest());
-		console.log("Eabled Value: "+ enableAC);
+		var err;
+                var hoob_cmp_res;
+
+
+
+		
 		
      		db = new sqlite3.Database(conn_str);
 	
 		db.get('SELECT a.accessLevel AS al1, b.accessLevel AS al2 FROM roleAccessLevel a,fqdnACLevel b WHERE (b.fqdn = (SELECT NAS_id FROM radius WHERE user_name = ?) OR b.fqdn = (SELECT d.fqdn FROM roleBasedAC d WHERE calledSID = (SELECT called_st_id FROM radius WHERE user_name = ?))) and a.role = (SELECT c.role FROM users c WHERE username = ?)', peer_id,peer_id,req.user.username, function(err, row1) {
 		if(err){res.json({"ProfileMessage": "Failed because of Error!"});}
+			
 		else if(enableAC == 0 || row1.al1 >= row1.al2){
-     	
-            		db.serialize(function() {
-       		 		var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, userName = ?, serv_state = ? WHERE PeerID = ?");
-       		 		stmt.run(1234,noob,hoob,req.user.username,2,peer_id);
-		 		stmt.finalize();
-    	    		});
+			
+        			PythonShell.run('oobmessage.py', options, function (err,results) {
+                			if (err){console.log("Error in python:" + err); res.json({"status": "Internal error !!"});}
+					else{
+						parseJ = JSON.parse(results);
+						err = parseJ['err'];
+						hoob_cmp_res = parseJ['res'];
+						console.log("Here Received");
+						
+						if(hoob_cmp_res != '8001'){ 
+							if(hoob_cmp_res == '8000'){
+								req.flash('profileMessage','Max OOB tries reaches!');
+								res.redirect('/profile');
+								console.log("Max tries reached"); 
+			 				}else{
+								req.flash('profileMessage','Wrong OOB received!');
+								res.redirect('/profile');
+								console.log(" Unrecognized Hoob received Here"); 
+							}
+						}else{
+            						db.serialize(function() {
+       		 						var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, userName = ?, serv_state = ? WHERE PeerID = ?");
+       		 						stmt.run(1234,noob,hoob,req.user.username,2,peer_id);
+		 						stmt.finalize();
+    	    						});
 
-			db.close();
-			req.flash('profileMessage','Received Successfully');
-     			res.redirect('/profile');
+							db.close();
+							req.flash('profileMessage','Received Successfully');
+     							res.redirect('/profile');
+						}
+
+					}	
+				});
                }
 	       else{req.flash('profileMessage','Access denied! Please contact admin.'); res.redirect('/profile'); }
            });

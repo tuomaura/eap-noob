@@ -172,7 +172,8 @@ typedef json_error_t 	noob_json_error_t;
 				DevUpdate INTEGER ,\
 				sleepTime UNSIGNED BIG INT,\
 				errorCode INTEGER,\
-				hint_peer TEXT)" 
+				hint_peer TEXT,\
+				OobRetries INTEGER DEFAULT 0)" 
 
 
 #define CREATE_RADIUS_TABLE "CREATE TABLE IF NOT EXISTS radius(\

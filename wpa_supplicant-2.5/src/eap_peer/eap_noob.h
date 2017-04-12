@@ -163,7 +163,8 @@ typedef json_error_t 	noob_json_error_t;
 					err_code INTEGER,\
 					show_OOB INTEGER,\
 					gen_OOB INTEGER,\
-					hint_server TEXT)"  
+					hint_server TEXT,\
+					OobRetries INTEGER DEFAULT 0)"  
 
 /*SQL Query to check peerID data*/
 
