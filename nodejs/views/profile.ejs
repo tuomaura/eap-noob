@@ -379,7 +379,7 @@ callTimers();
 function openNav(btn) {
     document.getElementById("myNav").style.width = "100%";
     var url_str = "<%=url%>";
-    var val = url_str + "/?PeerID=" + btn.getAttribute("value3")+"&Noob=" + btn.getAttribute("value1") + "&Hoob=" + btn.getAttribute("value2");
+    var val = url_str + "/?P=" + btn.getAttribute("value3")+"&N=" + btn.getAttribute("value1") + "&H=" + btn.getAttribute("value2");
     var overlay = document.getElementById("overlay");
     overlay.setAttribute("style", "background-color: white;")
     var content = document.createElement('div');

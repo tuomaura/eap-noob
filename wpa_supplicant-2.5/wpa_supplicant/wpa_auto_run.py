@@ -103,7 +103,7 @@ def exec_query(cmd, qtype):
 
 def url_to_db(params):
 	
-	cmd = 'UPDATE connections SET noob ='+'\''+ params['Noob'][0]+'\''+' ,hoob =\''+params['Hoob'][0]+'\''+' where PeerID=\''+params['PeerID'][0]+'\'' 
+	cmd = 'UPDATE connections SET noob ='+'\''+ params['N'][0]+'\''+' ,hoob =\''+params['H'][0]+'\''+' where PeerID=\''+params['P'][0]+'\'' 
 	print (cmd)
 
 	exec_query(cmd,0)
@@ -117,7 +117,7 @@ def parse_qr_code(url):
 	#print(params)	
 	if True == check_hoob(params):
 		url_to_db(params)
-		change_config(params['PeerID'][0])	
+		change_config(params['P'][0])	
 		print("OOB updated")
 
 def read_nfc_card(arg):
@@ -277,8 +277,8 @@ def gen_oob():
 
 def check_hoob(params):
 
-	if params['PeerID'][0] is not None:
-		query = 'select OobRetries from connections where PeerID ='+'\''+str(params['PeerID'][0])+'\''
+	if params['P'][0] is not None:
+		query = 'select OobRetries from connections where PeerID ='+'\''+str(params['P'][0])+'\''
 		out = exe_db_query(query)
 		num_tries = out[0]
 		
@@ -286,9 +286,9 @@ def check_hoob(params):
 			print("Max oob tries reached")
 			return False
 
-		out = get_hoob(params['PeerID'][0], params['Noob'][0])
+		out = get_hoob(params['P'][0], params['N'][0])
 
-		if (out) == (params['Hoob'][0].strip('\n')):
+		if (out) == (params['H'][0].strip('\n')):
 			return True
 
 		num_tries += 1
@@ -300,7 +300,7 @@ def check_hoob(params):
 			return False
 
 		db_cur = db_conn.cursor()
-		db_cur.execute('UPDATE connections SET OobRetries = ? WHERE PeerID= ? ',(num_tries,params['PeerID'][0]))
+		db_cur.execute('UPDATE connections SET OobRetries = ? WHERE PeerID= ? ',(num_tries,params['P'][0]))
 		con.commit()
 		con.close()
 
