@@ -2700,7 +2700,7 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_noob_serv_context *data,
 
 		req_json = eap_noob_json_dumps(req_obj,JSON_COMPACT|JSON_PRESERVE_ORDER);
 
-		wpa_printf(MSG_DEBUG, "EAP-NOOB: request %s",req_json);	
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: request %s =  %u",req_json,strlen(req_json));	
 		len = strlen(req_json)+1; //check here
 
 		req = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB,len , EAP_CODE_REQUEST, id);// len +1 for null termination
@@ -2779,7 +2779,7 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_sm * sm, struct eap_noob
 			eap_noob_json_object_set_new(req_obj,REALM,eap_noob_json_string(server_conf.realm));
 		
 		req_json = eap_noob_json_dumps(req_obj,JSON_COMPACT|JSON_PRESERVE_ORDER);
-		printf("REQ Received = %s\n", req_json);
+		printf("Request Sending = %s = %u\n", req_json,strlen(req_json));
 		len = strlen(req_json);//check here
 		req = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB,len+1 , EAP_CODE_REQUEST, id);
 		if (req == NULL) {

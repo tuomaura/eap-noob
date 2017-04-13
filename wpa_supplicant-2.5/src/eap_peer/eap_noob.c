@@ -2111,7 +2111,7 @@ static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data,
 
 		resp_json = eap_noob_json_dumps(rsp_obj,JSON_COMPACT|JSON_PRESERVE_ORDER);
 		len = strlen(resp_json)+1;
-		wpa_printf(MSG_DEBUG, "EAP-NOOB: Json %s",resp_json);
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: Response %s = %u",resp_json,strlen(resp_json));
 		resp = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB,len , EAP_CODE_RESPONSE, id);
 		if (resp == NULL) {
 			wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to allocate memory "
@@ -2160,7 +2160,7 @@ static struct wpabuf * eap_noob_rsp_type_one(struct eap_sm *sm,const struct eap_
 
 		resp_json = eap_noob_json_dumps(rsp_obj,JSON_COMPACT|JSON_PRESERVE_ORDER);
 		len = strlen(resp_json)+1;
-		printf("RESPONSE = %s\n", resp_json);	
+		printf("RESPONSE = %s = %u\n", resp_json,strlen(resp_json));	
 		resp = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB,len , EAP_CODE_RESPONSE, id);
 		if (resp == NULL) {
 			wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to allocate memory "

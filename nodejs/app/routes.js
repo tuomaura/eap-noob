@@ -638,39 +638,48 @@ module.exports = function(app, passport) {
 		if(err){res.json({"ProfileMessage": "Failed because of Error!"});}
 			
 		else if(enableAC == 0 || row1.al1 >= row1.al2){
-			
-        			PythonShell.run('oobmessage.py', options, function (err,results) {
-                			if (err){console.log("Error in python:" + err); res.json({"status": "Internal error !!"});}
-					else{
-						parseJ = JSON.parse(results);
-						err = parseJ['err'];
-						hoob_cmp_res = parseJ['res'];
-						console.log("Here Received");
+
+            		db.get('SELECT serv_state,errorCode FROM peers_connected WHERE PeerID = ?', peer_id, function(err, row2) {
+
+                		if (!row2){req.flash('profileMessage','Some Error contact admin!');res.redirect('/profile');console.log("Internal Error");}
+				else if(row2.errorCode) {req.flash('profileMessage','Error: ' + error_info[parseInt(row2.errorCode)] +'!!');res.redirect('/profile');console.log("Error" + row2.errorCode);}
+                		else if(parseInt(row2.serv_state) != 1) {req.flash('profileMessage','Error: state mismatch. Reset device');res.redirect('/profile');console.log("state mismatch");}
+				else {
+        				PythonShell.run('oobmessage.py', options, function (err,results) {
+                				if (err){console.log("Error in python:" + err); res.json({"status": "Internal error !!"});}
+						else{
+							parseJ = JSON.parse(results);
+							err = parseJ['err'];
+							hoob_cmp_res = parseJ['res'];
+							console.log("Here Received");
 						
-						if(hoob_cmp_res != '8001'){ 
-							if(hoob_cmp_res == '8000'){
-								req.flash('profileMessage','Max OOB tries reaches!');
-								res.redirect('/profile');
-								console.log("Max tries reached"); 
-			 				}else{
-								req.flash('profileMessage','Wrong OOB received!');
-								res.redirect('/profile');
-								console.log(" Unrecognized Hoob received Here"); 
-							}
-						}else{
-            						db.serialize(function() {
-       		 						var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, userName = ?, serv_state = ? WHERE PeerID = ?");
-       		 						stmt.run(1234,noob,hoob,req.user.username,2,peer_id);
-		 						stmt.finalize();
-    	    						});
+							if(hoob_cmp_res != '8001'){ 
+								if(hoob_cmp_res == '8000'){
+									req.flash('profileMessage','Max OOB tries reaches!');
+									res.redirect('/profile');
+									console.log("Max tries reached"); 
+			 					}else{
+									req.flash('profileMessage','Wrong OOB received!');
+									res.redirect('/profile');
+									console.log(" Unrecognized Hoob received Here"); 
+								}
+							}else{
+            							db.serialize(function() {
+       		 							var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, userName = ?, serv_state = ? WHERE PeerID = ?");
+       		 							stmt.run(1234,noob,hoob,req.user.username,2,peer_id);
+		 							stmt.finalize();
+    	    							});
 
-							db.close();
-							req.flash('profileMessage','Received Successfully');
-     							res.redirect('/profile');
-						}
+								db.close();
+								req.flash('profileMessage','Received Successfully');
+     								res.redirect('/profile');
+							}	
 
-					}	
-				});
+						}	
+					});
+				}
+            		});
+
                }
 	       else{req.flash('profileMessage','Access denied! Please contact admin.'); res.redirect('/profile'); }
            });
