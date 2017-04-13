@@ -588,6 +588,10 @@ module.exports = function(app, passport) {
         var hoob = req.query.H;
         var queryObject = url.parse(req.url,true).query;
         var len = Object.keys(queryObject).length;
+	var options;
+	var hash;
+	var hash_str;
+	var hint;
 	
         if(len != 3 || peer_id == undefined || noob == undefined || hoob == undefined)
         {
@@ -611,25 +615,18 @@ module.exports = function(app, passport) {
 
         }else{
   	   	
-		var hash = crypto.createHash('sha256');
-        	var hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
+		hash = crypto.createHash('sha256');
+        	hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
 		hash.update(hash_str);
-        	var hint =  base64url.encode(hash.digest());
+        	hint =  base64url.encode(hash.digest());
 
-		var options = {
+		options = {
   			mode: 'text',
   			pythonPath: '/usr/bin/python',
   			pythonOptions: ['-u'],
   			scriptPath: configDB.ooblibPath,
   			args: ['-i', peer_id, '-p', conn_str,'-n', noob,'-t', OobRetries, '-r',hoob]
 		};
-		
-		var parseJ;
-		var err;
-                var hoob_cmp_res;
-
-
-
 		
 		
      		db = new sqlite3.Database(conn_str);
@@ -645,13 +642,16 @@ module.exports = function(app, passport) {
 				else if(row2.errorCode) {req.flash('profileMessage','Error: ' + error_info[parseInt(row2.errorCode)] +'!!');res.redirect('/profile');console.log("Error" + row2.errorCode);}
                 		else if(parseInt(row2.serv_state) != 1) {req.flash('profileMessage','Error: state mismatch. Reset device');res.redirect('/profile');console.log("state mismatch");}
 				else {
-        				PythonShell.run('oobmessage.py', options, function (err,results) {
-                				if (err){console.log("Error in python:" + err); res.json({"status": "Internal error !!"});}
+					
+					var parseJ;
+					var err_p;
+                			var hoob_cmp_res;
+        				PythonShell.run('oobmessage.py', options, function (err_pr,results) {
+                				if (err_pr){console.log("Error in python:" + err); res.json({"status": "Internal error !!"});}
 						else{
 							parseJ = JSON.parse(results);
-							err = parseJ['err'];
+							err_p = parseJ['err'];
 							hoob_cmp_res = parseJ['res'];
-							console.log("Here Received");
 						
 							if(hoob_cmp_res != '8001'){ 
 								if(hoob_cmp_res == '8000'){
