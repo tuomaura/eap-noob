@@ -28,6 +28,7 @@
 #define MAX_URL_LEN			60
 #define ALGORITHM_ID			"EAP-NOOB"
 #define ALGORITHM_ID_LEN    		8
+#define FORMAT_BASE64URL		1
 
 /*MAX values for the fields*/
 #define MAX_SUP_VER             	1
@@ -114,17 +115,20 @@
 #define PEER_NAME_RCVD			0x0400
 #define PEER_ID_NUM_RCVD		0x0800
 #define HINT_RCVD               	0x1000
+#define DEF_MIN_SLEEP_RCVD              0x2000
+#define MSG_ENC_FMT_RCVD		0x4000
+
 
 #define TYPE_ONE_PARAMS         	(PEERID_RCVD|VERSION_RCVD|CSUITE_RCVD|DIRECTION_RCVD|INFO_RCVD) 
 #define TYPE_TWO_PARAMS         	(PEERID_RCVD|NONCE_RCVD|PKEY_RCVD)
-#define TYPE_THREE_PARAMS       	(PEERID_RCVD|MINSLP_RCVD)
+#define TYPE_THREE_PARAMS       	(PEERID_RCVD)
 #define TYPE_FOUR_PARAMS        	(PEERID_RCVD|MAC_RCVD)
 #define TYPE_FIVE_PARAMS        	(PEERID_RCVD|CSUITE_RCVD|INFO_RCVD)
 #define TYPE_SIX_PARAMS         	(PEERID_RCVD|NONCE_RCVD)
 #define TYPE_SEVEN_PARAMS       	(PEERID_RCVD|MAC_RCVD)
 #define TYPE_HINT_PARAMS		(PEERID_RCVD)
 #define CONF_PARAMS			(DIRECTION_RCVD|CSUITE_RCVD|VERSION_RCVD|PEER_NAME_RCVD|PEER_ID_NUM_RCVD)
-
+		
 
 #if 1
 #define JSON_ARRAY_FOREACH json_array_foreach
@@ -190,6 +194,7 @@ enum	{NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_
 enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};
 enum 	{HOOB,MACS,MACP};
 enum    {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,UPDATE_STATE_ERROR,UPDATE_OOB};
+
 struct eap_noob_peer_config_params{	
 
 	char * Peer_name;
@@ -208,6 +213,12 @@ struct eap_noob_peer_context{
 };
 
 
+struct eap_noob_globle_conf{
+	u32 default_minsleep;
+	u32 oob_enc_fmt;
+	u32 read_conf;
+};
+
 struct eap_noob_peer_data{
 
         u32 version;
@@ -216,7 +227,7 @@ struct eap_noob_peer_data{
         u32 dir;
         u32 minsleep;
 	u32 config_params;
-
+	
         char * peerID;
 	char * peer_info;
 	char * MAC;

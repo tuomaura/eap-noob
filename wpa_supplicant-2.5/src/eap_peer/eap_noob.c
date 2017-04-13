@@ -53,6 +53,8 @@
 #include <signal.h>
 
 
+struct eap_noob_globle_conf eap_noob_globle_conf = {0};
+
 /**
  * eap_noob_json_array - Wrapper function for creating JSON array.
  * Returns: reference to new array if successful or NULL otherwise.
@@ -1241,7 +1243,8 @@ static void  eap_noob_decode_obj(struct eap_noob_serv_data * data ,noob_json_t *
 
 			case JSON_INTEGER:
 
-				if(0 == (retval_int = eap_noob_json_integer_value(value)) && 0 != strcmp(key,TYPE)){
+				if((0 == (retval_int = eap_noob_json_integer_value(value))) && (0 != strcmp(key,TYPE)) 
+					&& (0 != strcmp(key, MINSLEEP))){
 					data->err_code = E1003;
 					return;
 				}
@@ -1354,6 +1357,11 @@ static void eap_noob_assign_waittime(struct eap_sm *sm,struct eap_noob_peer_cont
 
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB ASSIGN WAIT TIME");
 	clock_gettime(CLOCK_BOOTTIME, &tv);
+
+	if(0 == data->serv_attr->minsleep && 0 != eap_noob_globle_conf.default_minsleep)
+		data->serv_attr->minsleep = eap_noob_globle_conf.default_minsleep;
+
+	printf("Wait time  = %d\n",data->serv_attr->minsleep);
 
 	if(0 == strcmp(wpa_s->driver->name,"wired")){
 		sm->disabled_wired = tv.tv_sec + data->serv_attr->minsleep;
@@ -2120,7 +2128,6 @@ static struct wpabuf * eap_noob_rsp_type_one(struct eap_sm *sm,const struct eap_
 		return NULL;		
 	}
 
-	//TODO: generate a fresh nonce here
 	if(NULL != (rsp_obj = eap_noob_json_object())){
 
 		eap_noob_json_object_set_new(rsp_obj,TYPE,eap_noob_json_integer(EAP_NOOB_TYPE_1));
@@ -3112,7 +3119,7 @@ static void eap_noob_assign_config(char * conf_name,char * conf_value,struct eap
 		data->config_params |= CSUITE_RCVD;
 		printf("FILE  READ= %d\n",data->cryptosuite);
 	}		
-	else if(0 == strcmp("Direction",conf_name)){
+	else if(0 == strcmp("OobDirs",conf_name)){
 		data->dir = (int) strtol(conf_value, NULL, 10);
 		data->config_params |= DIRECTION_RCVD;
 		printf("FILE  READ= %d\n",data->dir);
@@ -3126,6 +3133,16 @@ static void eap_noob_assign_config(char * conf_name,char * conf_value,struct eap
 		data->peer_config_params->Peer_ID_Num = os_strdup(conf_value);
 		data->config_params |= PEER_ID_NUM_RCVD;
 		printf("FILE  READ= %s\n",data->peer_config_params->Peer_ID_Num);
+	}
+	else if(0 == strcmp("MinSleepDefault", conf_name)){
+		eap_noob_globle_conf.default_minsleep = (int) strtol(conf_value, NULL, 10);
+		data->config_params |= DEF_MIN_SLEEP_RCVD;
+		printf("FILE  READ= %d\n",eap_noob_globle_conf.default_minsleep);
+	}
+	else if(0 == strcmp("OobMessageEncoding", conf_name)){
+		eap_noob_globle_conf.oob_enc_fmt = (int) strtol(conf_value, NULL, 10);
+		data->config_params |= MSG_ENC_FMT_RCVD;
+		printf("FILE  READ= %d\n",eap_noob_globle_conf.oob_enc_fmt);
 	}
 	
 }
@@ -3184,9 +3201,16 @@ static int eap_noob_handle_incomplete_conf(struct eap_noob_peer_context * data)
 	}
 	
 	//set default values
-	data->peer_attr->version = VERSION_ONE;
-	data->peer_attr->cryptosuite = SUITE_ONE;
-	data->peer_attr->dir = PEER_TO_SERV;
+	if(! (data->peer_attr->config_params & VERSION_RCVD))
+		data->peer_attr->version = VERSION_ONE;
+	if(! (data->peer_attr->config_params & CSUITE_RCVD))
+		data->peer_attr->cryptosuite = SUITE_ONE;
+	if(! (data->peer_attr->config_params & DIRECTION_RCVD))
+		data->peer_attr->dir = PEER_TO_SERV;
+	if(! (data->peer_attr->config_params & DEF_MIN_SLEEP_RCVD))
+		eap_noob_globle_conf.default_minsleep = 0;
+	if(! (data->peer_attr->config_params & MSG_ENC_FMT_RCVD))
+		eap_noob_globle_conf.oob_enc_fmt = FORMAT_BASE64URL;
 	
 	return SUCCESS;
 }
@@ -3264,6 +3288,11 @@ static int eap_noob_read_config(struct eap_sm *sm,struct eap_noob_peer_context *
 
 	}
 
+	if(eap_noob_globle_conf.oob_enc_fmt != FORMAT_BASE64URL){
+		wpa_printf(MSG_ERROR, "EAP-NOOB: Unsupported OOB message encoding format");    	
+		return FAILURE;
+	}
+
 	if(data->peer_attr->config_params != CONF_PARAMS &&
 		FAILURE == eap_noob_handle_incomplete_conf(data))
 		return FAILURE;
@@ -3321,8 +3350,6 @@ static int eap_noob_peer_ctxt_alloc(struct eap_sm *sm,  struct eap_noob_peer_con
 static int eap_noob_peer_ctxt_init(struct eap_sm *sm,  struct eap_noob_peer_context * data)
 {
 
-	/*TODO: remove hard codings and initialize preferably through a 
-	  config file*/
 	int retval = FAILURE;
 
 	if(FAILURE != eap_noob_peer_ctxt_alloc(sm,data)){
@@ -3344,12 +3371,15 @@ static int eap_noob_peer_ctxt_init(struct eap_sm *sm,  struct eap_noob_peer_cont
 		printf("************* STATE = %d\n",data->serv_attr->state);
 	
 		if(data->serv_attr->state == UNREG || 
-			data->serv_attr->state == RECONNECT){	
+			data->serv_attr->state == RECONNECT || 
+				eap_noob_globle_conf.read_conf == 0){	
 
 			if(FAILURE == eap_noob_read_config(sm,data)){
 				wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to initialize context");
 				return FAILURE;
 			}
+
+			eap_noob_globle_conf.read_conf = 1;
 		}
 	}
 
