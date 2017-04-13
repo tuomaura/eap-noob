@@ -28,7 +28,8 @@ typedef json_error_t 	noob_json_error_t;
 #define PUBLIC_KEY      	"A Very secret public key"
 #define VERSION_ONE 		1
 #define SUITE_ONE 		1
-#define EAP_NOOB_NONCE_LEN      16
+#define EAP_NOOB_NOOB_LEN       16
+#define EAP_NOOB_NONCE_LEN      32
 #define EAP_SHARED_SECRET_LEN   32
 #define ALGORITHM_ID		"EAP-NOOB"
 #define ALGORITHM_ID_LEN    	8

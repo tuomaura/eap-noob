@@ -1965,16 +1965,17 @@ static void eap_noob_gen_KDF(struct eap_noob_serv_context * data, int state){
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: ALGORITH ID:",ALGORITHM_ID,ALGORITHM_ID_LEN);
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Peer_NONCE:",data->peer_attr->kdf_nonce_data->nonce_peer,EAP_NOOB_NONCE_LEN);
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Serv_NONCE:",data->peer_attr->kdf_nonce_data->nonce_serv,EAP_NOOB_NONCE_LEN);
+	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Shared Key:",data->peer_attr->ecdh_exchange_data->shared_key,EAP_SHARED_SECRET_LEN);
 
 	if(state == COMPLETION_EXCHANGE){
 		
-		wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: NOOB:",data->peer_attr->oob_data->noob,EAP_NOOB_NONCE_LEN);
+		wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: NOOB:",data->peer_attr->oob_data->noob,EAP_NOOB_NOOB_LEN);
         	eap_noob_ECDH_KDF_X9_63(out, KDF_LEN,
                 	data->peer_attr->ecdh_exchange_data->shared_key, EAP_SHARED_SECRET_LEN,
                 	(unsigned char *)ALGORITHM_ID, ALGORITHM_ID_LEN,
                 	data->peer_attr->kdf_nonce_data->nonce_peer, EAP_NOOB_NONCE_LEN,
                 	data->peer_attr->kdf_nonce_data->nonce_serv, EAP_NOOB_NONCE_LEN,
-                	data->peer_attr->oob_data->noob, EAP_NOOB_NONCE_LEN, md);
+                	data->peer_attr->oob_data->noob, EAP_NOOB_NOOB_LEN, md);
 	}else{
 		wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: kz:",data->peer_attr->kdf_out->kz,KZ_LEN);
         	eap_noob_ECDH_KDF_X9_63(out, KDF_LEN,
@@ -2008,7 +2009,7 @@ static void eap_noob_gen_KDF(struct eap_noob_serv_context * data, int state){
                 counter += KZ_LEN;
         }
 }
-
+#if 0
 static char * eap_noob_prepare_hoob_arr(struct eap_noob_serv_context * data){
 
 	noob_json_t * hoob_arr = NULL;
@@ -2112,7 +2113,7 @@ err:
         EVP_MD_CTX_destroy(mctx);
         return rv;
 }
-
+#endif
 /**
  * eap_noob_prepare_vers_arr : prepares a JSON array for Vers
  * @data: peer context
@@ -2441,9 +2442,11 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_noob_serv_context *data
 	struct wpabuf *req = NULL;
 	char * req_json = NULL;
 	size_t len = 0 ;
-	int dir = 0;	
 	u8 * mac = NULL;
 	char * mac_b64 = NULL;
+
+#if 0
+	int dir = 0;	
 	u8 * hoob = os_zalloc(HASH_LEN);
 	char * hoob_b64 = NULL;
 
@@ -2470,6 +2473,7 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_noob_serv_context *data
 			return eap_noob_err_msg(data,id);
 		}*/
 	}
+#endif
 	 /*generate KDF*/
         eap_noob_gen_KDF(data,COMPLETION_EXCHANGE);
         /*generate MAC*/

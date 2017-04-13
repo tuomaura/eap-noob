@@ -252,14 +252,15 @@ static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state){
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Algorith ID:",ALGORITHM_ID,ALGORITHM_ID_LEN);
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Nonce_Peer",data->serv_attr->kdf_nonce_data->nonce_peer,EAP_NOOB_NONCE_LEN);
 	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Nonce_Serv",data->serv_attr->kdf_nonce_data->nonce_serv,EAP_NOOB_NONCE_LEN);
+	wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Nonce_Serv",data->serv_attr->ecdh_exchange_data->shared_key, EAP_SHARED_SECRET_LEN);
 	if(state == COMPLETION_EXCHANGE){
-		wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Noob",data->serv_attr->oob_data->noob,EAP_NOOB_NONCE_LEN);
+		wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Noob",data->serv_attr->oob_data->noob,EAP_NOOB_NOOB_LEN);
 		eap_noob_ECDH_KDF_X9_63(out, KDF_LEN,
 				data->serv_attr->ecdh_exchange_data->shared_key, EAP_SHARED_SECRET_LEN,
 				(unsigned char *)ALGORITHM_ID, ALGORITHM_ID_LEN,
 				data->serv_attr->kdf_nonce_data->nonce_peer, EAP_NOOB_NONCE_LEN,
 				data->serv_attr->kdf_nonce_data->nonce_serv, EAP_NOOB_NONCE_LEN,
-				data->serv_attr->oob_data->noob, EAP_NOOB_NONCE_LEN, md);
+				data->serv_attr->oob_data->noob, EAP_NOOB_NOOB_LEN, md);
 	}else{
 		
 		wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: kz",data->serv_attr->kdf_out->kz,KZ_LEN);
@@ -1172,7 +1173,7 @@ static void eap_noob_verify_param_len(struct eap_noob_serv_data * data)
                                         break;
                                 case INFO_RCVD:
                                         if(strlen(data->serv_info) > MAX_INFO_LEN){
-						data->err_code = E1003;
+						data->err_code = E5002;
                                         }
                                         break;
                         }
@@ -1217,10 +1218,21 @@ static void  eap_noob_decode_obj(struct eap_noob_serv_data * data ,noob_json_t *
 					wpa_printf(MSG_DEBUG,"EAP-NOOB:Copy Verify %s",eap_noob_json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER));
 					data->ecdh_exchange_data->jwk_serv = eap_noob_json_loads(eap_noob_json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER),
 								JSON_COMPACT|JSON_PRESERVE_ORDER,&error);
-					wpa_printf(MSG_DEBUG,"EAP-NOOB:Copy Verify %s",eap_noob_json_dumps(data->ecdh_exchange_data->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER));
+					if(NULL == data->ecdh_exchange_data->jwk_serv){
+						data->err_code = E1003;
+                                                return;
+					}
+
+					wpa_printf(MSG_DEBUG,"EAP-NOOB:Copy Verify %s",eap_noob_json_dumps(data->ecdh_exchange_data->jwk_serv,
+															JSON_COMPACT|JSON_PRESERVE_ORDER));
 				}else if(0 == strcmp(key, SERV_INFO)){
 					data->rcvd_params |= INFO_RCVD;
 					data->serv_info = eap_noob_json_dumps(value,JSON_COMPACT|JSON_PRESERVE_ORDER);
+					if(NULL == data->serv_info){
+						data->err_code = E5002;
+                                        	return;
+					}
+
 					wpa_printf(MSG_DEBUG,"EAP-NOOB:Serv Info %s",data->serv_info);
 
 				}
@@ -1342,14 +1354,14 @@ static void eap_noob_assign_waittime(struct eap_sm *sm,struct eap_noob_peer_cont
 
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB ASSIGN WAIT TIME");
 	clock_gettime(CLOCK_BOOTTIME, &tv);
-#if 1
+
 	if(0 == strcmp(wpa_s->driver->name,"wired")){
 		sm->disabled_wired = tv.tv_sec + data->serv_attr->minsleep;
 		printf("\n ************************EAP-NOOB: disabled untill = %ld\n",sm->disabled_wired);
 		data->wired = 1;	
 		return;
-	}	
-#endif
+	}
+	
 	sm->disabled_wired = 0;
 	wpa_s->current_ssid->disabled_until.sec = tv.tv_sec + data->serv_attr->minsleep;
 	wpa_blacklist_add(wpa_s, wpa_s->current_ssid->bssid);
@@ -2581,7 +2593,6 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_sm *sm, noob_json_t * r
 	// TODO : verify received MAC here.
 	/*generate KDF*/
 	if(data->peer_attr->dir == PEER_TO_SERV && FAILURE == eap_noob_exec_hint_queries(data)){		
-		printf("SOme error in Hint section\n");
 		data->serv_attr->err_code = E1002;
                 resp = eap_noob_err_msg(data,id);
                 return resp;
@@ -2594,6 +2605,7 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_sm *sm, noob_json_t * r
 		/*generate MAC*/
 		mac = eap_noob_gen_MAC(data,MACS,data->serv_attr->kdf_out->kms, KMS_LEN,COMPLETION_EXCHANGE);
 		eap_noob_Base64Encode(mac+16, MAC_LEN, &mac_b64);
+		printf(" MAC = %s\n",mac_b64);
 
 		//if(0 != strcmp(mac_b64,data->serv_attr->MAC)){
 		if(0 != strcmp((char *)mac+16,data->serv_attr->MAC)){
@@ -2762,17 +2774,23 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_sm *sm,noob_json_t * req
 	}
 
 	//checks on the received URL
-	url = os_strstr(data->serv_attr->serv_info, "https://");
-	strcpy(url_cpy,url);
-	url_cpy[strlen(url_cpy)-2] = '\0';
+        if ( NULL == (url = os_strstr(data->serv_attr->serv_info, "https://"))){
 
-	if(NULL == url || strlen(url_cpy) > MAX_URL_LEN ){
-		//FAILURE == eap_noob_ascii_check(url_cpy,strlen(url_cpy))){
-		data->serv_attr->err_code = E1003;
-		resp = eap_noob_err_msg(data,id);
-		return resp;
-	}
+                data->serv_attr->err_code = E5003;
+                resp = eap_noob_err_msg(data,id);
+                return resp;
+        }
 
+
+        strcpy(url_cpy,url);
+        url_cpy[strlen(url_cpy)-2] = '\0';
+
+        if(NULL == url || strlen(url_cpy) > MAX_URL_LEN ){
+                //FAILURE == eap_noob_ascii_check(url_cpy,strlen(url_cpy))){
+                data->serv_attr->err_code = E5003;
+                resp = eap_noob_err_msg(data,id);
+                return resp;
+        }
 
 	data->peer_attr->peerID = os_malloc(strlen(data->serv_attr->peerID)+1);
 	os_memcpy(data->peer_attr->peerID,data->serv_attr->peerID,strlen(data->serv_attr->peerID)+1);

@@ -13,6 +13,7 @@ def main(argv):
 	peerId=None
 	path=None
 	noob=None
+	max_tries =None
 
         parser = argparse.ArgumentParser()
         parser.add_argument('-p', '--path', dest='path', help='absolute path to peer_connection_db')
@@ -26,7 +27,11 @@ def main(argv):
 	path = args.path
 	noob = args.noob
 	recv_hoob = args.recvHoob
-	max_tries = int(args.oobTries)
+	
+	if None != args.oobTries:
+		max_tries = int(args.oobTries)
+
+
 
 	if peerId is not None and path is not None and noob is None:
 		print get_oob_message(peerId,path)

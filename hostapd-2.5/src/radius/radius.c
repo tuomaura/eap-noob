@@ -653,7 +653,7 @@ struct radius_attr_hdr *radius_msg_add_attr(struct radius_msg *msg, u8 type,
 void radius_store_record(struct  radius_msg * msg, struct eap_sm * sm)
 {
 
-	char record[4][128] = {0};
+	char record[4][128] = {{0}};
 	char * pos = NULL;
 	struct radius_hdr *hdr;
 	int curr = 0;

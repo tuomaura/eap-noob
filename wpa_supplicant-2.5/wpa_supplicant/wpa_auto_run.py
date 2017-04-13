@@ -27,18 +27,20 @@ noob_conf_file='eapoob.conf'
 keyword = 'Direction'
 oob_out_file = '/tmp/noob_output.txt'
 oob_file = 'file.txt'
-max_oob_tries = 4
+max_oob_tries = 0
 oob_try_keyword = 'OobRetries'
 
 
 def set_max_oob_tries():
 
+	global max_oob_tries
 	noob_conf = open(noob_conf_file, 'r')
 
 	for line in noob_conf:
 		if '#' != line[0] and oob_try_keyword in line:
 			parts = re.sub('[\s+]', '', line)
 			max_oob_tries = int ((parts[len(oob_try_keyword)+1]))
+
 
 def change_config(peerID):
 
@@ -108,59 +110,78 @@ def url_to_db(params):
 
 	exec_query(cmd,0)
 
+# return true when the loop for reading the OOB message needs to be exited
 def parse_qr_code(url):
 	
+	ret_val = 0
 	url_comp = urlparse(url);
 	
 	params = urllib.parse.parse_qs(url_comp.query)
 
 	#print(params)	
-	if True == check_hoob(params):
+	ret_val = check_hoob(params)
+	if 1 == ret_val:
 		url_to_db(params)
 		change_config(params['P'][0])	
 		print("OOB updated")
+		return True
+
+	if  -1 == ret_val: 
+		return True
+
+	return False
 
 def read_nfc_card(arg):
-	no_message = True
-	print("In new thread")
-	cmd = "./read_through_nfc >"+oob_out_file
-	#runbash(cmd)
-	subprocess.Popen(cmd,shell=True)
+	
+	no_oob = False
 
-	while no_message:
-        	time.sleep(2)
-        	oob_output = open(oob_out_file,'r')
-        	for line in oob_output:
-                	if 'Noob' in line and 'Hoob' in line and 'PeerID' in line:
-                        	no_message = False
-        	oob_output.close()
+	while not no_oob: 
+		no_message = True
+		print("In new thread")
+		cmd = "./read_through_nfc >"+oob_out_file
+		#runbash(cmd)
+		subprocess.Popen(cmd,shell=True)
 
-	subprocess.Popen("sudo killall read_through_nfc",shell=True)
-	cmd = 'rm -f '+oob_out_file
-	runbash(cmd)
-	print (line)
-	parse_qr_code(line)
+		while no_message:
+        		time.sleep(2)
+        		oob_output = open(oob_out_file,'r')
+        		for line in oob_output:
+                		if 'N=' in line and 'H=' in line and 'P=' in line:
+                        		no_message = False
+        		oob_output.close()
+
+		subprocess.Popen("sudo killall read_through_nfc",shell=True)
+		cmd = 'rm -f '+oob_out_file
+		runbash(cmd)
+		print (line)
+		no_oob = parse_qr_code(line)
 
 def read_qr_code(arg):
-	no_message = True
-	#print("In new thread")
-	cmd = "zbarcam >"+oob_out_file
-	#runbash(cmd)
-	subprocess.Popen(cmd,shell=True)
 
-	while no_message:
-        	time.sleep(2)
-        	oob_output = open(oob_out_file,'r')
-        	for line in oob_output:
-                	if 'Noob' in line and 'Hoob' in line and 'PeerID' in line:
-                        	no_message = False
-        	oob_output.close()
+	no_oob = False
 
-	subprocess.Popen("sudo killall zbarcam",shell=True)
-	cmd = 'rm -f '+oob_out_file
-	runbash(cmd)
-	print (line)
-	parse_qr_code(line) 
+	while not no_oob: 
+		no_message = True
+		time.sleep(2)
+		print("In new thread")
+		cmd = "zbarcam >"+oob_out_file
+		#runbash(cmd)
+		subprocess.Popen(cmd,shell=True)
+
+		while no_message:
+        		time.sleep(2)
+        		oob_output = open(oob_out_file,'r')
+        		for line in oob_output:
+                		if 'N=' in line and 'H=' in line and 'P=' in line:
+                        		no_message = False
+        		oob_output.close()
+
+		subprocess.Popen("sudo killall zbarcam",shell=True)
+
+		cmd = 'rm -f '+oob_out_file
+		runbash(cmd)
+		print (line)
+		no_oob = parse_qr_code(line) 
 
 
 def exe_db_query(query):
@@ -274,22 +295,24 @@ def gen_oob():
 	con.close()
 	return
 	
-
+# 1=success, 0=failure, -1=Max tries reached
 def check_hoob(params):
+
+	global max_oob_tries
 
 	if params['P'][0] is not None:
 		query = 'select OobRetries from connections where PeerID ='+'\''+str(params['P'][0])+'\''
 		out = exe_db_query(query)
-		num_tries = int(out[0])
+		num_tries = out[0]
 		
 		if(num_tries >= max_oob_tries):
 			print("Max oob tries reached")
-			return False
+			return -1
 
 		out = get_hoob(params['P'][0], params['N'][0])
 
 		if (out) == (params['H'][0].strip('\n')):
-			return True
+			return 1
 
 		num_tries += 1
 		db_conn = sqlite3.connect(db_name)
@@ -297,15 +320,15 @@ def check_hoob(params):
                 # check if DB cannot be accessed
 		if db_conn is None:
 			print("Some DB error")
-			return False
+			return 0
 
 		db_cur = db_conn.cursor()
 		db_cur.execute('UPDATE connections SET OobRetries = ? WHERE PeerID= ? ',(num_tries,params['P'][0]))
-		con.commit()
-		con.close()
+		db_conn.commit()
+		db_conn.close()
 
 		print("Hoob mismatch")
-		return False
+		return 0
 
 def update_file(signum, frame):
 
@@ -490,7 +513,6 @@ def main():
 	prepare(interface)
 	time.sleep(2)
 	network_scan()
-	set_max_oob_tries()
 	
 	while True:
 		ssid_list = get_result()
@@ -504,7 +526,7 @@ def main():
 	direction = get_direction()
 	check_if_table_exists()
 	
-
+	set_max_oob_tries()
 
 	if direction is '2':
 		print("Server to peer direction")
