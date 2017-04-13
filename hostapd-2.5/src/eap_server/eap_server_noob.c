@@ -48,12 +48,12 @@
 #include "eap_i.h"
 #include "eap_server_noob.h"
 
+static struct eap_noob_global_conf server_conf;
+
 /**
  * eap_noob_json_array - Wrapper function for creating JSON array.
  * Returns: reference to new array if successful or NULL otherwise.
  **/
-static int max_we_count;
-
 
 static noob_json_t * eap_noob_json_array()
 {
@@ -948,29 +948,58 @@ static int eap_noob_parse_NAI(struct eap_noob_serv_context * data, int len)
 
 	wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s",__func__);
 
-	if(os_strstr(data->peer_attr->NAI, DOMAIN)){
+	printf("============REalm is %s\n",server_conf.realm);
+
+	if(os_strstr(data->peer_attr->NAI, DOMAIN) || os_strstr(data->peer_attr->NAI, server_conf.realm)){
 
 		token = strsep(&data->peer_attr->NAI, "@"); /*TODO : check for leak*/
 		data->peer_attr->user_name_peer = token;
+		data->peer_attr->realm = strsep(&data->peer_attr->NAI, "@");
+		printf("============REalm internal is %s\n",data->peer_attr->realm);
+
+		if(strlen(data->peer_attr->user_name_peer) > (MAX_PEER_ID_LEN + 3)){ // plus 3 for '+','s' and state number
+
+			eap_noob_set_error(data->peer_attr,E1001);
+                	return FAILURE;
+
+		}
+		printf("============REalm is 1 %s\n",server_conf.realm);
+
+
 		/*Peer State*/			
-		if(os_strstr(data->peer_attr->user_name_peer, "+")){
+		if(os_strstr(data->peer_attr->user_name_peer, "+") && (0 == strcmp(data->peer_attr->realm,server_conf.realm))){
+			
 		
 			token = strsep(&data->peer_attr->user_name_peer, "+");
+
 			data->peer_attr->peerID_rcvd = token;
 			token = strsep(&data->peer_attr->user_name_peer, "+");
+			printf("============REalm is 6 %s\n",server_conf.realm);
+
 			if(*token != 's'){
 				eap_noob_set_error(data->peer_attr,E1001);
 				return FAILURE;	
 			}
+			printf("============REalm is 2 %s\n",server_conf.realm);
+
 			data->peer_attr->peer_state = (int) strtol(token+1, NULL, 10);	
+			return SUCCESS;
 		}
-		else {
-			if(0 != strcmp("noob",data->peer_attr->user_name_peer)){
-				eap_noob_set_error(data->peer_attr,E1001);
-				return FAILURE;	
-			}
+		else if(0 == strcmp("noob",data->peer_attr->user_name_peer) && 0 == strcmp(data->peer_attr->realm,DOMAIN)){
+			data->peer_attr->peer_state = UNREG;
+			return SUCCESS;	
+		
 		}
+		else{
+			
+			printf("============REalm is 3 %s\n",server_conf.realm);
+			eap_noob_set_error(data->peer_attr,E1001);
+                	return FAILURE;
+		}
+
+
 		/* REALM */
+/*
 		token = strsep(&data->peer_attr->NAI, "@");
 		data->peer_attr->realm = token;
 
@@ -978,12 +1007,13 @@ static int eap_noob_parse_NAI(struct eap_noob_serv_context * data, int len)
 			eap_noob_set_error(data->peer_attr,E1001);
 			return FAILURE;	
 		}
-	}else{
-		eap_noob_set_error(data->peer_attr,E1001);
-		return FAILURE;	
+*/
 	}
+	wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s",__func__);
 
-	return SUCCESS;
+	eap_noob_set_error(data->peer_attr,E1001);
+	return FAILURE;
+
 }
 
 
@@ -1136,10 +1166,21 @@ static void eap_noob_assign_config(char * conf_name,char * conf_value,struct eap
                 printf("FILE  READ= %s\n",data->serv_config_params->Serv_URL);
         }
 	else if(0 == strcmp("Max_WE", conf_name)){
-		max_we_count = (int) strtol(conf_value, NULL, 10);
+		server_conf.max_we_count = (int) strtol(conf_value, NULL, 10);
 		data->config_params |= WE_COUNT_RCVD;
-                printf("FILE  READ= %d\n",max_we_count);	
+                printf("FILE  READ= %d\n",server_conf.max_we_count);
 
+		if(server_conf.max_we_count == 0)
+			server_conf.max_we_count = MAX_WAIT_EXCHNG_TRIES;//assign some default value if user has given wrong value	
+
+	}
+	else if(0 == strcmp("Realm", conf_name)){
+		if(server_conf.realm != NULL)
+			os_free(server_conf.realm);
+		server_conf.len_realm = strlen(conf_value);
+		server_conf.realm = (char *) os_strdup(conf_value);	
+		data->config_params |= REALM_RCVD;
+                printf("FILE  READ= %s\n",server_conf.realm);	
 	}
 
 }
@@ -1157,7 +1198,7 @@ static void eap_noob_parse_config(char * buff,struct eap_noob_server_data * data
         char * conf_name = NULL;
         char * conf_value = NULL;
         char * token = NULL;
-
+	server_conf.read_conf = 1;
         for(; *pos == ' ' || *pos == '\t' ; pos++);
 
         if(*pos == '#')
@@ -1201,10 +1242,20 @@ static int eap_noob_handle_incomplete_conf(struct eap_noob_serv_context * data)
         }
 
         //set default values if not provided via config
-	data->server_attr->version[0] = VERSION_ONE;
-	data->server_attr->cryptosuite[0] = SUITE_ONE;
-	data->server_attr->dir = BOTH_DIR;
-	max_we_count = 5;
+	if(!(data->server_attr->config_params & VERSION_RCVD))
+		data->server_attr->version[0] = VERSION_ONE;
+	
+	if(!(data->server_attr->config_params & CSUITE_RCVD))
+		data->server_attr->cryptosuite[0] = SUITE_ONE;
+
+	if(!(data->server_attr->config_params & DIRECTION_RCVD))
+		data->server_attr->dir = BOTH_DIR;
+
+	if(!(data->server_attr->config_params & WE_COUNT_RCVD))
+		server_conf.max_we_count = MAX_WAIT_EXCHNG_TRIES;
+
+	if(!(data->server_attr->config_params & REALM_RCVD))
+		server_conf.realm = os_strdup(DOMAIN);
 
         return SUCCESS;
 }
@@ -1378,6 +1429,11 @@ static int eap_noob_serv_ctxt_init( struct eap_noob_serv_context * data, struct 
 			len = sm->identity_len;
 		}
 
+		if(FAILURE == eap_noob_read_config(data)){
+                                wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to initialize context");
+                                return FAILURE;
+                }
+
 		if(SUCCESS == (retval = eap_noob_parse_NAI(data,len))){			
 			if(!(retval = eap_noob_create_db(data))) return retval;
 			
@@ -1396,15 +1452,15 @@ static int eap_noob_serv_ctxt_init( struct eap_noob_serv_context * data, struct 
 			}
 
 			if(data->peer_attr->serv_state == UNREG ||
-                        data->peer_attr->serv_state == RECONNECT){
-
+                        data->peer_attr->serv_state == RECONNECT || server_conf.read_conf == 0){
+/*
                         if(FAILURE == eap_noob_read_config(data)){
                                 wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to initialize context");
                                 return FAILURE;
-                        }
+                        }*/
                 }
 
-		}
+		}else {printf("ID compare returned false\n");}
 	}
 	return retval;
 
@@ -2718,6 +2774,9 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_sm * sm, struct eap_noob
 		eap_noob_json_object_set_new(req_obj,CSUITES_SERV,csuite_arr);
 		eap_noob_json_object_set_new(req_obj,DIRECTION_SERV,eap_noob_json_integer(data->server_attr->dir));
 		eap_noob_json_object_set_new(req_obj,SERV_INFO,eap_noob_prepare_serv_json_obj(data->server_attr->serv_config_params));
+
+		if(0 != strcmp(server_conf.realm,DOMAIN))
+			eap_noob_json_object_set_new(req_obj,REALM,eap_noob_json_string(server_conf.realm));
 		
 		req_json = eap_noob_json_dumps(req_obj,JSON_COMPACT|JSON_PRESERVE_ORDER);
 		printf("REQ Received = %s\n", req_json);
@@ -3303,13 +3362,14 @@ static void eap_noob_rsp_type_three(struct eap_sm *sm,
 
 	if((eap_noob_verify_peerID(data)) && (SUCCESS == eap_noob_change_state(data,WAITING))){
 
-		data->peer_attr->minslp_count++;
 
-		if(max_we_count == data->peer_attr->minslp_count){
+
+		if(server_conf.max_we_count <= data->peer_attr->minslp_count){
 			eap_noob_set_error(data->peer_attr,E2001);
                 	eap_noob_set_done(data, NOT_DONE);
                 	return;
 		}
+		data->peer_attr->minslp_count++;
 	
 		if(FAILURE == eap_noob_db_update(data,UPDATE_STATE_MINSLP)){
 			//eap_oob_set_error(); //Internal error

@@ -73,7 +73,7 @@ typedef json_error_t 	noob_json_error_t;
 #define NOT_DONE		0
 
 /*Maximum allowed waiting exchages*/
-//#define MAX_WAIT_EXCHNG_TRIES 	10
+#define MAX_WAIT_EXCHNG_TRIES 	5
 
 /*keywords for json encoding and decoding*/
 
@@ -109,6 +109,7 @@ typedef json_error_t 	noob_json_error_t;
 #define JSON_WEB_KEY    	"jwk"
 #define KEY_TYPE        	"kty"
 #define CURVE           	"crv"
+#define REALM			"realm"
 #define ECDH_KDF_MAX 		(1 << 30)
 
 #define SERV_NAME		"ServName"
@@ -128,7 +129,7 @@ typedef json_error_t 	noob_json_error_t;
 #define SERV_URL_RCVD		0x0800
 #define HINT_RCVD		0x1000
 #define WE_COUNT_RCVD		0x2000
-
+#define REALM_RCVD		0x4000
 
 
 #define TYPE_ONE_PARAMS		(PEERID_RCVD|VERSION_RCVD|CSUITE_RCVD|DIRECTION_RCVD|INFO_RCVD) 
@@ -140,7 +141,7 @@ typedef json_error_t 	noob_json_error_t;
 #define TYPE_SEVEN_PARAMS       (PEERID_RCVD|MAC_RCVD)
 #define TYPE_HINT_PARAMS        (PEERID_RCVD|HINT_RCVD)
 
-#define CONF_PARAMS             (DIRECTION_RCVD|CSUITE_RCVD|VERSION_RCVD|SERV_NAME_RCVD|SERV_URL_RCVD|WE_COUNT_RCVD)
+#define CONF_PARAMS             (DIRECTION_RCVD|CSUITE_RCVD|VERSION_RCVD|SERV_NAME_RCVD|SERV_URL_RCVD|WE_COUNT_RCVD|REALM_RCVD)
 #define DB_NAME			"peer_connection_db"
 #define DEVICE_TABLE		"devices"
 #define PEER_TABLE		"peers_connected"
@@ -189,6 +190,15 @@ enum {NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_
 enum {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,UPDATE_STATE_ERROR, UPDATE_OOB};
 enum eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001}; 
 enum {HOOB,MACS,MACP};
+
+struct eap_noob_global_conf{
+
+int read_conf;
+int max_we_count;
+char * realm;
+int len_realm;
+
+};
 
 struct eap_noob_serv_config_params{
 

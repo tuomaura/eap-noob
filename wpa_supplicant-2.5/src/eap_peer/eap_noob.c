@@ -1254,7 +1254,7 @@ static void  eap_noob_decode_obj(struct eap_noob_serv_data * data ,noob_json_t *
 				}
 				else if(0 == strcmp(key, MINSLEEP)){
 					data->minsleep = retval_int;
-					data->rcvd_params |= MINSLP_RCVD;
+					//data->rcvd_params |= MINSLP_RCVD;
 				}
 				else if(0 == strcmp(key, ERR_CODE)){
 					data->err_code = retval_int;
@@ -1272,6 +1272,12 @@ static void  eap_noob_decode_obj(struct eap_noob_serv_data * data ,noob_json_t *
 					data->peerID = os_strdup(retval_char);
 					data->rcvd_params |= PEERID_RCVD;
 
+				}
+				if(0 == strcmp(key, REALM)){
+					if(NULL != data->realm)
+						os_free(data->realm);
+					data->realm = os_strdup(retval_char);
+					printf("*******%s\n",data->realm);
 				}
 
 				else if(0 == strcmp(key, NONCE_SERV)){ 
@@ -1432,7 +1438,7 @@ static void eap_noob_config_change(struct eap_sm *sm , struct eap_noob_peer_cont
 	struct wpa_supplicant *wpa_s = (struct wpa_supplicant *) sm->msg_ctx;
 
 	if(wpa_s){
-		snprintf(buff,120,"%s+s%d@eap-noob.net",data->peer_attr->peerID, data->serv_attr->state);
+		snprintf(buff,120,"%s+s%d@%s",data->peer_attr->peerID, data->serv_attr->state,data->peer_attr->realm);
 		len = os_strlen(buff);
 
 		os_free(wpa_s->current_ssid->eap.identity);
@@ -1621,6 +1627,21 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)
 				peer->peer_attr->peer_info = os_malloc(os_strlen(argv[count]));
 				strcpy(peer->peer_attr->peer_info, argv[count]);
 			}
+			else if (os_strcmp(azColName[count], "Realm") == 0) {
+				if(NULL != data->realm)
+					os_free(data->realm);
+				if(NULL != peer->peer_attr->realm)
+					os_free(peer->peer_attr->realm);
+
+				data->realm = os_malloc(os_strlen(argv[count]));
+				strcpy(data->realm, argv[count]);
+
+				peer->peer_attr->realm = os_malloc(os_strlen(argv[count]));
+				strcpy(peer->peer_attr->realm, argv[count]);
+
+				eap_noob_Base64Decode(data->kdf_nonce_data->nonce_peer_b64, &data->kdf_nonce_data->nonce_peer, &len); //To-Do check for length
+
+			}	
 			else if (os_strcmp(azColName[count], "SharedSecret") == 0 && os_strlen(argv[count]) > 0) {
 				if(NULL != data->ecdh_exchange_data->shared_key_b64)
 					os_free(data->ecdh_exchange_data->shared_key_b64);
@@ -1812,9 +1833,9 @@ static int eap_noob_db_entry(struct eap_sm *sm,struct eap_noob_peer_context *dat
 
 	snprintf(query,MAX_QUERY_LEN,"INSERT INTO %s (ssid, PeerID, Vers,Verp, state, Csuites,Csuitep,Dirs,Dirp, "
 			"nonce_peer, nonce_serv, minsleep,ServInfo, PeerInfo,SharedSecret, Noob, Hoob," 
-			" OOB_RECEIVED_FLAG,pub_key_serv,pub_key_peer,err_code)"
+			" OOB_RECEIVED_FLAG,pub_key_serv,pub_key_peer,err_code,Realm)"
 			"VALUES ('%s','%s','%s', %d, %d, '%s', %d, %d ,%d,'%s','%s', %d, '%s', '%s','%s',"
-			" '%s', '%s', %d, '%s', '%s',%d)", data->db_table_name,
+			" '%s', '%s', %d, '%s', '%s',%d,'%s')", data->db_table_name,
 			wpa_s->current_ssid->ssid,data->serv_attr->peerID, eap_noob_json_dumps(vers_arr,JSON_COMPACT),
 			data->peer_attr->version,data->serv_attr->state,  
 			eap_noob_json_dumps(csuites_arr,JSON_COMPACT), data->peer_attr->cryptosuite,
@@ -1823,7 +1844,7 @@ static int eap_noob_db_entry(struct eap_sm *sm,struct eap_noob_peer_context *dat
 			data->serv_attr->minsleep, data->serv_attr->serv_info, 
 			data->peer_attr->peer_info,data->serv_attr->ecdh_exchange_data->shared_key_b64,
 			"","",0,(eap_noob_json_dumps(data->serv_attr->ecdh_exchange_data->jwk_serv,JSON_COMPACT|JSON_PRESERVE_ORDER)),
-			(eap_noob_json_dumps(data->serv_attr->ecdh_exchange_data->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER)),data->serv_attr->err_code);
+			(eap_noob_json_dumps(data->serv_attr->ecdh_exchange_data->jwk_peer,JSON_COMPACT|JSON_PRESERVE_ORDER)),data->serv_attr->err_code,data->peer_attr->realm);
 
 	printf("QUERY = %s\n",query);
 
@@ -2801,6 +2822,14 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_sm *sm,noob_json_t * req
 
 	data->peer_attr->peerID = os_malloc(strlen(data->serv_attr->peerID)+1);
 	os_memcpy(data->peer_attr->peerID,data->serv_attr->peerID,strlen(data->serv_attr->peerID)+1);
+
+	if(NULL != data->serv_attr->realm && strlen(data->serv_attr->realm) > 0){
+		data->peer_attr->realm = os_strdup(data->serv_attr->realm);
+	}else{
+		data->peer_attr->realm = os_strdup(DEFAULT_REALM);
+		data->serv_attr->realm = os_strdup(DEFAULT_REALM);
+	} 
+	printf("*******%s\n",data->serv_attr->realm);
 
 	//TODO: handle eap_noob failure scenario
 	if(SUCCESS == eap_noob_check_compatibility(data)){

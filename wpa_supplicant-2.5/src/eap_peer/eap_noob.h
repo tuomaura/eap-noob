@@ -16,6 +16,7 @@
 #define MAX_QUERY_LEN			2048
 #define SHORT_QUERY_LEN			500
 #define DOMAIN		    		"@eap-noob.net"
+#define DEFAULT_REALM		    	"eap-noob.net"
 #define VERSION_ONE 			1
 #define SUITE_ONE 			1
 #define TABLE_NAME			"connections"
@@ -92,6 +93,7 @@
 #define X_COORDINATE    		"x"
 #define Y_COORDINATE    		"y"
 #define JSON_WEB_KEY    		"jwk"
+#define REALM                           "realm"
 #define KEY_TYPE        		"kty"
 #define CURVE           		"crv"
 
@@ -169,7 +171,8 @@ typedef json_error_t 	noob_json_error_t;
 					show_OOB INTEGER,\
 					gen_OOB INTEGER,\
 					hint_server TEXT,\
-					OobRetries INTEGER DEFAULT 0)"  
+					OobRetries INTEGER DEFAULT 0,\
+					Realm TEXT)"  
 
 /*SQL Query to check peerID data*/
 
@@ -231,6 +234,7 @@ struct eap_noob_peer_data{
         char * peerID;
 	char * peer_info;
 	char * MAC;
+	char * realm;
 
 	struct eap_noob_peer_config_params * peer_config_params;
 	
@@ -309,6 +313,7 @@ struct eap_noob_serv_data{
 	char * MAC;
         char * ssid;
         char * peerID;
+	char * realm;
 
    	enum eap_noob_err_code err_code; 
 	Boolean record_present;

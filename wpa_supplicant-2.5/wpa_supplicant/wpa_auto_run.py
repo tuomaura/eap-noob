@@ -24,7 +24,7 @@ conn_tbl = 'connections'
 config_file = "wpa_supplicant.conf"
 target_file = config_file+'.tmp'
 noob_conf_file='eapoob.conf'
-keyword = 'Direction'
+keyword = 'OobDirs'
 oob_out_file = '/tmp/noob_output.txt'
 oob_file = 'file.txt'
 max_oob_tries = 0
@@ -42,7 +42,7 @@ def set_max_oob_tries():
 			max_oob_tries = int ((parts[len(oob_try_keyword)+1]))
 
 
-def change_config(peerID):
+def change_config(peerID,realm):
 
 	if peerID is None:
 		print ("Peer ID is NULL")
@@ -52,8 +52,8 @@ def change_config(peerID):
 		print ("Config file unavailable")
 		return
 
-	old_identity = peerID+'+s1@eap-noob.net'
-	new_identity = peerID+'+s2@eap-noob.net'
+	old_identity = peerID+'+s1@'+realm
+	new_identity = peerID+'+s2@'+realm
 
 	read_conf = open(config_file, 'r')
 	write_conf = open(target_file,'w')
@@ -110,6 +110,14 @@ def url_to_db(params):
 
 	exec_query(cmd,0)
 
+def get_realm(peerId):
+
+	query = 'select realm from connections where PeerID ='+'\''+str(peerId)+'\''
+
+	out = exe_db_query(query)
+
+	return out[0]
+
 # return true when the loop for reading the OOB message needs to be exited
 def parse_qr_code(url):
 	
@@ -122,7 +130,8 @@ def parse_qr_code(url):
 	ret_val = check_hoob(params)
 	if 1 == ret_val:
 		url_to_db(params)
-		change_config(params['P'][0])	
+		realm = get_realm(params['P'][0])
+		change_config(params['P'][0],realm)	
 		print("OOB updated")
 		return True
 
