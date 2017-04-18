@@ -391,6 +391,10 @@ function openNav(btn) {
 			 height : 300
     });
     qrcode.makeCode(val);
+
+    var mainDiv = document.getElementById('overlayContent');
+    childDiv = mainDiv.getElementsByTagName('img')[0];
+    childDiv.setAttribute("vspace","20");
 }
 
 /* Close when someone clicks on the "x" symbol inside the overlay */

@@ -78,7 +78,8 @@
 #define PUBLICKEY_SERV			"PKs"
 #define SERV_INFO			"ServerInfo"
 #define MAC_SERVER			"MACs"
-#define HINT				"Hint"
+#define HINT_PEER			"NoobIdp"
+#define HINT_SERV			"NoobIds"
 
 #define VERSION_PEER 			"Verp"
 #define CSUITES_PEER			"Cryptosuitep"
@@ -124,7 +125,7 @@
 #define TYPE_ONE_PARAMS         	(PEERID_RCVD|VERSION_RCVD|CSUITE_RCVD|DIRECTION_RCVD|INFO_RCVD) 
 #define TYPE_TWO_PARAMS         	(PEERID_RCVD|NONCE_RCVD|PKEY_RCVD)
 #define TYPE_THREE_PARAMS       	(PEERID_RCVD)
-#define TYPE_FOUR_PARAMS        	(PEERID_RCVD|MAC_RCVD)
+#define TYPE_FOUR_PARAMS        	(PEERID_RCVD|MAC_RCVD|HINT_RCVD)
 #define TYPE_FIVE_PARAMS        	(PEERID_RCVD|CSUITE_RCVD|INFO_RCVD)
 #define TYPE_SIX_PARAMS         	(PEERID_RCVD|NONCE_RCVD)
 #define TYPE_SEVEN_PARAMS       	(PEERID_RCVD|MAC_RCVD)

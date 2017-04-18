@@ -152,13 +152,10 @@ module.exports = function(app, passport) {
 					var hoob = parseJ['hoob'];
 					var hash = crypto.createHash('sha256');
 					var hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
-					//console.log(hash_str);
-                			//console.log('noob:', noob);
-                			//console.log('hoob:', hoob);
-  					hash.update(hash_str);
-  					var hint =  base64url.encode(hash.digest());
-					//console.log(hint.slice(0,22));
-					//console.log(hint.slice(0,32));
+  					hash.update(hash_str,'utf8');
+                			var digest_hex = new Buffer(hash.digest('hex'));
+                			digest_hex = digest_hex.slice(0,16);
+               		 		var hint =  base64url.encode(digest_hex);
             				db.get('INSERT INTO devices (PeerID, serv_state, PeerInfo, Noob, Hoob,Hint,errorCode, username) values(?,?,?,?,?,?,?,?)', peer_id, row.serv_state, row.PeerInfo, noob, hoob, hint.slice(0,32),0, req.user.username, function(err, row) {
             					db.close();
                 				if (err){console.log(err);res.json({"status": "failed"});}
@@ -617,8 +614,10 @@ module.exports = function(app, passport) {
   	   	
 		hash = crypto.createHash('sha256');
         	hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
-		hash.update(hash_str);
-        	hint =  base64url.encode(hash.digest());
+		hash.update(hash_str,'utf8');
+		var digest_hex = new Buffer(hash.digest('hex'));
+		digest_hex = digest_hex.slice(0,16);	
+        	hint =  base64url.encode(digest_hex);
 
 		options = {
   			mode: 'text',
@@ -665,8 +664,8 @@ module.exports = function(app, passport) {
 								}
 							}else{
             							db.serialize(function() {
-       		 							var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, userName = ?, serv_state = ? WHERE PeerID = ?");
-       		 							stmt.run(1234,noob,hoob,req.user.username,2,peer_id);
+       		 							var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, userName = ?, serv_state = ?, hint_peer = ? WHERE PeerID = ?");
+       		 							stmt.run(1234,noob,hoob,req.user.username,2,hint,peer_id);
 		 							stmt.finalize();
     	    							});
 

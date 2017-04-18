@@ -806,6 +806,7 @@ static char * eap_noob_prepare_hoob_arr(const struct eap_noob_peer_context * dat
 	return hoob_str;
 }
 #endif
+/*
 static int eap_noob_prepare_hash(u8 *out, size_t outlen, 
 	char * hash_string, int hash_str_len)
 {
@@ -840,7 +841,7 @@ err:
 	return rv;
 
 }
-
+*/
 #if 0
 /**
  * eap_noob_get_hoob : generate hoob
@@ -1286,16 +1287,17 @@ static void  eap_noob_decode_obj(struct eap_noob_serv_data * data ,noob_json_t *
 					data->rcvd_params |= NONCE_RCVD;
 
 				}
-				else if(0 == strcmp(key, HINT) && data->dir == PEER_TO_SERV){
+				else if(0 == strcmp(key, HINT_SERV)){ //  && data->dir == PEER_TO_SERV){
 
                                         if(data->oob_data->hint_b64 != NULL)
                                                 os_free(data->oob_data->hint_b64);
                                         if(data->oob_data->hint != NULL)
-                                                os_free(data->oob_data->hint_b64);
+                                                os_free(data->oob_data->hint);
 
 
                                         data->oob_data->hint_b64 = os_strdup(retval_char);
                                         data->oob_data->hint_len = eap_noob_Base64Decode(data->oob_data->hint_b64, &data->oob_data->hint, &len);
+					printf("Received hint = %s\n", data->oob_data->hint_b64);
                                         data->rcvd_params |= HINT_RCVD;
                                 }
 
@@ -1659,6 +1661,16 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)
 
 				eap_noob_Base64Decode(data->oob_data->noob_b64, &data->oob_data->noob, &len);
 			}	
+			else if (os_strcmp(azColName[count], "hint_server") == 0 && os_strlen(argv[count]) > 0) {
+                                if(NULL != data->oob_data->hint_b64)
+                                        os_free(data->oob_data->hint_b64);
+
+                                data->oob_data->hint_b64 = os_malloc(os_strlen(argv[count]));
+                                strcpy(data->oob_data->hint_b64, argv[count]);
+
+                                eap_noob_Base64Decode(data->oob_data->hint_b64, &data->oob_data->hint, &len);
+                        }
+
 			else if (os_strcmp(azColName[count], "Hoob") == 0 && os_strlen(argv[count]) > 0) {
 				if(NULL != data->oob_data->hoob_b64)
 					os_free(data->oob_data->hoob_b64);
@@ -1670,6 +1682,7 @@ int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)
 				eap_noob_Base64Decode(data->oob_data->hoob_b64, &data->oob_data->hoob, &len);
 			}else if (os_strcmp(azColName[count], "pub_key_serv") == 0){
 				data->ecdh_exchange_data->jwk_serv = eap_noob_json_loads(argv[count], JSON_COMPACT|JSON_PRESERVE_ORDER, &error); //ToDo: check and free this before assigning if required
+
 				wpa_printf(MSG_DEBUG,"EAP-NOOB:Serv_KEY: %s",argv[count]);
 
 			}else if (os_strcmp(azColName[count], "pub_key_peer") == 0){
@@ -2111,7 +2124,7 @@ static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data,
 
 		resp_json = eap_noob_json_dumps(rsp_obj,JSON_COMPACT|JSON_PRESERVE_ORDER);
 		len = strlen(resp_json)+1;
-		wpa_printf(MSG_DEBUG, "EAP-NOOB: Response %s = %u",resp_json,strlen(resp_json));
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: Response %s = %d",resp_json,(int)strlen(resp_json));
 		resp = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB,len , EAP_CODE_RESPONSE, id);
 		if (resp == NULL) {
 			wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to allocate memory "
@@ -2160,7 +2173,7 @@ static struct wpabuf * eap_noob_rsp_type_one(struct eap_sm *sm,const struct eap_
 
 		resp_json = eap_noob_json_dumps(rsp_obj,JSON_COMPACT|JSON_PRESERVE_ORDER);
 		len = strlen(resp_json)+1;
-		printf("RESPONSE = %s = %u\n", resp_json,strlen(resp_json));	
+		printf("RESPONSE = %s = %d\n", resp_json,(int)strlen(resp_json));	
 		resp = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB,len , EAP_CODE_RESPONSE, id);
 		if (resp == NULL) {
 			wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to allocate memory "
@@ -2174,7 +2187,7 @@ static struct wpabuf * eap_noob_rsp_type_one(struct eap_sm *sm,const struct eap_
 	return resp;
 
 }
-
+/*
 static int eap_noob_prepare_hint(const struct eap_noob_peer_context *data,u8 * hint)
 {
 	char * hint_str = NULL;
@@ -2191,14 +2204,14 @@ static int eap_noob_prepare_hint(const struct eap_noob_peer_context *data,u8 * h
 		strcat(hint_str,HINT_SALT);
 		printf("HINT string = %s\n",hint_str);
 		hint_str_len = strlen(hint_str);
-		eap_noob_prepare_hash(hint, HASH_LEN+8, hint_str,hint_str_len);	
+		eap_noob_prepare_hash(hint, HASH_LEN, hint_str,hint_str_len);	
 		os_free(hint_str);
 		return SUCCESS;	
 	}
 
 	return FAILURE;
 }	
-
+*/
 
 static struct wpabuf * eap_noob_rsp_hint(const struct eap_noob_peer_context *data, u8 id)
 {
@@ -2206,7 +2219,7 @@ static struct wpabuf * eap_noob_rsp_hint(const struct eap_noob_peer_context *dat
 	struct wpabuf *resp = NULL;
 	char * resp_json = NULL;
 	size_t len = 0 ;
-	char hint[HASH_LEN+8] = {0};
+	//char hint[HASH_LEN+8] = {0};
 	char * hint_b64 = NULL;
 
 	if(NULL == data){
@@ -2219,21 +2232,24 @@ static struct wpabuf * eap_noob_rsp_hint(const struct eap_noob_peer_context *dat
 		eap_noob_json_object_set_new(rsp_obj,TYPE,eap_noob_json_integer(EAP_NOOB_HINT));
 		eap_noob_json_object_set_new(rsp_obj,PEERID,eap_noob_json_string(data->serv_attr->peerID));
 		//TODO : hash noob before sending
+/*
 		if(data->serv_attr->oob_data->hint != NULL)
 			os_free(data->serv_attr->oob_data->hint); 
-		data->serv_attr->oob_data->hint = os_zalloc(HASH_LEN+8);
-                memset(data->serv_attr->oob_data->hint,0,HASH_LEN+8);
+		data->serv_attr->oob_data->hint = os_zalloc(HASH_LEN);
+                memset(data->serv_attr->oob_data->hint,0,HASH_LEN);
 		eap_noob_prepare_hint(data, (u8 *)data->serv_attr->oob_data->hint);
 		
 		
 
-		eap_noob_Base64Encode((u8 *)hint,HASH_LEN+8, &hint_b64);
-
+		eap_noob_Base64Encode((u8 *)data->serv_attr->oob_data->hint,HASH_LEN, &hint_b64);
+		printf("Hint is %s\n",hint_b64);
 		if(data->serv_attr->oob_data->hint_b64 != NULL)
 			os_free(data->serv_attr->oob_data->hint_b64);
 		data->serv_attr->oob_data->hint_b64 = os_strdup(hint_b64);
-
-		eap_noob_json_object_set_new(rsp_obj,HINT,eap_noob_json_string(hint_b64));
+		printf("Hint is %s\n",data->serv_attr->oob_data->hint_b64);
+*/
+		eap_noob_json_object_set_new(rsp_obj,HINT_PEER,eap_noob_json_string(data->serv_attr->oob_data->hint_b64));
+		printf("Hint is %s\n",data->serv_attr->oob_data->hint_b64);
 		
 		if(hint_b64) os_free(hint_b64);
 	

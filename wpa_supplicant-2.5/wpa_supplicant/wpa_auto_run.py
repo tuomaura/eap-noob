@@ -105,7 +105,8 @@ def exec_query(cmd, qtype):
 
 def url_to_db(params):
 	
-	cmd = 'UPDATE connections SET noob ='+'\''+ params['N'][0]+'\''+' ,hoob =\''+params['H'][0]+'\''+' where PeerID=\''+params['P'][0]+'\'' 
+	noob_id = get_noob_id(params['N'][0])
+	cmd = 'UPDATE connections SET hint_server ='+'\''+ noob_id+'\''+' ,noob ='+'\''+ params['N'][0]+'\''+' ,hoob =\''+params['H'][0]+'\''+' where PeerID=\''+params['P'][0]+'\'' 
 	print (cmd)
 
 	exec_query(cmd,0)
@@ -255,11 +256,12 @@ def get_hoob(peer_id, noob_b64):
 
 def get_noob_id(noob_b64):
 
-	noob_id_str = noob_b64+"noobid" 	
+	noob_id_str = noob_b64+"AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING" 	
 	noob_id_enc = noob_id_str.encode('utf-8')
 	noob_id = hashlib.sha256(noob_id_enc).hexdigest()
 	noob_id_b64 = base64.urlsafe_b64encode(noob_id[0:16].encode('utf-8'))
 	noob_id_b64 = str(noob_id_b64,'utf-8').strip('=')
+	print ("Noob Id is "+noob_id_b64+"\n")
 	return noob_id_b64	
 
 def get_noob():
@@ -398,7 +400,7 @@ def prepare(iface):
 	conf_file = open(config_file,'w')
 	conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=12000\n\n")
 	conf_file.close()
-	cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant"
+	cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant -d"
 	subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
 
 def network_scan():
