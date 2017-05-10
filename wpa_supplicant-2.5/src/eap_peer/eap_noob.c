@@ -421,6 +421,9 @@ static char * eap_noob_prepare_mac_arr(const struct eap_noob_peer_context * data
 		}else{
 			eap_noob_json_array_append(mac_arr,eap_noob_json_string(""));
 		}
+		if(strcmp(DEFAULT_REALM,data->peer_attr->realm) != 0){
+			eap_noob_json_array_append(mac_arr,eap_noob_json_string(data->peer_attr->realm));
+		}
 		eap_noob_json_array_append(mac_arr,eap_noob_json_string(data->peer_attr->peer_info));
 		if(state == RECONNECT_EXCHANGE){
 			eap_noob_json_array_append(mac_arr,eap_noob_json_string(""));

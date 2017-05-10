@@ -223,7 +223,7 @@ def exe_db_query(query):
 def get_hoob(peer_id, noob_b64):
 
 	query = 'select Vers,Verp,PeerID,Csuites,Dirs,ServInfo,Csuitep,\
-	Dirp,PeerInfo, pub_key_serv,nonce_serv, pub_key_peer, nonce_peer  \
+	Dirp,Realm,PeerInfo, pub_key_serv,nonce_serv, pub_key_peer, nonce_peer  \
 	from connections where PeerID ='+'\''+str(peer_id)+'\''
 
 	out = exe_db_query(query)
@@ -239,6 +239,8 @@ def get_hoob(peer_id, noob_b64):
 
         # Add params selected from DB to list
 	for item in range (0,len(out)):
+		if item == 8 and out[item] == 'eap-noob.net':
+			continue;
 		hoob_arr.append(out[item])
 
         # Add noob to list
@@ -246,12 +248,14 @@ def get_hoob(peer_id, noob_b64):
 
         #convert it to string
 	hoob_str = json.dumps(hoob_arr)
+	print ("************************" + hoob_str)
 
 	hoob_enc = hoob_str.encode('utf-8')
 	hoob = hashlib.sha256(hoob_enc).hexdigest()
 	hoob_b64 = base64.urlsafe_b64encode(hoob[0:16].encode('utf-8'))
 	#hoob_b64 = hoob_b64.encode('utf-8')
 	hoob_b64 = str(hoob_b64, 'utf-8').strip('=')
+	print("************************" + hoob_b64)
 	return hoob_b64
 
 def get_noob_id(noob_b64):

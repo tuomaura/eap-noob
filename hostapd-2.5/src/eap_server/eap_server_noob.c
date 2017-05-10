@@ -2295,6 +2295,9 @@ static char * eap_noob_prepare_mac_arr(struct eap_noob_serv_context * data,int t
 		}else{
 			eap_noob_json_array_append(mac_arr,eap_noob_json_string(""));
 		}
+		if(strcmp(server_conf.realm,DOMAIN) != 0){
+			eap_noob_json_array_append(mac_arr,eap_noob_json_string(server_conf.realm));
+		} 
 		eap_noob_json_array_append(mac_arr,eap_noob_json_string(data->peer_attr->peer_info));
 		if(state == RECONNECT_EXCHANGE){
 			eap_noob_json_array_append(mac_arr,eap_noob_json_string(""));

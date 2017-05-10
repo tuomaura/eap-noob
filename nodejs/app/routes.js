@@ -143,9 +143,10 @@ module.exports = function(app, passport) {
   				scriptPath: configDB.ooblibPath,
   				args: ['-i', peer_id, '-p', conn_str]
 			};
+			console.log("Peer id is " + peer_id)
 			var parseJ;
         		PythonShell.run('oobmessage.py', options, function (err,results) {
-                		if (err){console.log("results : ",results); res.json({"status": "failed"});}
+                		if (err){console.log("error" + err); res.json({"status": "failed"});}
 				else{
 					parseJ = JSON.parse(results);
 					var noob = parseJ['noob'];

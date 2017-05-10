@@ -6,7 +6,11 @@ import os
 import base64
 import sys, getopt
 import argparse
+import re
 #db_name = "peer_connection_db"
+realm = None;
+noob_conf_file = '../hostapd-2.5/hostapd/eapoob.conf'
+realm_key = 'Realm' 
 
 def main(argv):
 
@@ -39,6 +43,18 @@ def main(argv):
 		print get_hoob_comp_res(peerId,noob,path,max_tries,recv_hoob)
  	else:
 		print('oobmessage.py -o <peerId> -p <path> [-n <noob>]')
+
+
+def set_realm():
+	
+	global realm
+	noob_conf = open(noob_conf_file, 'r')
+
+	for line in noob_conf:
+        	if '#' != line[0] and realm_key in line:
+                	parts = re.sub('[\s+]', '', line)
+                	temp = parts.split("#")[0]
+                	realm = temp[len(realm_key)+1:]
 
 def ret_obj(noob, hoob, err, result = None):
 	obj = {}
@@ -81,6 +97,12 @@ def exe_db_query(query,path):
 
 	return out
 
+def print_log(val):
+
+	f1=open('./logfile', 'a+')
+	f1.write(val)
+	f1.close()
+
 def get_hoob(peer_id, noob_b64,path):
       
 	query = 'select Vers,Verp,PeerID,Csuites,Dirs,ServInfo,Csuitep,\
@@ -88,7 +110,7 @@ def get_hoob(peer_id, noob_b64,path):
         from peers_connected where PeerID ='+'\''+str(peer_id)+'\''	
 	
 	out = exe_db_query(query, path)
-
+	set_realm()
 	if out is None:
 		return ret_obj(None, None, "No DB or no recored found")
 
@@ -102,12 +124,16 @@ def get_hoob(peer_id, noob_b64,path):
 	# Add params selected from DB to list
 	for item in range (0,len(out)):
 		hoob_arr.append(out[item])
+		if item == 7 and realm != 'eap-noob.net':
+			hoob_arr.append(realm) 
 	
 	# Add noob to list
 	hoob_arr.append(noob_b64)
 
 	#convert it to string
 	hoob_str = json.dumps(hoob_arr)
+
+	print_log(hoob_str)
 
 	# create hoob by hashing the hoob string
 	hoob = hashlib.sha256(hoob_str).hexdigest()	
