@@ -317,7 +317,8 @@ static noob_json_t * eap_noob_prepare_peer_info_json(struct eap_sm *sm,struct ea
 
         if(NULL != (info_obj = eap_noob_json_object())){
 
-                eap_noob_json_object_set_new(info_obj,PEER_NAME,eap_noob_json_string(data->Peer_name));
+                eap_noob_json_object_set_new(info_obj,PEER_MAKE,eap_noob_json_string(data->Peer_name));
+                eap_noob_json_object_set_new(info_obj,PEER_TYPE,eap_noob_json_string(eap_noob_globle_conf.peer_type));
                 eap_noob_json_object_set_new(info_obj,PEER_SERIAL_NUM,eap_noob_json_string(data->Peer_ID_Num));
                	eap_noob_json_object_set_new(info_obj,PEER_SSID,eap_noob_json_string((char *)wpa_s->current_ssid->ssid));
 		sprintf(bssid,"%x:%x:%x:%x:%x:%x",wpa_s->current_ssid->bssid[0],wpa_s->current_ssid->bssid[1],
@@ -3169,11 +3170,16 @@ static void eap_noob_assign_config(char * conf_name,char * conf_value,struct eap
 		data->config_params |= DIRECTION_RCVD;
 		printf("FILE  READ= %d\n",data->dir);
 	}		
-	else if(0 == strcmp("PeerName", conf_name)){
+	else if(0 == strcmp("PeerMake", conf_name)){
 		data->peer_config_params->Peer_name = os_strdup(conf_value);
-		data->config_params |= PEER_NAME_RCVD;
+		data->config_params |= PEER_MAKE_RCVD;
 		printf("FILE  READ= %s\n",data->peer_config_params->Peer_name);
-	}		
+	}	
+        else if(0 == strcmp("PeerType", conf_name)){
+                eap_noob_globle_conf.peer_type = os_strdup(conf_value);
+                data->config_params |= PEER_TYPE_RCVD;
+                printf("FILE  READ= %s\n",eap_noob_globle_conf.peer_type);
+        } 	
 	else if(0 == strcmp("PeerSNum", conf_name)){
 		data->peer_config_params->Peer_ID_Num = os_strdup(conf_value);
 		data->config_params |= PEER_ID_NUM_RCVD;
@@ -3239,9 +3245,9 @@ static void eap_noob_parse_config(char * buff,struct eap_noob_peer_data * data)
 static int eap_noob_handle_incomplete_conf(struct eap_noob_peer_context * data)
 {
 
-	if(!(data->peer_attr->config_params&PEER_NAME_RCVD) || 
-		!(data->peer_attr->config_params&PEER_ID_NUM_RCVD)){
-		wpa_printf(MSG_ERROR, "EAP-NOOB: Peer name or Peer ID number missing");
+	if(!(data->peer_attr->config_params&PEER_MAKE_RCVD) || 
+		!(data->peer_attr->config_params&PEER_ID_NUM_RCVD) || !(data->peer_attr->config_params&PEER_TYPE_RCVD)){
+		wpa_printf(MSG_ERROR, "EAP-NOOB: Peer Make or Peer Type or Peer Serial number missing");
 		return FAILURE;
 	}
 	

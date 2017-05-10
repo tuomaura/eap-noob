@@ -1195,6 +1195,11 @@ static void eap_noob_assign_config(char * conf_name,char * conf_value,struct eap
 		data->config_params |= REALM_RCVD;
                 printf("FILE  READ= %s\n",server_conf.realm);	
 	}
+	else if(0 == strcmp("OobMessageEncoding", conf_name)){
+		server_conf.oob_encode = (int) strtol(conf_value, NULL, 10);	
+		data->config_params |= ENCODE_RCVD;
+                printf("FILE  READ= %d\n",server_conf.oob_encode);	
+	}
 
 }
 
@@ -1253,6 +1258,11 @@ static int eap_noob_handle_incomplete_conf(struct eap_noob_serv_context * data)
                 wpa_printf(MSG_ERROR, "EAP-NOOB: Server name or Server URL  missing");
                 return FAILURE;
         }
+
+	if(!(data->server_attr->config_params & ENCODE_RCVD)){
+		wpa_printf(MSG_ERROR, "EAP-NOOB: Encoding Scheme not specified");
+		return FAILURE;
+	}
 
         //set default values if not provided via config
 	if(!(data->server_attr->config_params & VERSION_RCVD))
@@ -1499,7 +1509,7 @@ static void * eap_noob_init(struct eap_sm *sm)
 		return NULL;
 	}
 	//TODO: check if hard coded initialization can be avoided
-	if(FAILURE == eap_noob_serv_ctxt_init(data,sm)){
+	if(FAILURE == eap_noob_serv_ctxt_init(data,sm) && data ->peer_attr->err_code != E1001){
 		wpa_printf(MSG_DEBUG,"EAP-NOOB: INIT SERVER Fail to initialize context");
 		return NULL;
 	}
@@ -1983,8 +1993,10 @@ static struct wpabuf * eap_noob_err_msg(struct eap_noob_serv_context *data, u8 i
 
 	if(NULL != (req_obj = eap_noob_json_object())){
 
-		if(data->peer_attr->peerID_gen){
+		if(data->peer_attr->peerID_gen && code != E1001){
 			eap_noob_json_object_set_new(req_obj,PEERID,eap_noob_json_string(data->peer_attr->peerID_gen));	
+		}else{
+			eap_noob_json_object_set_new(req_obj,PEERID,eap_noob_json_string(data->peer_attr->peerID_rcvd));	
 		}
 		eap_noob_json_object_set_new(req_obj,TYPE,eap_noob_json_integer(NONE));
 		eap_noob_json_object_set_new(req_obj,ERR_CODE,eap_noob_json_integer(error_code[code]));
@@ -2003,7 +2015,7 @@ static struct wpabuf * eap_noob_err_msg(struct eap_noob_serv_context *data, u8 i
 			return NULL;
 		}
 		
-		if(FAILURE == eap_noob_db_update(data,UPDATE_STATE_ERROR)){
+		if(code != E1001 && FAILURE == eap_noob_db_update(data,UPDATE_STATE_ERROR)){
 			//eap_oob_set_error(); //Internal error
 			//set_done(data, NOT_DONE);
 			wpa_printf(MSG_DEBUG,"Fail to Write Error to DB");

@@ -130,7 +130,7 @@
             <div class="well" id = <%=deviceInfo[j].peer_id%>>
                 <h4> Device <%= j+1 %></h4>
                     <p>
-  			 <strong>Device Name</strong>: <%= deviceInfo[j].peer_name %><br>
+  			 <strong>Device Make</strong>: <%= deviceInfo[j].peer_name %><br>
 			 <strong>Device Mac </strong>: <%= deviceInfo[j].peer_num %><br>
 			 <%var id_val = 'Dcountdown' + j %>
 			 <strong id = <%=id_val%> value1 = <%=deviceInfo[j].peer_id%> value2 = <%=deviceInfo[j].state_num%> >Device Status: <%= deviceInfo[j].state %></strong><br>
@@ -148,7 +148,7 @@
             <div class="well" id = <%=userInfo[i].peer_id%>>
                 <h4> Device <%= i+1 %></h4>
                     <p>
-  			 <strong>Device Name</strong>: <%= userInfo[i].peer_name %><br>
+  			 <strong>Device Make</strong>: <%= userInfo[i].peer_name %><br>
 			 <strong>Device Mac </strong>: <%= userInfo[i].peer_num %><br>
 			 <strong>Software Status </strong>: <%= userInfo[i].dev_update %><br>
 			 <%var id_val = 'Dcountdown' + i + j %>

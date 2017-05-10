@@ -95,10 +95,10 @@ module.exports = function(app, passport) {
 					deviceDetails[i] = new Object();
 					deviceDetails[i].peer_id = row.PeerID;
 					parseJson= JSON.parse(row.PeerInfo);
-					deviceDetails[i].peer_name = parseJson['PeerName'];
-					deviceDetails[i].peer_num = parseJson['PeerSNum'];
-					deviceDetails[i].peer_ssid = parseJson['PeerSSID'];
-					deviceDetails[i].peer_bssid = parseJson['PeerBSSID'];
+					deviceDetails[i].peer_name = parseJson['Make'];
+					deviceDetails[i].peer_num = parseJson['Serial'];
+					deviceDetails[i].peer_ssid = parseJson['SSID'];
+					deviceDetails[i].peer_bssid = parseJson['BSSID'];
 					
 					i++;
 				});
@@ -279,8 +279,8 @@ module.exports = function(app, passport) {
 						deviceDetails[j] = new Object();
         					deviceDetails[j].peer_id = row1.PeerID;
 						parseJson1= JSON.parse(row1.PeerInfo);
-        					deviceDetails[j].peer_name = parseJson1['PeerName'];
-						deviceDetails[j].peer_num = parseJson1['PeerSNum'];
+        					deviceDetails[j].peer_name = parseJson1['Make'];
+						deviceDetails[j].peer_num = parseJson1['Serial'];
 						//deviceDetails[j].dev_update = dev_status[parseInt(row1.DevUpdate)];
 						deviceDetails[j].noob = row1.Noob;
   						deviceDetails[j].hoob = row1.Hoob;
@@ -299,8 +299,8 @@ module.exports = function(app, passport) {
 						userDetails[i] = new Object();
         					userDetails[i].peer_id = row.PeerID;
 						parseJson= JSON.parse(row.PeerInfo);
-						userDetails[i].peer_num = parseJson['PeerSNum'];
-        					userDetails[i].peer_name = parseJson['PeerName'];
+						userDetails[i].peer_num = parseJson['Serial'];
+        					userDetails[i].peer_name = parseJson['Make'];
 						userDetails[i].dev_update = dev_status[parseInt(row.DevUpdate)];
 						if(row.errorCode){
 							userDetails[i].state_num = '0';

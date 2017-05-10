@@ -34,7 +34,7 @@
 /*MAX values for the fields*/
 #define MAX_SUP_VER             	1
 #define MAX_SUP_CSUITES			1
-#define MAX_PEER_ID_LEN 		60
+#define MAX_PEER_ID_LEN 		22
 #define MAX_CONF_LEN			500
 #define MAX_INFO_LEN			500
 #define MAX_LINE_SIZE           	1000
@@ -74,12 +74,12 @@
 #define DIRECTION_SERV			"Dirs"
 #define NONCE_SERV			"Ns"
 #define MINSLEEP			"minsleep"
-#define PEERID				"PeerID"
+#define PEERID				"PeerId"
 #define PUBLICKEY_SERV			"PKs"
 #define SERV_INFO			"ServerInfo"
 #define MAC_SERVER			"MACs"
-#define HINT_PEER			"NoobIdp"
-#define HINT_SERV			"NoobIds"
+#define HINT_PEER			"NoobId"
+#define HINT_SERV			"NoobId"
 
 #define VERSION_PEER 			"Verp"
 #define CSUITES_PEER			"Cryptosuitep"
@@ -98,11 +98,11 @@
 #define KEY_TYPE        		"kty"
 #define CURVE           		"crv"
 
-#define PEER_NAME			"PeerName"
-#define PEER_SERIAL_NUM			"PeerSNum"
-#define PEER_SSID			"PeerSSID"
-#define PEER_BSSID			"PeerBSSID"
-
+#define PEER_SERIAL_NUM			"Serial"
+#define PEER_SSID			"SSID"
+#define PEER_BSSID			"BSSID"
+#define PEER_TYPE                       "Type"
+#define PEER_MAKE                       "Make"
 
 /*bit masks to validate message structure*/
 #define PEERID_RCVD            		0x0001
@@ -115,11 +115,12 @@
 #define INFO_RCVD               	0x0080
 #define STATE_RCVD              	0x0100
 #define MINSLP_RCVD             	0x0200
-#define PEER_NAME_RCVD			0x0400
+#define PEER_MAKE_RCVD			0x0400
 #define PEER_ID_NUM_RCVD		0x0800
 #define HINT_RCVD               	0x1000
 #define DEF_MIN_SLEEP_RCVD              0x2000
 #define MSG_ENC_FMT_RCVD		0x4000
+#define PEER_TYPE_RCVD			0x8000
 
 
 #define TYPE_ONE_PARAMS         	(PEERID_RCVD|VERSION_RCVD|CSUITE_RCVD|DIRECTION_RCVD|INFO_RCVD) 
@@ -130,7 +131,7 @@
 #define TYPE_SIX_PARAMS         	(PEERID_RCVD|NONCE_RCVD)
 #define TYPE_SEVEN_PARAMS       	(PEERID_RCVD|MAC_RCVD)
 #define TYPE_HINT_PARAMS		(PEERID_RCVD)
-#define CONF_PARAMS			(DIRECTION_RCVD|CSUITE_RCVD|VERSION_RCVD|PEER_NAME_RCVD|PEER_ID_NUM_RCVD)
+#define CONF_PARAMS			(DIRECTION_RCVD|CSUITE_RCVD|VERSION_RCVD|PEER_TYPE_RCVD|PEER_ID_NUM_RCVD|PEER_TYPE_RCVD)
 		
 
 #if 1
@@ -220,6 +221,7 @@ struct eap_noob_peer_context{
 struct eap_noob_globle_conf{
 	u32 default_minsleep;
 	u32 oob_enc_fmt;
+	char * peer_type;	
 	u32 read_conf;
 };
 

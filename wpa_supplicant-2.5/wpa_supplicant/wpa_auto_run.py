@@ -356,8 +356,8 @@ def update_file(signum, frame):
 		if(row[5]!=0):
 			file.write("Error code: "+str(row[5]))
 		
-		line = (row[0].encode(encoding='UTF-8') + b',' + servinfo['ServName'].encode(encoding='UTF-8') + b',' 
-		+ servinfo['ServUrl'].encode(encoding='UTF-8')+b'/?P='+row [2].encode(encoding='UTF-8') + 
+		line = (row[0].encode(encoding='UTF-8') + b',' + servinfo['Name'].encode(encoding='UTF-8') + b',' 
+		+ servinfo['Url'].encode(encoding='UTF-8')+b'/?P='+row [2].encode(encoding='UTF-8') + 
 		b'&N=' + row[3].encode(encoding='UTF-8')+ b'&H=' + row[4].encode(encoding='UTF-8') + b'\n')
 		file.write(line)
 	file.close()
@@ -400,7 +400,7 @@ def prepare(iface):
 	conf_file = open(config_file,'w')
 	conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=12000\n\n")
 	conf_file.close()
-	cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant -d"
+	cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant -dd"
 	subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
 
 def network_scan():

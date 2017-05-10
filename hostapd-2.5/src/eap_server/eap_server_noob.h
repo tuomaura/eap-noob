@@ -39,7 +39,7 @@ typedef json_error_t 	noob_json_error_t;
 #define MAX_SUP_CSUITES		1
 #define MAX_CONF_LEN    	500
 #define MAX_INFO_LEN		500
-#define MAX_PEER_ID_LEN 	60
+#define MAX_PEER_ID_LEN 	22
 #define MAX_LINE_SIZE		1000
 
 #define KDF_LEN			288
@@ -86,13 +86,15 @@ typedef json_error_t 	noob_json_error_t;
 #define DIRECTION_SERV		"Dirs"
 #define NONCE_SERV		"Ns"
 #define MINSLEEP		"minsleep"
-#define PEERID			"PeerID"
+#define PEERID			"PeerId"
 #define PUBLICKEY_SERV		"PKs"
 #define SERV_INFO		"ServerInfo"
 #define MACs			"MACs"
 
-#define PEER_NAME                       "PeerName"
-#define PEER_SERIAL_NUM                 "PeerSNum"
+#define PEER_SERIAL_NUM         "Serial"
+#define PEER_TYPE               "Type"
+#define PEER_MAKE	        "Make"
+
  
 
 #define VERSION_PEER 		"Verp"
@@ -102,8 +104,8 @@ typedef json_error_t 	noob_json_error_t;
 #define PUBLICKEY_PEER		"PKp"
 #define PEER_INFO		"PeerInfo"
 #define PEERSTATE       	"state"
-#define HINT_SERV		"NoobIds"
-#define HINT_PEER		"NoobIdp"
+#define HINT_SERV		"NoobId"
+#define HINT_PEER		"NoobId"
 #define MACp			"MACp" 
 #define X_COORDINATE    	"x"
 #define Y_COORDINATE    	"y"
@@ -113,8 +115,8 @@ typedef json_error_t 	noob_json_error_t;
 #define REALM			"realm"
 #define ECDH_KDF_MAX 		(1 << 30)
 
-#define SERV_NAME		"ServName"
-#define SERV_URL		"ServUrl"
+#define SERV_NAME		"ServerName"
+#define SERV_URL		"ServerUrl"
 
 #define PEERID_RCVD 		0x0001
 #define DIRECTION_RCVD 		0x0002
@@ -131,7 +133,7 @@ typedef json_error_t 	noob_json_error_t;
 #define HINT_RCVD		0x1000
 #define WE_COUNT_RCVD		0x2000
 #define REALM_RCVD		0x4000
-
+#define ENCODE_RCVD		0x8000
 
 #define TYPE_ONE_PARAMS		(PEERID_RCVD|VERSION_RCVD|CSUITE_RCVD|DIRECTION_RCVD|INFO_RCVD) 
 #define TYPE_TWO_PARAMS		(PEERID_RCVD|NONCE_RCVD|PKEY_RCVD)
@@ -142,7 +144,7 @@ typedef json_error_t 	noob_json_error_t;
 #define TYPE_SEVEN_PARAMS       (PEERID_RCVD|MAC_RCVD)
 #define TYPE_HINT_PARAMS        (PEERID_RCVD|HINT_RCVD)
 
-#define CONF_PARAMS             (DIRECTION_RCVD|CSUITE_RCVD|VERSION_RCVD|SERV_NAME_RCVD|SERV_URL_RCVD|WE_COUNT_RCVD|REALM_RCVD)
+#define CONF_PARAMS             (DIRECTION_RCVD|CSUITE_RCVD|VERSION_RCVD|SERV_NAME_RCVD|SERV_URL_RCVD|WE_COUNT_RCVD|REALM_RCVD|ENCODE_RCVD)
 #define DB_NAME			"peer_connection_db"
 #define DEVICE_TABLE		"devices"
 #define PEER_TABLE		"peers_connected"
@@ -198,6 +200,7 @@ int read_conf;
 int max_we_count;
 char * realm;
 int len_realm;
+int oob_encode;
 
 };
 
