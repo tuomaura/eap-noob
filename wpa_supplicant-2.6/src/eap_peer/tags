@@ -1,0 +1,1770 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ALGORITHM_ID	eap_noob.h	30;"	d
+ALGORITHM_ID_LEN	eap_noob.h	31;"	d
+AMSK_LEN	eap_noob.h	45;"	d
+BOTH_DIR	eap_noob.h	60;"	d
+BatchEnding	tncc.c	/^	TNC_Result (*BatchEnding)($/;"	m	struct:tnc_if_imc	file:
+BeginHandshake	tncc.c	/^	TNC_Result (*BeginHandshake)($/;"	m	struct:tnc_if_imc	file:
+CHALLENGE	eap_sake.c	/^	enum { IDENTITY, CHALLENGE, CONFIRM, SUCCESS, FAILURE } state;$/;"	e	enum:eap_sake_data::__anon1	file:
+CHECK_NUMBER_OF_ROWS	eap_noob.h	184;"	d
+CHILD_SA	ikev2.h	/^	enum { SA_INIT, SA_AUTH, CHILD_SA, NOTIFY, IKEV2_DONE, IKEV2_FAILED }$/;"	e	enum:ikev2_responder_data::__anon13
+CLEAR_EAP_ID	eap_aka.c	343;"	d	file:
+CLEAR_EAP_ID	eap_sim.c	365;"	d	file:
+CLEAR_PSEUDONYM	eap_aka.c	341;"	d	file:
+CLEAR_PSEUDONYM	eap_sim.c	363;"	d	file:
+CLEAR_REAUTH_ID	eap_aka.c	342;"	d	file:
+CLEAR_REAUTH_ID	eap_sim.c	364;"	d	file:
+COMMIT	eap_eke.c	/^		IDENTITY, COMMIT, CONFIRM, SUCCESS, FAILURE$/;"	e	enum:eap_eke_data::__anon4	file:
+COMPLETION_EXCHANGE	eap_noob.h	/^enum	{COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW}; \/\/Flag used during KDF and MAC generation$/;"	e	enum:__anon19
+CONFIRM	eap_eke.c	/^		IDENTITY, COMMIT, CONFIRM, SUCCESS, FAILURE$/;"	e	enum:eap_eke_data::__anon4	file:
+CONFIRM	eap_sake.c	/^	enum { IDENTITY, CHALLENGE, CONFIRM, SUCCESS, FAILURE } state;$/;"	e	enum:eap_sake_data::__anon1	file:
+CONFIRM	eap_vendor_test.c	/^	enum { INIT, CONFIRM, SUCCESS } state;$/;"	e	enum:eap_vendor_test_data::__anon18	file:
+CONF_FILE	eap_noob.h	9;"	d
+CONF_PARAMS	eap_noob.h	135;"	d
+CONTINUE	eap_aka.c	/^		CONTINUE, RESULT_SUCCESS, SUCCESS, FAILURE$/;"	e	enum:eap_aka_data::__anon6	file:
+CONTINUE	eap_sim.c	/^		CONTINUE, RESULT_SUCCESS, SUCCESS, FAILURE$/;"	e	enum:eap_sim_data::__anon9	file:
+CREATE_CONNECTION_TABLE	eap_noob.h	149;"	d
+CSUITES_PEER	eap_noob.h	86;"	d
+CSUITES_SERV	eap_noob.h	74;"	d
+CSUITE_RCVD	eap_noob.h	111;"	d
+CURVE	eap_noob.h	100;"	d
+ClientTimeout	eap_i.h	/^	int ClientTimeout;$/;"	m	struct:eap_sm
+DB_NAME	eap_noob.h	23;"	d
+DECISION_COND_SUCC	eap_i.h	/^	DECISION_FAIL, DECISION_COND_SUCC, DECISION_UNCOND_SUCC$/;"	e	enum:__anon10
+DECISION_FAIL	eap_i.h	/^	DECISION_FAIL, DECISION_COND_SUCC, DECISION_UNCOND_SUCC$/;"	e	enum:__anon10
+DECISION_UNCOND_SUCC	eap_i.h	/^	DECISION_FAIL, DECISION_COND_SUCC, DECISION_UNCOND_SUCC$/;"	e	enum:__anon10
+DEFAULT_REALM	eap_noob.h	19;"	d
+DEF_MIN_SLEEP_RCVD	eap_noob.h	122;"	d
+DIRECTION_PEER	eap_noob.h	87;"	d
+DIRECTION_RCVD	eap_noob.h	110;"	d
+DIRECTION_SERV	eap_noob.h	75;"	d
+DOMAIN	eap_noob.h	18;"	d
+DONE	eap_ikev2.c	/^	enum { WAIT_START, PROC_MSG, WAIT_FRAG_ACK, DONE, FAIL } state;$/;"	e	enum:eap_ikev2_data::__anon30	file:
+DONE	eap_tnc.c	/^	enum { WAIT_START, PROC_MSG, WAIT_FRAG_ACK, DONE, FAIL } state;$/;"	e	enum:eap_tnc_data::__anon16	file:
+E1001	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+E1002	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+E1003	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+E1004	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+E1005	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+E1006	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+E2001	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+E2002	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+E3001	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+E3002	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+E3003	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+E4001	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+E5001	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+E5002	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+E5003	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+EAPOL_altAccept	eap.h	/^	EAPOL_altAccept,$/;"	e	enum:eapol_bool_var
+EAPOL_altReject	eap.h	/^	EAPOL_altReject,$/;"	e	enum:eapol_bool_var
+EAPOL_eapFail	eap.h	/^	EAPOL_eapFail,$/;"	e	enum:eapol_bool_var
+EAPOL_eapNoResp	eap.h	/^	EAPOL_eapNoResp,$/;"	e	enum:eapol_bool_var
+EAPOL_eapReq	eap.h	/^	EAPOL_eapReq,$/;"	e	enum:eapol_bool_var
+EAPOL_eapResp	eap.h	/^	EAPOL_eapResp,$/;"	e	enum:eapol_bool_var
+EAPOL_eapRestart	eap.h	/^	EAPOL_eapRestart,$/;"	e	enum:eapol_bool_var
+EAPOL_eapSuccess	eap.h	/^	EAPOL_eapSuccess,$/;"	e	enum:eapol_bool_var
+EAPOL_eapTriggerStart	eap.h	/^	EAPOL_eapTriggerStart$/;"	e	enum:eapol_bool_var
+EAPOL_idleWhile	eap.h	/^	EAPOL_idleWhile$/;"	e	enum:eapol_int_var
+EAPOL_portEnabled	eap.h	/^	EAPOL_portEnabled,$/;"	e	enum:eapol_bool_var
+EAPOOB_H	eap_noob.h	6;"	d
+EAP_CLIENT_TIMEOUT_DEFAULT	eap.c	36;"	d	file:
+EAP_CONFIG_FLAGS_EXT_PASSWORD	eap_config.h	690;"	d
+EAP_CONFIG_FLAGS_PASSWORD_NTHASH	eap_config.h	689;"	d
+EAP_CONFIG_H	eap_config.h	10;"	d
+EAP_DISABLED	eap_i.h	/^		EAP_INITIALIZE, EAP_DISABLED, EAP_IDLE, EAP_RECEIVED,$/;"	e	enum:eap_sm::__anon12
+EAP_DISCARD	eap_i.h	/^		EAP_GET_METHOD, EAP_METHOD, EAP_SEND_RESPONSE, EAP_DISCARD,$/;"	e	enum:eap_sm::__anon12
+EAP_FAILURE	eap_i.h	/^		EAP_FAILURE$/;"	e	enum:eap_sm::__anon12
+EAP_FAST_PAC_BINARY_FORMAT_VERSION	eap_fast_pac.c	40;"	d	file:
+EAP_FAST_PAC_BINARY_MAGIC	eap_fast_pac.c	39;"	d	file:
+EAP_FAST_PAC_H	eap_fast_pac.h	10;"	d
+EAP_FAST_PROV_AUTH	eap_fast.c	48;"	d	file:
+EAP_FAST_PROV_UNAUTH	eap_fast.c	47;"	d	file:
+EAP_GET_METHOD	eap_i.h	/^		EAP_GET_METHOD, EAP_METHOD, EAP_SEND_RESPONSE, EAP_DISCARD,$/;"	e	enum:eap_sm::__anon12
+EAP_H	eap.h	10;"	d
+EAP_IDENTITY	eap_i.h	/^		EAP_IDENTITY, EAP_NOTIFICATION, EAP_RETRANSMIT, EAP_SUCCESS,$/;"	e	enum:eap_sm::__anon12
+EAP_IDLE	eap_i.h	/^		EAP_INITIALIZE, EAP_DISABLED, EAP_IDLE, EAP_RECEIVED,$/;"	e	enum:eap_sm::__anon12
+EAP_INITIALIZE	eap_i.h	/^		EAP_INITIALIZE, EAP_DISABLED, EAP_IDLE, EAP_RECEIVED,$/;"	e	enum:eap_sm::__anon12
+EAP_I_H	eap_i.h	10;"	d
+EAP_MAX_AUTH_ROUNDS	eap.c	35;"	d	file:
+EAP_METHOD	eap_i.h	/^		EAP_GET_METHOD, EAP_METHOD, EAP_SEND_RESPONSE, EAP_DISCARD,$/;"	e	enum:eap_sm::__anon12
+EAP_METHODS_H	eap_methods.h	10;"	d
+EAP_NOOB_HINT	eap_noob.h	/^enum	{NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7,EAP_NOOB_HINT};$/;"	e	enum:__anon21
+EAP_NOOB_NONCE_LEN	eap_noob.h	26;"	d
+EAP_NOOB_NOOB_LEN	eap_noob.h	25;"	d
+EAP_NOOB_TYPE_1	eap_noob.h	/^enum	{NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7,EAP_NOOB_HINT};$/;"	e	enum:__anon21
+EAP_NOOB_TYPE_2	eap_noob.h	/^enum	{NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7,EAP_NOOB_HINT};$/;"	e	enum:__anon21
+EAP_NOOB_TYPE_3	eap_noob.h	/^enum	{NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7,EAP_NOOB_HINT};$/;"	e	enum:__anon21
+EAP_NOOB_TYPE_4	eap_noob.h	/^enum	{NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7,EAP_NOOB_HINT};$/;"	e	enum:__anon21
+EAP_NOOB_TYPE_5	eap_noob.h	/^enum	{NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7,EAP_NOOB_HINT};$/;"	e	enum:__anon21
+EAP_NOOB_TYPE_6	eap_noob.h	/^enum	{NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7,EAP_NOOB_HINT};$/;"	e	enum:__anon21
+EAP_NOOB_TYPE_7	eap_noob.h	/^enum	{NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7,EAP_NOOB_HINT};$/;"	e	enum:__anon21
+EAP_NOTIFICATION	eap_i.h	/^		EAP_IDENTITY, EAP_NOTIFICATION, EAP_RETRANSMIT, EAP_SUCCESS,$/;"	e	enum:eap_sm::__anon12
+EAP_PEAP_VERSION	eap_peap.c	26;"	d	file:
+EAP_PEER_METHOD_INTERFACE_VERSION	eap_i.h	223;"	d
+EAP_PROXY_FAILURE	eap_proxy.h	/^	EAP_PROXY_FAILURE = 0x00,$/;"	e	enum:eap_proxy_status
+EAP_PROXY_H	eap_proxy.h	10;"	d
+EAP_PROXY_SUCCESS	eap_proxy.h	/^	EAP_PROXY_SUCCESS$/;"	e	enum:eap_proxy_status
+EAP_RECEIVED	eap_i.h	/^		EAP_INITIALIZE, EAP_DISABLED, EAP_IDLE, EAP_RECEIVED,$/;"	e	enum:eap_sm::__anon12
+EAP_RETRANSMIT	eap_i.h	/^		EAP_IDENTITY, EAP_NOTIFICATION, EAP_RETRANSMIT, EAP_SUCCESS,$/;"	e	enum:eap_sm::__anon12
+EAP_SEND_RESPONSE	eap_i.h	/^		EAP_GET_METHOD, EAP_METHOD, EAP_SEND_RESPONSE, EAP_DISCARD,$/;"	e	enum:eap_sm::__anon12
+EAP_SHARED_SECRET_LEN	eap_noob.h	27;"	d
+EAP_SUCCESS	eap_i.h	/^		EAP_IDENTITY, EAP_NOTIFICATION, EAP_RETRANSMIT, EAP_SUCCESS,$/;"	e	enum:eap_sm::__anon12
+EAP_TLS_COMMON_H	eap_tls_common.h	10;"	d
+EAP_TLS_FLAGS_LENGTH_INCLUDED	eap_tls_common.h	80;"	d
+EAP_TLS_FLAGS_MORE_FRAGMENTS	eap_tls_common.h	81;"	d
+EAP_TLS_FLAGS_START	eap_tls_common.h	82;"	d
+EAP_TLS_KEY_LEN	eap_tls_common.h	86;"	d
+EAP_TLS_VERSION_MASK	eap_tls_common.h	83;"	d
+EAP_TNC_FLAGS_LENGTH_INCLUDED	eap_tnc.c	28;"	d	file:
+EAP_TNC_FLAGS_MORE_FRAGMENTS	eap_tnc.c	29;"	d	file:
+EAP_TNC_FLAGS_START	eap_tnc.c	30;"	d	file:
+EAP_TNC_VERSION	eap_tnc.c	33;"	d	file:
+EAP_TNC_VERSION_MASK	eap_tnc.c	31;"	d	file:
+EAP_TTLS_PHASE2_CHAP	eap_ttls.c	/^		EAP_TTLS_PHASE2_CHAP$/;"	e	enum:eap_ttls_data::phase2_types	file:
+EAP_TTLS_PHASE2_EAP	eap_ttls.c	/^		EAP_TTLS_PHASE2_EAP,$/;"	e	enum:eap_ttls_data::phase2_types	file:
+EAP_TTLS_PHASE2_MSCHAP	eap_ttls.c	/^		EAP_TTLS_PHASE2_MSCHAP,$/;"	e	enum:eap_ttls_data::phase2_types	file:
+EAP_TTLS_PHASE2_MSCHAPV2	eap_ttls.c	/^		EAP_TTLS_PHASE2_MSCHAPV2,$/;"	e	enum:eap_ttls_data::phase2_types	file:
+EAP_TTLS_PHASE2_PAP	eap_ttls.c	/^		EAP_TTLS_PHASE2_PAP,$/;"	e	enum:eap_ttls_data::phase2_types	file:
+EAP_TTLS_VERSION	eap_ttls.c	23;"	d	file:
+EAP_UNAUTH_TLS_TYPE	eap_tls_common.h	89;"	d
+EAP_VENDOR_ID	eap_vendor_test.c	20;"	d	file:
+EAP_VENDOR_TYPE	eap_vendor_test.c	21;"	d	file:
+EAP_WFA_UNAUTH_TLS_TYPE	eap_tls_common.h	90;"	d
+EAP_state	eap_i.h	/^	} EAP_state;$/;"	m	struct:eap_sm	typeref:enum:eap_sm::__anon12
+ECDH_KDF_MAX	eap_noob.h	28;"	d
+EMSK_LEN	eap_noob.h	44;"	d
+ERROR_ACCT_DISABLED	eap_mschapv2.c	68;"	d	file:
+ERROR_AUTHENTICATION_FAILURE	eap_mschapv2.c	71;"	d	file:
+ERROR_CHANGING_PASSWORD	eap_mschapv2.c	72;"	d	file:
+ERROR_NO_DIALIN_PERMISSION	eap_mschapv2.c	70;"	d	file:
+ERROR_PASSWD_EXPIRED	eap_mschapv2.c	69;"	d	file:
+ERROR_RESTRICTED_LOGON_HOURS	eap_mschapv2.c	67;"	d	file:
+ERR_CODE	eap_noob.h	94;"	d
+ERR_INFO	eap_noob.h	93;"	d
+EXT_CERT_CHECK_BAD	eap_config.h	/^		EXT_CERT_CHECK_BAD,$/;"	e	enum:eap_peer_config::__anon7
+EXT_CERT_CHECK_GOOD	eap_config.h	/^		EXT_CERT_CHECK_GOOD,$/;"	e	enum:eap_peer_config::__anon7
+EapDecision	eap_i.h	/^} EapDecision;$/;"	t	typeref:enum:__anon10
+EapMethodState	eap_i.h	/^} EapMethodState;$/;"	t	typeref:enum:__anon11
+FAIL	eap_ikev2.c	/^	enum { WAIT_START, PROC_MSG, WAIT_FRAG_ACK, DONE, FAIL } state;$/;"	e	enum:eap_ikev2_data::__anon30	file:
+FAIL	eap_tnc.c	/^	enum { WAIT_START, PROC_MSG, WAIT_FRAG_ACK, DONE, FAIL } state;$/;"	e	enum:eap_tnc_data::__anon16	file:
+FAIL	eap_wsc.c	/^	enum { WAIT_START, MESG, WAIT_FRAG_ACK, FAIL } state;$/;"	e	enum:eap_wsc_data::__anon29	file:
+FAILURE	eap_aka.c	/^		CONTINUE, RESULT_SUCCESS, SUCCESS, FAILURE$/;"	e	enum:eap_aka_data::__anon6	file:
+FAILURE	eap_eke.c	/^		IDENTITY, COMMIT, CONFIRM, SUCCESS, FAILURE$/;"	e	enum:eap_eke_data::__anon4	file:
+FAILURE	eap_gpsk.c	/^	enum { GPSK_1, GPSK_3, SUCCESS, FAILURE } state;$/;"	e	enum:eap_gpsk_data::__anon17	file:
+FAILURE	eap_noob.h	65;"	d
+FAILURE	eap_pwd.c	/^		SUCCESS_ON_FRAG_COMPLETION, SUCCESS, FAILURE$/;"	e	enum:eap_pwd_data::__anon24	file:
+FAILURE	eap_sake.c	/^	enum { IDENTITY, CHALLENGE, CONFIRM, SUCCESS, FAILURE } state;$/;"	e	enum:eap_sake_data::__anon1	file:
+FAILURE	eap_sim.c	/^		CONTINUE, RESULT_SUCCESS, SUCCESS, FAILURE$/;"	e	enum:eap_sim_data::__anon9	file:
+FIXED_LENGTH	eap_noob.h	50;"	d
+FORMAT_BASE64URL	eap_noob.h	32;"	d
+GPSK_1	eap_gpsk.c	/^	enum { GPSK_1, GPSK_3, SUCCESS, FAILURE } state;$/;"	e	enum:eap_gpsk_data::__anon17	file:
+GPSK_3	eap_gpsk.c	/^	enum { GPSK_1, GPSK_3, SUCCESS, FAILURE } state;$/;"	e	enum:eap_gpsk_data::__anon17	file:
+HASH_LEN	eap_noob.h	53;"	d
+HINT_PEER	eap_noob.h	82;"	d
+HINT_RCVD	eap_noob.h	121;"	d
+HINT_SALT	eap_noob.h	24;"	d
+HINT_SERV	eap_noob.h	83;"	d
+HOOB	eap_noob.h	/^enum 	{HOOB,MACS,MACP};$/;"	e	enum:__anon22
+IDENTITY	eap_eke.c	/^		IDENTITY, COMMIT, CONFIRM, SUCCESS, FAILURE$/;"	e	enum:eap_eke_data::__anon4	file:
+IDENTITY	eap_sake.c	/^	enum { IDENTITY, CHALLENGE, CONFIRM, SUCCESS, FAILURE } state;$/;"	e	enum:eap_sake_data::__anon1	file:
+IDi	ikev2.h	/^	u8 *IDi;$/;"	m	struct:ikev2_responder_data
+IDi_len	ikev2.h	/^	size_t IDi_len;$/;"	m	struct:ikev2_responder_data
+IDi_type	ikev2.h	/^	u8 IDi_type;$/;"	m	struct:ikev2_responder_data
+IDr	ikev2.h	/^	u8 *IDr;$/;"	m	struct:ikev2_responder_data
+IDr_len	ikev2.h	/^	size_t IDr_len;$/;"	m	struct:ikev2_responder_data
+IF_TNCCS_END	tncc.c	40;"	d	file:
+IF_TNCCS_START	tncc.c	33;"	d	file:
+IKEV2_DONE	ikev2.h	/^	enum { SA_INIT, SA_AUTH, CHILD_SA, NOTIFY, IKEV2_DONE, IKEV2_FAILED }$/;"	e	enum:ikev2_responder_data::__anon13
+IKEV2_FAILED	ikev2.h	/^	enum { SA_INIT, SA_AUTH, CHILD_SA, NOTIFY, IKEV2_DONE, IKEV2_FAILED }$/;"	e	enum:ikev2_responder_data::__anon13
+IKEV2_H	ikev2.h	10;"	d
+INFO_RCVD	eap_noob.h	116;"	d
+INIT	eap_vendor_test.c	/^	enum { INIT, CONFIRM, SUCCESS } state;$/;"	e	enum:eap_vendor_test_data::__anon18	file:
+INVALID	eap_noob.h	67;"	d
+Initialize	tncc.c	/^	TNC_Result (*Initialize)($/;"	m	struct:tnc_if_imc	file:
+JSON_ARRAY_FOREACH	eap_noob.h	139;"	d
+JSON_WEB_KEY	eap_noob.h	97;"	d
+KDF_LEN	eap_noob.h	42;"	d
+KEY_TYPE	eap_noob.h	99;"	d
+KMP_LEN	eap_noob.h	48;"	d
+KMS_LEN	eap_noob.h	47;"	d
+KZ_LEN	eap_noob.h	46;"	d
+LAST_MSG_SA_AUTH	ikev2.h	/^	enum { LAST_MSG_SA_INIT, LAST_MSG_SA_AUTH } last_msg;$/;"	e	enum:ikev2_responder_data::__anon15
+LAST_MSG_SA_INIT	ikev2.h	/^	enum { LAST_MSG_SA_INIT, LAST_MSG_SA_AUTH } last_msg;$/;"	e	enum:ikev2_responder_data::__anon15
+LEAP_CHALLENGE_LEN	eap_leap.c	18;"	d	file:
+LEAP_DONE	eap_leap.c	/^		LEAP_DONE$/;"	e	enum:eap_leap_data::__anon5	file:
+LEAP_KEY_LEN	eap_leap.c	20;"	d	file:
+LEAP_RESPONSE_LEN	eap_leap.c	19;"	d	file:
+LEAP_VERSION	eap_leap.c	17;"	d	file:
+LEAP_WAIT_CHALLENGE	eap_leap.c	/^		LEAP_WAIT_CHALLENGE,$/;"	e	enum:eap_leap_data::__anon5	file:
+LEAP_WAIT_RESPONSE	eap_leap.c	/^		LEAP_WAIT_RESPONSE,$/;"	e	enum:eap_leap_data::__anon5	file:
+LEAP_WAIT_SUCCESS	eap_leap.c	/^		LEAP_WAIT_SUCCESS,$/;"	e	enum:eap_leap_data::__anon5	file:
+LIB_OBJS	Makefile	/^LIB_OBJS= \\$/;"	m
+MAC	eap_noob.h	/^	char * MAC;$/;"	m	struct:eap_noob_peer_data
+MAC	eap_noob.h	/^	char * MAC;$/;"	m	struct:eap_noob_serv_data
+MACP	eap_noob.h	/^enum 	{HOOB,MACS,MACP};$/;"	e	enum:__anon22
+MACS	eap_noob.h	/^enum 	{HOOB,MACS,MACP};$/;"	e	enum:__anon22
+MAC_LEN	eap_noob.h	49;"	d
+MAC_PEER	eap_noob.h	91;"	d
+MAC_RCVD	eap_noob.h	114;"	d
+MAC_SERVER	eap_noob.h	81;"	d
+MAX_CONF_LEN	eap_noob.h	38;"	d
+MAX_INFO_LEN	eap_noob.h	39;"	d
+MAX_LINE_SIZE	eap_noob.h	40;"	d
+MAX_MSG_TYPES	eap_noob.h	55;"	d
+MAX_PATH_LEN	eap_noob.h	15;"	d
+MAX_PEER_ID_LEN	eap_noob.h	37;"	d
+MAX_QUERY_LEN	eap_noob.h	16;"	d
+MAX_SUP_CSUITES	eap_noob.h	36;"	d
+MAX_SUP_VER	eap_noob.h	35;"	d
+MAX_URL_LEN	eap_noob.h	29;"	d
+MAX_X25519_LEN	eap_noob.h	51;"	d
+MESG	eap_wsc.c	/^	enum { WAIT_START, MESG, WAIT_FRAG_ACK, FAIL } state;$/;"	e	enum:eap_wsc_data::__anon29	file:
+METHOD_CONT	eap_i.h	/^	METHOD_NONE, METHOD_INIT, METHOD_CONT, METHOD_MAY_CONT, METHOD_DONE$/;"	e	enum:__anon11
+METHOD_DONE	eap_i.h	/^	METHOD_NONE, METHOD_INIT, METHOD_CONT, METHOD_MAY_CONT, METHOD_DONE$/;"	e	enum:__anon11
+METHOD_INIT	eap_i.h	/^	METHOD_NONE, METHOD_INIT, METHOD_CONT, METHOD_MAY_CONT, METHOD_DONE$/;"	e	enum:__anon11
+METHOD_MAY_CONT	eap_i.h	/^	METHOD_NONE, METHOD_INIT, METHOD_CONT, METHOD_MAY_CONT, METHOD_DONE$/;"	e	enum:__anon11
+METHOD_NONE	eap_i.h	/^	METHOD_NONE, METHOD_INIT, METHOD_CONT, METHOD_MAY_CONT, METHOD_DONE$/;"	e	enum:__anon11
+MINSLEEP	eap_noob.h	77;"	d
+MINSLP_RCVD	eap_noob.h	118;"	d
+MSCHAPV2_AUTH_RESPONSE_LEN	mschapv2.h	14;"	d
+MSCHAPV2_CHAL_LEN	mschapv2.h	12;"	d
+MSCHAPV2_H	mschapv2.h	10;"	d
+MSCHAPV2_KEY_LEN	eap_mschapv2.c	75;"	d	file:
+MSCHAPV2_MASTER_KEY_LEN	mschapv2.h	15;"	d
+MSCHAPV2_NT_RESPONSE_LEN	mschapv2.h	13;"	d
+MSCHAPV2_OP_CHALLENGE	eap_mschapv2.c	61;"	d	file:
+MSCHAPV2_OP_CHANGE_PASSWORD	eap_mschapv2.c	65;"	d	file:
+MSCHAPV2_OP_FAILURE	eap_mschapv2.c	64;"	d	file:
+MSCHAPV2_OP_RESPONSE	eap_mschapv2.c	62;"	d	file:
+MSCHAPV2_OP_SUCCESS	eap_mschapv2.c	63;"	d	file:
+MSG_ENC_FMT_RCVD	eap_noob.h	123;"	d
+MSK_LEN	eap_noob.h	43;"	d
+NAI	eap_noob.h	/^	char * NAI;$/;"	m	struct:eap_noob_serv_data
+NONCE_PEER	eap_noob.h	88;"	d
+NONCE_RCVD	eap_noob.h	113;"	d
+NONCE_SERV	eap_noob.h	76;"	d
+NONE	eap_noob.h	/^enum	{NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7,EAP_NOOB_HINT};$/;"	e	enum:__anon21
+NOTIFY	ikev2.h	/^	enum { SA_INIT, SA_AUTH, CHILD_SA, NOTIFY, IKEV2_DONE, IKEV2_FAILED }$/;"	e	enum:ikev2_responder_data::__anon13
+NO_BINDING	eap_peap.c	/^	enum { NO_BINDING, OPTIONAL_BINDING, REQUIRE_BINDING } crypto_binding;$/;"	e	enum:eap_peap_data::__anon25	file:
+NO_CHECK	eap_config.h	/^		NO_CHECK = 0,$/;"	e	enum:eap_peer_config::__anon7
+NO_ERROR	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	e	enum:eap_noob_err_code
+NUM_OF_STATES	eap_noob.h	54;"	d
+NUM_OF_VERSIONS	eap_noob.h	13;"	d
+NotifyConnectionChange	tncc.c	/^	TNC_Result (*NotifyConnectionChange)($/;"	m	struct:tnc_if_imc	file:
+OOB	eap_noob.h	/^enum 	{UNREG, WAITING, OOB, RECONNECT,REGISTERED};$/;"	e	enum:__anon20
+OPTIONAL_BINDING	eap_peap.c	/^	enum { NO_BINDING, OPTIONAL_BINDING, REQUIRE_BINDING } crypto_binding;$/;"	e	enum:eap_peap_data::__anon25	file:
+PASSWD_CHANGE_CHAL_LEN	eap_mschapv2.c	74;"	d	file:
+PAX_DONE	eap_pax.c	/^	enum { PAX_INIT, PAX_STD_2_SENT, PAX_DONE } state;$/;"	e	enum:eap_pax_data::__anon26	file:
+PAX_INIT	eap_pax.c	/^	enum { PAX_INIT, PAX_STD_2_SENT, PAX_DONE } state;$/;"	e	enum:eap_pax_data::__anon26	file:
+PAX_STD_2_SENT	eap_pax.c	/^	enum { PAX_INIT, PAX_STD_2_SENT, PAX_DONE } state;$/;"	e	enum:eap_pax_data::__anon26	file:
+PEERID	eap_noob.h	78;"	d
+PEERID_RCVD	eap_noob.h	109;"	d
+PEERINFO	eap_noob.h	90;"	d
+PEER_AUTH_CERT	ikev2.h	/^	enum { PEER_AUTH_CERT, PEER_AUTH_SECRET } peer_auth;$/;"	e	enum:ikev2_responder_data::__anon14
+PEER_AUTH_SECRET	ikev2.h	/^	enum { PEER_AUTH_CERT, PEER_AUTH_SECRET } peer_auth;$/;"	e	enum:ikev2_responder_data::__anon14
+PEER_BSSID	eap_noob.h	104;"	d
+PEER_ID_DEFAULT	eap_noob.h	14;"	d
+PEER_ID_NUM_RCVD	eap_noob.h	120;"	d
+PEER_MAKE	eap_noob.h	106;"	d
+PEER_MAKE_RCVD	eap_noob.h	119;"	d
+PEER_SERIAL_NUM	eap_noob.h	102;"	d
+PEER_SSID	eap_noob.h	103;"	d
+PEER_TO_SERV	eap_noob.h	58;"	d
+PEER_TYPE	eap_noob.h	105;"	d
+PEER_TYPE_RCVD	eap_noob.h	124;"	d
+PENDING_CHECK	eap_config.h	/^		PENDING_CHECK,$/;"	e	enum:eap_peer_config::__anon7
+PKEY_RCVD	eap_noob.h	115;"	d
+PROC_MSG	eap_ikev2.c	/^	enum { WAIT_START, PROC_MSG, WAIT_FRAG_ACK, DONE, FAIL } state;$/;"	e	enum:eap_ikev2_data::__anon30	file:
+PROC_MSG	eap_tnc.c	/^	enum { WAIT_START, PROC_MSG, WAIT_FRAG_ACK, DONE, FAIL } state;$/;"	e	enum:eap_tnc_data::__anon16	file:
+PSK_DONE	eap_psk.c	/^	enum { PSK_INIT, PSK_MAC_SENT, PSK_DONE } state;$/;"	e	enum:eap_psk_data::__anon3	file:
+PSK_INIT	eap_psk.c	/^	enum { PSK_INIT, PSK_MAC_SENT, PSK_DONE } state;$/;"	e	enum:eap_psk_data::__anon3	file:
+PSK_MAC_SENT	eap_psk.c	/^	enum { PSK_INIT, PSK_MAC_SENT, PSK_DONE } state;$/;"	e	enum:eap_psk_data::__anon3	file:
+PUBLICKEY_PEER	eap_noob.h	89;"	d
+PUBLICKEY_SERV	eap_noob.h	79;"	d
+PWD_Commit_Req	eap_pwd.c	/^		PWD_ID_Req, PWD_Commit_Req, PWD_Confirm_Req,$/;"	e	enum:eap_pwd_data::__anon24	file:
+PWD_Confirm_Req	eap_pwd.c	/^		PWD_ID_Req, PWD_Commit_Req, PWD_Confirm_Req,$/;"	e	enum:eap_pwd_data::__anon24	file:
+PWD_ID_Req	eap_pwd.c	/^		PWD_ID_Req, PWD_Commit_Req, PWD_Confirm_Req,$/;"	e	enum:eap_pwd_data::__anon24	file:
+Peer_ID_Num	eap_noob.h	/^	char * Peer_ID_Num;$/;"	m	struct:eap_noob_peer_config_params
+Peer_name	eap_noob.h	/^	char * Peer_name;$/;"	m	struct:eap_noob_peer_config_params
+ProvideBindFunction	tncc.c	/^	TNC_Result (*ProvideBindFunction)($/;"	m	struct:tnc_if_imc	file:
+REALM	eap_noob.h	98;"	d
+RECONNECT	eap_noob.h	/^enum 	{UNREG, WAITING, OOB, RECONNECT,REGISTERED};$/;"	e	enum:__anon20
+RECONNECT_EXCHANGE	eap_noob.h	/^enum	{COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW}; \/\/Flag used during KDF and MAC generation$/;"	e	enum:__anon19
+RECONNECT_EXCHANGE_NEW	eap_noob.h	/^enum	{COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW}; \/\/Flag used during KDF and MAC generation$/;"	e	enum:__anon19
+REGISTERED	eap_noob.h	/^enum 	{UNREG, WAITING, OOB, RECONNECT,REGISTERED};$/;"	e	enum:__anon20
+REQUIRE_BINDING	eap_peap.c	/^	enum { NO_BINDING, OPTIONAL_BINDING, REQUIRE_BINDING } crypto_binding;$/;"	e	enum:eap_peap_data::__anon25	file:
+RESULT_SUCCESS	eap_aka.c	/^		CONTINUE, RESULT_SUCCESS, SUCCESS, FAILURE$/;"	e	enum:eap_aka_data::__anon6	file:
+RESULT_SUCCESS	eap_sim.c	/^		CONTINUE, RESULT_SUCCESS, SUCCESS, FAILURE$/;"	e	enum:eap_sim_data::__anon9	file:
+ReceiveMessage	tncc.c	/^	TNC_Result (*ReceiveMessage)($/;"	m	struct:tnc_if_imc	file:
+SA_AUTH	ikev2.h	/^	enum { SA_INIT, SA_AUTH, CHILD_SA, NOTIFY, IKEV2_DONE, IKEV2_FAILED }$/;"	e	enum:ikev2_responder_data::__anon13
+SA_INIT	ikev2.h	/^	enum { SA_INIT, SA_AUTH, CHILD_SA, NOTIFY, IKEV2_DONE, IKEV2_FAILED }$/;"	e	enum:ikev2_responder_data::__anon13
+SERV_INFO	eap_noob.h	80;"	d
+SERV_TO_PEER	eap_noob.h	59;"	d
+SHORT_QUERY_LEN	eap_noob.h	17;"	d
+SM_STATE	eap.c	/^SM_STATE(EAP, DISABLED)$/;"	f
+SM_STATE	eap.c	/^SM_STATE(EAP, DISCARD)$/;"	f
+SM_STATE	eap.c	/^SM_STATE(EAP, FAILURE)$/;"	f
+SM_STATE	eap.c	/^SM_STATE(EAP, GET_METHOD)$/;"	f
+SM_STATE	eap.c	/^SM_STATE(EAP, IDENTITY)$/;"	f
+SM_STATE	eap.c	/^SM_STATE(EAP, IDLE)$/;"	f
+SM_STATE	eap.c	/^SM_STATE(EAP, INITIALIZE)$/;"	f
+SM_STATE	eap.c	/^SM_STATE(EAP, METHOD)$/;"	f
+SM_STATE	eap.c	/^SM_STATE(EAP, NOTIFICATION)$/;"	f
+SM_STATE	eap.c	/^SM_STATE(EAP, RECEIVED)$/;"	f
+SM_STATE	eap.c	/^SM_STATE(EAP, RETRANSMIT)$/;"	f
+SM_STATE	eap.c	/^SM_STATE(EAP, SEND_RESPONSE)$/;"	f
+SM_STATE	eap.c	/^SM_STATE(EAP, SUCCESS)$/;"	f
+SM_STEP	eap.c	/^SM_STEP(EAP)$/;"	f
+SSOH_MS_CORRELATIONID	tncc.c	/^	SSOH_MS_CORRELATIONID = 6,$/;"	e	enum:__anon8	file:
+SSOH_MS_INSTALLED_SHVS	tncc.c	/^	SSOH_MS_INSTALLED_SHVS = 7,$/;"	e	enum:__anon8	file:
+SSOH_MS_MACHINENAME	tncc.c	/^	SSOH_MS_MACHINENAME = 5,$/;"	e	enum:__anon8	file:
+SSOH_MS_MACHINE_INVENTORY	tncc.c	/^	SSOH_MS_MACHINE_INVENTORY = 1,$/;"	e	enum:__anon8	file:
+SSOH_MS_MACHINE_INVENTORY_EX	tncc.c	/^	SSOH_MS_MACHINE_INVENTORY_EX = 8$/;"	e	enum:__anon8	file:
+SSOH_MS_PACKET_INFO	tncc.c	/^	SSOH_MS_PACKET_INFO = 3,$/;"	e	enum:__anon8	file:
+SSOH_MS_QUARANTINE_STATE	tncc.c	/^	SSOH_MS_QUARANTINE_STATE = 2,$/;"	e	enum:__anon8	file:
+SSOH_MS_SYSTEMGENERATED_IDS	tncc.c	/^	SSOH_MS_SYSTEMGENERATED_IDS = 4,$/;"	e	enum:__anon8	file:
+STATE_MACHINE_DATA	eap.c	32;"	d	file:
+STATE_MACHINE_DEBUG_PREFIX	eap.c	33;"	d	file:
+STATE_RCVD	eap_noob.h	117;"	d
+STRUCT_PACKED	eap_mschapv2.c	/^} STRUCT_PACKED;$/;"	v	typeref:struct:eap_mschapv2_hdr
+STRUCT_PACKED	eap_mschapv2.c	/^} STRUCT_PACKED;$/;"	v	typeref:struct:ms_change_password
+STRUCT_PACKED	eap_mschapv2.c	/^} STRUCT_PACKED;$/;"	v	typeref:struct:ms_response
+SUCCESS	eap_aka.c	/^		CONTINUE, RESULT_SUCCESS, SUCCESS, FAILURE$/;"	e	enum:eap_aka_data::__anon6	file:
+SUCCESS	eap_eke.c	/^		IDENTITY, COMMIT, CONFIRM, SUCCESS, FAILURE$/;"	e	enum:eap_eke_data::__anon4	file:
+SUCCESS	eap_gpsk.c	/^	enum { GPSK_1, GPSK_3, SUCCESS, FAILURE } state;$/;"	e	enum:eap_gpsk_data::__anon17	file:
+SUCCESS	eap_noob.h	64;"	d
+SUCCESS	eap_pwd.c	/^		SUCCESS_ON_FRAG_COMPLETION, SUCCESS, FAILURE$/;"	e	enum:eap_pwd_data::__anon24	file:
+SUCCESS	eap_sake.c	/^	enum { IDENTITY, CHALLENGE, CONFIRM, SUCCESS, FAILURE } state;$/;"	e	enum:eap_sake_data::__anon1	file:
+SUCCESS	eap_sim.c	/^		CONTINUE, RESULT_SUCCESS, SUCCESS, FAILURE$/;"	e	enum:eap_sim_data::__anon9	file:
+SUCCESS	eap_vendor_test.c	/^	enum { INIT, CONFIRM, SUCCESS } state;$/;"	e	enum:eap_vendor_test_data::__anon18	file:
+SUCCESS_ON_FRAG_COMPLETION	eap_pwd.c	/^		SUCCESS_ON_FRAG_COMPLETION, SUCCESS, FAILURE$/;"	e	enum:eap_pwd_data::__anon24	file:
+SUITE_ONE	eap_noob.h	21;"	d
+TABLE_NAME	eap_noob.h	22;"	d
+TNCCS_PROCESS_ERROR	tncc.h	/^	TNCCS_PROCESS_ERROR = -1,$/;"	e	enum:tncc_process_res
+TNCCS_PROCESS_OK_NO_RECOMMENDATION	tncc.h	/^	TNCCS_PROCESS_OK_NO_RECOMMENDATION = 0,$/;"	e	enum:tncc_process_res
+TNCCS_RECOMMENDATION_ALLOW	tncc.h	/^	TNCCS_RECOMMENDATION_ALLOW,$/;"	e	enum:tncc_process_res
+TNCCS_RECOMMENDATION_ERROR	tncc.h	/^	TNCCS_RECOMMENDATION_ERROR,$/;"	e	enum:tncc_process_res
+TNCCS_RECOMMENDATION_ISOLATE	tncc.h	/^	TNCCS_RECOMMENDATION_ISOLATE$/;"	e	enum:tncc_process_res
+TNCCS_RECOMMENDATION_NONE	tncc.h	/^	TNCCS_RECOMMENDATION_NONE,$/;"	e	enum:tncc_process_res
+TNCC_H	tncc.h	10;"	d
+TNC_9048_LogMessage	tncc.c	/^static TNC_Result TNC_9048_LogMessage(TNC_IMCID imcID, TNC_UInt32 severity,$/;"	f	file:
+TNC_9048_UserMessage	tncc.c	/^static TNC_Result TNC_9048_UserMessage(TNC_IMCID imcID,$/;"	f	file:
+TNC_CONFIG_FILE	tncc.c	30;"	d	file:
+TNC_MAX_IMC_ID	tncc.c	101;"	d	file:
+TNC_TNCC_BindFunction	tncc.c	/^static TNC_Result TNC_TNCC_BindFunction($/;"	f	file:
+TNC_TNCC_ReportMessageTypes	tncc.c	/^static TNC_Result TNC_TNCC_ReportMessageTypes($/;"	f	file:
+TNC_TNCC_RequestHandshakeRetry	tncc.c	/^static TNC_Result TNC_TNCC_RequestHandshakeRetry($/;"	f	file:
+TNC_TNCC_SendMessage	tncc.c	/^static TNC_Result TNC_TNCC_SendMessage($/;"	f	file:
+TNC_WINREG_PATH	tncc.c	32;"	d	file:
+TSTR	tncc.c	23;"	d	file:
+TSTR	tncc.c	25;"	d	file:
+TYPE	eap_noob.h	72;"	d
+TYPE_FIVE_PARAMS	eap_noob.h	131;"	d
+TYPE_FOUR_PARAMS	eap_noob.h	130;"	d
+TYPE_HINT_PARAMS	eap_noob.h	134;"	d
+TYPE_ONE_PARAMS	eap_noob.h	127;"	d
+TYPE_SEVEN_PARAMS	eap_noob.h	133;"	d
+TYPE_SIX_PARAMS	eap_noob.h	132;"	d
+TYPE_THREE_PARAMS	eap_noob.h	129;"	d
+TYPE_TWO_PARAMS	eap_noob.h	128;"	d
+Terminate	tncc.c	/^	TNC_Result (*Terminate)(TNC_IMCID imcID);$/;"	m	struct:tnc_if_imc	file:
+UNREG	eap_noob.h	/^enum 	{UNREG, WAITING, OOB, RECONNECT,REGISTERED};$/;"	e	enum:__anon20
+UPDATE_ALL	eap_noob.h	/^enum    {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,UPDATE_STATE_ERROR,UPDATE_OOB};$/;"	e	enum:__anon23
+UPDATE_OOB	eap_noob.h	/^enum    {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,UPDATE_STATE_ERROR,UPDATE_OOB};$/;"	e	enum:__anon23
+UPDATE_PERSISTENT_KEYS_SECRET	eap_noob.h	/^enum    {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,UPDATE_STATE_ERROR,UPDATE_OOB};$/;"	e	enum:__anon23
+UPDATE_STATE	eap_noob.h	/^enum    {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,UPDATE_STATE_ERROR,UPDATE_OOB};$/;"	e	enum:__anon23
+UPDATE_STATE_ERROR	eap_noob.h	/^enum    {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,UPDATE_STATE_ERROR,UPDATE_OOB};$/;"	e	enum:__anon23
+UPDATE_STATE_MINSLP	eap_noob.h	/^enum    {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,UPDATE_STATE_ERROR,UPDATE_OOB};$/;"	e	enum:__anon23
+VALID	eap_noob.h	68;"	d
+VERSION_ONE	eap_noob.h	20;"	d
+VERSION_PEER	eap_noob.h	85;"	d
+VERSION_RCVD	eap_noob.h	112;"	d
+VERSION_SERV	eap_noob.h	73;"	d
+WAITING	eap_noob.h	/^enum 	{UNREG, WAITING, OOB, RECONNECT,REGISTERED};$/;"	e	enum:__anon20
+WAIT_FRAG_ACK	eap_ikev2.c	/^	enum { WAIT_START, PROC_MSG, WAIT_FRAG_ACK, DONE, FAIL } state;$/;"	e	enum:eap_ikev2_data::__anon30	file:
+WAIT_FRAG_ACK	eap_tnc.c	/^	enum { WAIT_START, PROC_MSG, WAIT_FRAG_ACK, DONE, FAIL } state;$/;"	e	enum:eap_tnc_data::__anon16	file:
+WAIT_FRAG_ACK	eap_wsc.c	/^	enum { WAIT_START, MESG, WAIT_FRAG_ACK, FAIL } state;$/;"	e	enum:eap_wsc_data::__anon29	file:
+WAIT_START	eap_ikev2.c	/^	enum { WAIT_START, PROC_MSG, WAIT_FRAG_ACK, DONE, FAIL } state;$/;"	e	enum:eap_ikev2_data::__anon30	file:
+WAIT_START	eap_tnc.c	/^	enum { WAIT_START, PROC_MSG, WAIT_FRAG_ACK, DONE, FAIL } state;$/;"	e	enum:eap_tnc_data::__anon16	file:
+WAIT_START	eap_wsc.c	/^	enum { WAIT_START, MESG, WAIT_FRAG_ACK, FAIL } state;$/;"	e	enum:eap_wsc_data::__anon29	file:
+X_COORDINATE	eap_noob.h	95;"	d
+Y_COORDINATE	eap_noob.h	96;"	d
+a_id	eap_fast_pac.h	/^	u8 *a_id;$/;"	m	struct:eap_fast_pac
+a_id_info	eap_fast_pac.h	/^	u8 *a_id_info;$/;"	m	struct:eap_fast_pac
+a_id_info_len	eap_fast_pac.h	/^	size_t a_id_info_len;$/;"	m	struct:eap_fast_pac
+a_id_len	eap_fast_pac.h	/^	size_t a_id_len;$/;"	m	struct:eap_fast_pac
+ak	eap_pax.c	/^	u8 ak[EAP_PAX_AK_LEN];$/;"	m	struct:eap_pax_data	file:
+ak	eap_psk.c	/^	u8 ak[EAP_PSK_AK_LEN], kdk[EAP_PSK_KDK_LEN], tek[EAP_PSK_TEK_LEN];$/;"	m	struct:eap_psk_data	file:
+allowNotifications	eap_i.h	/^	Boolean allowNotifications; \/* peer state machine <-> methods *\/$/;"	m	struct:eap_sm
+allowNotifications	eap_i.h	/^	Boolean allowNotifications;$/;"	m	struct:eap_method_ret
+altsubject_match	eap_config.h	/^	u8 *altsubject_match;$/;"	m	struct:eap_peer_config
+altsubject_match2	eap_config.h	/^	u8 *altsubject_match2;$/;"	m	struct:eap_peer_config
+amsk	eap_noob.h	/^	u8 * amsk;$/;"	m	struct:eap_noob_ecdh_kdf_out
+amsk_b64	eap_noob.h	/^	char * amsk_b64;$/;"	m	struct:eap_noob_ecdh_kdf_out
+anon_provisioning	eap_fast.c	/^	int anon_provisioning; \/* doing anonymous (unauthenticated)$/;"	m	struct:eap_fast_data	file:
+anonymous_identity	eap_config.h	/^	u8 *anonymous_identity;$/;"	m	struct:eap_peer_config
+anonymous_identity_len	eap_config.h	/^	size_t anonymous_identity_len;$/;"	m	struct:eap_peer_config
+ap_challenge	eap_leap.c	/^	u8 ap_challenge[LEAP_CHALLENGE_LEN];$/;"	m	struct:eap_leap_data	file:
+ap_response	eap_leap.c	/^	u8 ap_response[LEAP_RESPONSE_LEN];$/;"	m	struct:eap_leap_data	file:
+auth	eap_sake.c	/^		u8 auth[EAP_SAKE_TEK_AUTH_LEN];$/;"	m	struct:eap_sake_data::__anon2	file:
+auth_challenge	eap_i.h	/^	u8 *peer_challenge, *auth_challenge;$/;"	m	struct:eap_sm
+auth_challenge	eap_mschapv2.c	/^	u8 *auth_challenge;$/;"	m	struct:eap_mschapv2_data	file:
+auth_response	eap_mschapv2.c	/^	u8 auth_response[MSCHAPV2_AUTH_RESPONSE_LEN];$/;"	m	struct:eap_mschapv2_data	file:
+auth_response	eap_ttls.c	/^	u8 auth_response[MSCHAPV2_AUTH_RESPONSE_LEN];$/;"	m	struct:eap_ttls_data	file:
+auth_response_valid	eap_mschapv2.c	/^	int auth_response_valid;$/;"	m	struct:eap_mschapv2_data	file:
+auth_response_valid	eap_ttls.c	/^	int auth_response_valid;$/;"	m	struct:eap_ttls_data	file:
+autn	eap_aka.c	/^	u8 rand[EAP_AKA_RAND_LEN], autn[EAP_AKA_AUTN_LEN];$/;"	m	struct:eap_aka_data	file:
+auts	eap_aka.c	/^	u8 auts[EAP_AKA_AUTS_LEN];$/;"	m	struct:eap_aka_data	file:
+binding_nonce	eap_peap.c	/^	u8 binding_nonce[32];$/;"	m	struct:eap_peap_data	file:
+bnctx	eap_pwd.c	/^	BN_CTX *bnctx;$/;"	m	struct:eap_pwd_data	file:
+buf	eap_fast_pac.c	/^	char *buf;$/;"	m	struct:eap_fast_read_ctx	file:
+buf_len	eap_fast_pac.c	/^	size_t buf_len;$/;"	m	struct:eap_fast_read_ctx	file:
+ca_cert	eap_config.h	/^	u8 *ca_cert;$/;"	m	struct:eap_peer_config
+ca_cert2	eap_config.h	/^	u8 *ca_cert2;$/;"	m	struct:eap_peer_config
+ca_cert2_id	eap_config.h	/^	char *ca_cert2_id;$/;"	m	struct:eap_peer_config
+ca_cert_id	eap_config.h	/^	char *ca_cert_id;$/;"	m	struct:eap_peer_config
+ca_path	eap_config.h	/^	u8 *ca_path;$/;"	m	struct:eap_peer_config
+ca_path2	eap_config.h	/^	u8 *ca_path2;$/;"	m	struct:eap_peer_config
+cert2_id	eap_config.h	/^	char *cert2_id;$/;"	m	struct:eap_peer_config
+cert_id	eap_config.h	/^	char *cert_id;$/;"	m	struct:eap_peer_config
+cert_in_cb	eap.h	/^	int cert_in_cb;$/;"	m	struct:eap_config
+changed	eap_i.h	/^	Boolean changed;$/;"	m	struct:eap_sm
+cid	eap_pax.c	/^	char *cid;$/;"	m	struct:eap_pax_data	file:
+cid_len	eap_pax.c	/^	size_t cid_len;$/;"	m	struct:eap_pax_data	file:
+cipher	eap_sake.c	/^		u8 cipher[EAP_SAKE_TEK_CIPHER_LEN];$/;"	m	struct:eap_sake_data::__anon2	file:
+ck	eap_aka.c	/^	u8 ik[EAP_AKA_IK_LEN], ck[EAP_AKA_CK_LEN], res[EAP_AKA_RES_MAX_LEN];$/;"	m	struct:eap_aka_data	file:
+ck	eap_pax.c	/^	u8 ck[EAP_PAX_CK_LEN];$/;"	m	struct:eap_pax_data	file:
+client_cert	eap_config.h	/^	u8 *client_cert;$/;"	m	struct:eap_peer_config
+client_cert2	eap_config.h	/^	u8 *client_cert2;$/;"	m	struct:eap_peer_config
+cmk	eap_peap.c	/^	u8 cmk[20];$/;"	m	struct:eap_peap_data	file:
+config_params	eap_noob.h	/^	u32 config_params;$/;"	m	struct:eap_noob_peer_data
+conn	eap_tls_common.h	/^	struct tls_connection *conn;$/;"	m	struct:eap_ssl_data	typeref:struct:eap_ssl_data::tls_connection
+connectionID	tncc.c	/^	TNC_ConnectionID connectionID;$/;"	m	struct:tnc_if_imc	file:
+counter	eap_aka.c	/^	unsigned int counter, counter_too_small;$/;"	m	struct:eap_aka_data	file:
+counter	eap_sim.c	/^	unsigned int counter, counter_too_small;$/;"	m	struct:eap_sim_data	file:
+counter_too_small	eap_aka.c	/^	unsigned int counter, counter_too_small;$/;"	m	struct:eap_aka_data	file:
+counter_too_small	eap_sim.c	/^	unsigned int counter, counter_too_small;$/;"	m	struct:eap_sim_data	file:
+crypto_binding	eap_peap.c	/^	enum { NO_BINDING, OPTIONAL_BINDING, REQUIRE_BINDING } crypto_binding;$/;"	m	struct:eap_peap_data	typeref:enum:eap_peap_data::__anon25	file:
+crypto_binding_used	eap_peap.c	/^	int crypto_binding_used;$/;"	m	struct:eap_peap_data	file:
+cryptosuite	eap_noob.h	/^        u32 cryptosuite;$/;"	m	struct:eap_noob_peer_data
+cryptosuite	eap_noob.h	/^        u32 cryptosuite[MAX_SUP_CSUITES];$/;"	m	struct:eap_noob_serv_data
+current_pac	eap_fast.c	/^	struct eap_fast_pac *current_pac;$/;"	m	struct:eap_fast_data	typeref:struct:eap_fast_data::eap_fast_pac	file:
+data	eap_config.h	/^	u8 *data;$/;"	m	struct:wpa_config_blob
+db_name	eap_noob.h	/^        char * db_name;$/;"	m	struct:eap_noob_peer_context
+db_table_name	eap_noob.h	/^        char * db_table_name;$/;"	m	struct:eap_noob_peer_context
+decision	eap_i.h	/^	EapDecision decision;$/;"	m	struct:eap_method_ret
+decision	eap_i.h	/^	EapDecision decision;$/;"	m	struct:eap_sm
+decision_succ	eap_ttls.c	/^	EapDecision decision_succ;$/;"	m	struct:eap_ttls_data	file:
+default_minsleep	eap_noob.h	/^	u32 default_minsleep;$/;"	m	struct:eap_noob_globle_conf
+deinit	eap_i.h	/^	void (*deinit)(struct eap_sm *sm, void *priv);$/;"	m	struct:eap_method
+deinit_for_reauth	eap_i.h	/^	void (*deinit_for_reauth)(struct eap_sm *sm, void *priv);$/;"	m	struct:eap_method
+dh	ikev2.h	/^	const struct dh_group *dh;$/;"	m	struct:ikev2_responder_data	typeref:struct:ikev2_responder_data::dh_group
+dh	ikev2.h	/^	int dh;$/;"	m	struct:ikev2_proposal_data
+dh_file	eap_config.h	/^	u8 *dh_file;$/;"	m	struct:eap_peer_config
+dh_file2	eap_config.h	/^	u8 *dh_file2;$/;"	m	struct:eap_peer_config
+dh_group_id	eap_pax.c	/^	u8 mac_id, dh_group_id, public_key_id;$/;"	m	struct:eap_pax_data	file:
+dh_key	eap_noob.h	/^	EVP_PKEY *dh_key;$/;"	m	struct:eap_noob_ecdh_key_exchange
+dh_priv	eap_eke.c	/^	u8 dh_priv[EAP_EKE_MAX_DH_LEN];$/;"	m	struct:eap_eke_data	file:
+dhgroup	eap_eke.c	/^	u8 dhgroup; \/* forced DH group or 0 to allow all supported *\/$/;"	m	struct:eap_eke_data	file:
+dir	eap_noob.h	/^        u32 dir;$/;"	m	struct:eap_noob_peer_data
+dir	eap_noob.h	/^        u32 dir;$/;"	m	struct:eap_noob_serv_data
+disabled_wired	eap_i.h	/^	time_t disabled_wired;$/;"	m	struct:eap_sm
+dl_handle	eap_i.h	/^	void *dl_handle;$/;"	m	struct:eap_method
+dlhandle	tncc.c	/^	void *dlhandle; \/* from dlopen() *\/$/;"	m	struct:tnc_if_imc	file:
+domain_match	eap_config.h	/^	char *domain_match;$/;"	m	struct:eap_peer_config
+domain_match2	eap_config.h	/^	char *domain_match2;$/;"	m	struct:eap_peer_config
+domain_suffix_match	eap_config.h	/^	char *domain_suffix_match;$/;"	m	struct:eap_peer_config
+domain_suffix_match2	eap_config.h	/^	char *domain_suffix_match2;$/;"	m	struct:eap_peer_config
+e	eap_pax.c	/^		u8 e[2 * EAP_PAX_RAND_LEN];$/;"	m	union:eap_pax_data::__anon27	file:
+eap	eap_tls_common.h	/^	struct eap_sm *eap;$/;"	m	struct:eap_ssl_data	typeref:struct:eap_ssl_data::eap_sm
+eapKeyAvailable	eap_i.h	/^	Boolean eapKeyAvailable; \/* peer to lower layer *\/$/;"	m	struct:eap_sm
+eapKeyData	eap_i.h	/^	u8 *eapKeyData; \/* peer to lower layer *\/$/;"	m	struct:eap_sm
+eapKeyDataLen	eap_i.h	/^	size_t eapKeyDataLen; \/* peer to lower layer *\/$/;"	m	struct:eap_sm
+eapRespData	eap_i.h	/^	struct wpabuf *eapRespData; \/* peer to lower layer *\/$/;"	m	struct:eap_sm	typeref:struct:eap_sm::wpabuf
+eapSessionId	eap_i.h	/^	u8 *eapSessionId; \/* peer to lower layer *\/$/;"	m	struct:eap_sm
+eapSessionIdLen	eap_i.h	/^	size_t eapSessionIdLen; \/* peer to lower layer *\/$/;"	m	struct:eap_sm
+eap_aka_add_checkcode	eap_aka.c	/^static void eap_aka_add_checkcode(struct eap_aka_data *data,$/;"	f	file:
+eap_aka_add_id_msg	eap_aka.c	/^static int eap_aka_add_id_msg(struct eap_aka_data *data,$/;"	f	file:
+eap_aka_authentication_reject	eap_aka.c	/^static struct wpabuf * eap_aka_authentication_reject(struct eap_aka_data *data,$/;"	f	file:
+eap_aka_clear_identities	eap_aka.c	/^static void eap_aka_clear_identities(struct eap_sm *sm,$/;"	f	file:
+eap_aka_clear_keys	eap_aka.c	/^static void eap_aka_clear_keys(struct eap_aka_data *data, int reauth)$/;"	f	file:
+eap_aka_client_error	eap_aka.c	/^static struct wpabuf * eap_aka_client_error(struct eap_aka_data *data, u8 id,$/;"	f	file:
+eap_aka_data	eap_aka.c	/^struct eap_aka_data {$/;"	s	file:
+eap_aka_deinit	eap_aka.c	/^static void eap_aka_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_aka_deinit_for_reauth	eap_aka.c	/^static void eap_aka_deinit_for_reauth(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_aka_ext_sim_req	eap_aka.c	/^static int eap_aka_ext_sim_req(struct eap_sm *sm, struct eap_aka_data *data)$/;"	f	file:
+eap_aka_ext_sim_result	eap_aka.c	/^static int eap_aka_ext_sim_result(struct eap_sm *sm, struct eap_aka_data *data,$/;"	f	file:
+eap_aka_getKey	eap_aka.c	/^static u8 * eap_aka_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_aka_get_emsk	eap_aka.c	/^static u8 * eap_aka_get_emsk(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_aka_get_identity	eap_aka.c	/^static const u8 * eap_aka_get_identity(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_aka_get_session_id	eap_aka.c	/^static u8 * eap_aka_get_session_id(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_aka_has_reauth_data	eap_aka.c	/^static Boolean eap_aka_has_reauth_data(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_aka_init	eap_aka.c	/^static void * eap_aka_init(struct eap_sm *sm)$/;"	f	file:
+eap_aka_init_for_reauth	eap_aka.c	/^static void * eap_aka_init_for_reauth(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_aka_isKeyAvailable	eap_aka.c	/^static Boolean eap_aka_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_aka_learn_ids	eap_aka.c	/^static int eap_aka_learn_ids(struct eap_sm *sm, struct eap_aka_data *data,$/;"	f	file:
+eap_aka_prime_init	eap_aka.c	/^static void * eap_aka_prime_init(struct eap_sm *sm)$/;"	f	file:
+eap_aka_prime_kdf_neg	eap_aka.c	/^static struct wpabuf * eap_aka_prime_kdf_neg(struct eap_aka_data *data,$/;"	f	file:
+eap_aka_prime_kdf_select	eap_aka.c	/^static struct wpabuf * eap_aka_prime_kdf_select(struct eap_aka_data *data,$/;"	f	file:
+eap_aka_prime_kdf_valid	eap_aka.c	/^static int eap_aka_prime_kdf_valid(struct eap_aka_data *data,$/;"	f	file:
+eap_aka_process	eap_aka.c	/^static struct wpabuf * eap_aka_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_aka_process_challenge	eap_aka.c	/^static struct wpabuf * eap_aka_process_challenge(struct eap_sm *sm,$/;"	f	file:
+eap_aka_process_identity	eap_aka.c	/^static struct wpabuf * eap_aka_process_identity(struct eap_sm *sm,$/;"	f	file:
+eap_aka_process_notification	eap_aka.c	/^static struct wpabuf * eap_aka_process_notification($/;"	f	file:
+eap_aka_process_notification_auth	eap_aka.c	/^static int eap_aka_process_notification_auth(struct eap_aka_data *data,$/;"	f	file:
+eap_aka_process_notification_reauth	eap_aka.c	/^static int eap_aka_process_notification_reauth(struct eap_aka_data *data,$/;"	f	file:
+eap_aka_process_reauthentication	eap_aka.c	/^static struct wpabuf * eap_aka_process_reauthentication($/;"	f	file:
+eap_aka_response_challenge	eap_aka.c	/^static struct wpabuf * eap_aka_response_challenge(struct eap_aka_data *data,$/;"	f	file:
+eap_aka_response_identity	eap_aka.c	/^static struct wpabuf * eap_aka_response_identity(struct eap_sm *sm,$/;"	f	file:
+eap_aka_response_notification	eap_aka.c	/^static struct wpabuf * eap_aka_response_notification(struct eap_aka_data *data,$/;"	f	file:
+eap_aka_response_reauth	eap_aka.c	/^static struct wpabuf * eap_aka_response_reauth(struct eap_aka_data *data,$/;"	f	file:
+eap_aka_state	eap_aka.c	/^static void eap_aka_state(struct eap_aka_data *data, int state)$/;"	f	file:
+eap_aka_state_txt	eap_aka.c	/^static const char * eap_aka_state_txt(int state)$/;"	f	file:
+eap_aka_synchronization_failure	eap_aka.c	/^static struct wpabuf * eap_aka_synchronization_failure($/;"	f	file:
+eap_aka_umts_auth	eap_aka.c	/^static int eap_aka_umts_auth(struct eap_sm *sm, struct eap_aka_data *data)$/;"	f	file:
+eap_aka_verify_checkcode	eap_aka.c	/^static int eap_aka_verify_checkcode(struct eap_aka_data *data,$/;"	f	file:
+eap_aka_verify_mac	eap_aka.c	/^static int eap_aka_verify_mac(struct eap_aka_data *data,$/;"	f	file:
+eap_allowed_method	eap.c	/^int eap_allowed_method(struct eap_sm *sm, int vendor, u32 method)$/;"	f
+eap_allowed_phase2_type	eap.c	/^static int eap_allowed_phase2_type(int vendor, int type)$/;"	f	file:
+eap_clear_config_otp	eap.c	/^void eap_clear_config_otp(struct eap_sm *sm)$/;"	f
+eap_config	eap.h	/^struct eap_config {$/;"	s
+eap_deinit_prev_method	eap.c	/^static void eap_deinit_prev_method(struct eap_sm *sm, const char *txt)$/;"	f	file:
+eap_eke_build_fail	eap_eke.c	/^static struct wpabuf * eap_eke_build_fail(struct eap_eke_data *data,$/;"	f	file:
+eap_eke_build_msg	eap_eke.c	/^static struct wpabuf * eap_eke_build_msg(struct eap_eke_data *data, int id,$/;"	f	file:
+eap_eke_data	eap_eke.c	/^struct eap_eke_data {$/;"	s	file:
+eap_eke_deinit	eap_eke.c	/^static void eap_eke_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_eke_getKey	eap_eke.c	/^static u8 * eap_eke_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_eke_get_emsk	eap_eke.c	/^static u8 * eap_eke_get_emsk(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_eke_get_session_id	eap_eke.c	/^static u8 * eap_eke_get_session_id(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_eke_init	eap_eke.c	/^static void * eap_eke_init(struct eap_sm *sm)$/;"	f	file:
+eap_eke_isKeyAvailable	eap_eke.c	/^static Boolean eap_eke_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_eke_process	eap_eke.c	/^static struct wpabuf * eap_eke_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_eke_process_commit	eap_eke.c	/^static struct wpabuf * eap_eke_process_commit(struct eap_sm *sm,$/;"	f	file:
+eap_eke_process_confirm	eap_eke.c	/^static struct wpabuf * eap_eke_process_confirm(struct eap_eke_data *data,$/;"	f	file:
+eap_eke_process_failure	eap_eke.c	/^static struct wpabuf * eap_eke_process_failure(struct eap_eke_data *data,$/;"	f	file:
+eap_eke_process_id	eap_eke.c	/^static struct wpabuf * eap_eke_process_id(struct eap_eke_data *data,$/;"	f	file:
+eap_eke_state	eap_eke.c	/^static void eap_eke_state(struct eap_eke_data *data, int state)$/;"	f	file:
+eap_eke_state_txt	eap_eke.c	/^static const char * eap_eke_state_txt(int state)$/;"	f	file:
+eap_eke_supp_dhgroup	eap_eke.c	/^static int eap_eke_supp_dhgroup(u8 dhgroup)$/;"	f	file:
+eap_eke_supp_encr	eap_eke.c	/^static int eap_eke_supp_encr(u8 encr)$/;"	f	file:
+eap_eke_supp_mac	eap_eke.c	/^static int eap_eke_supp_mac(u8 mac)$/;"	f	file:
+eap_eke_supp_prf	eap_eke.c	/^static int eap_eke_supp_prf(u8 prf)$/;"	f	file:
+eap_erp_get_key	eap.c	/^eap_erp_get_key(struct eap_sm *sm, const char *realm)$/;"	f	file:
+eap_erp_get_key_nai	eap.c	/^eap_erp_get_key_nai(struct eap_sm *sm, const char *nai)$/;"	f	file:
+eap_erp_key	eap_i.h	/^struct eap_erp_key {$/;"	s
+eap_erp_remove_keys_realm	eap.c	/^static void eap_erp_remove_keys_realm(struct eap_sm *sm, const char *realm)$/;"	f	file:
+eap_fast_add_pac	eap_fast_pac.c	/^int eap_fast_add_pac(struct eap_fast_pac **pac_root,$/;"	f
+eap_fast_add_pac_data	eap_fast_pac.c	/^static int eap_fast_add_pac_data(struct eap_fast_pac *pac, char **buf,$/;"	f	file:
+eap_fast_clear_pac_opaque_ext	eap_fast.c	/^static int eap_fast_clear_pac_opaque_ext(struct eap_sm *sm,$/;"	f	file:
+eap_fast_copy_buf	eap_fast_pac.c	/^static int eap_fast_copy_buf(u8 **dst, size_t *dst_len,$/;"	f	file:
+eap_fast_data	eap_fast.c	/^struct eap_fast_data {$/;"	s	file:
+eap_fast_decrypt	eap_fast.c	/^static int eap_fast_decrypt(struct eap_sm *sm, struct eap_fast_data *data,$/;"	f	file:
+eap_fast_deinit	eap_fast.c	/^static void eap_fast_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_fast_deinit_pac_data	eap_fast_pac.c	/^static void eap_fast_deinit_pac_data(struct eap_fast_read_ctx *rc)$/;"	f	file:
+eap_fast_derive_key_auth	eap_fast.c	/^static int eap_fast_derive_key_auth(struct eap_sm *sm,$/;"	f	file:
+eap_fast_derive_key_provisioning	eap_fast.c	/^static int eap_fast_derive_key_provisioning(struct eap_sm *sm,$/;"	f	file:
+eap_fast_derive_keys	eap_fast.c	/^static int eap_fast_derive_keys(struct eap_sm *sm, struct eap_fast_data *data)$/;"	f	file:
+eap_fast_derive_msk	eap_fast.c	/^static int eap_fast_derive_msk(struct eap_fast_data *data)$/;"	f	file:
+eap_fast_encrypt_response	eap_fast.c	/^static int eap_fast_encrypt_response(struct eap_sm *sm,$/;"	f	file:
+eap_fast_free_pac	eap_fast_pac.c	/^void eap_fast_free_pac(struct eap_fast_pac *pac)$/;"	f
+eap_fast_getKey	eap_fast.c	/^static u8 * eap_fast_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_fast_get_a_id	eap_fast.c	/^static const u8 * eap_fast_get_a_id(const u8 *buf, size_t len, size_t *id_len)$/;"	f	file:
+eap_fast_get_cmk	eap_fast.c	/^static int eap_fast_get_cmk(struct eap_sm *sm, struct eap_fast_data *data,$/;"	f	file:
+eap_fast_get_emsk	eap_fast.c	/^static u8 * eap_fast_get_emsk(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_fast_get_pac	eap_fast_pac.c	/^struct eap_fast_pac * eap_fast_get_pac(struct eap_fast_pac *pac_root,$/;"	f
+eap_fast_get_phase2_key	eap_fast.c	/^static int eap_fast_get_phase2_key(struct eap_sm *sm,$/;"	f	file:
+eap_fast_get_session_id	eap_fast.c	/^static u8 * eap_fast_get_session_id(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_fast_get_status	eap_fast.c	/^static int eap_fast_get_status(struct eap_sm *sm, void *priv, char *buf,$/;"	f	file:
+eap_fast_init	eap_fast.c	/^static void * eap_fast_init(struct eap_sm *sm)$/;"	f	file:
+eap_fast_init_pac_data	eap_fast_pac.c	/^static int eap_fast_init_pac_data(struct eap_sm *sm, const char *pac_file,$/;"	f	file:
+eap_fast_init_phase2_method	eap_fast.c	/^static int eap_fast_init_phase2_method(struct eap_sm *sm,$/;"	f	file:
+eap_fast_isKeyAvailable	eap_fast.c	/^static Boolean eap_fast_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_fast_load_pac	eap_fast_pac.c	/^int eap_fast_load_pac(struct eap_sm *sm, struct eap_fast_pac **pac_root,$/;"	f
+eap_fast_load_pac_bin	eap_fast_pac.c	/^int eap_fast_load_pac_bin(struct eap_sm *sm, struct eap_fast_pac **pac_root,$/;"	f
+eap_fast_pac	eap_fast_pac.h	/^struct eap_fast_pac {$/;"	s
+eap_fast_pac_get_a_id	eap_fast_pac.c	/^static void eap_fast_pac_get_a_id(struct eap_fast_pac *pac)$/;"	f	file:
+eap_fast_pac_list_truncate	eap_fast_pac.c	/^size_t eap_fast_pac_list_truncate(struct eap_fast_pac *pac_root,$/;"	f
+eap_fast_pac_request	eap_fast.c	/^static struct wpabuf * eap_fast_pac_request(void)$/;"	f	file:
+eap_fast_parse_a_id	eap_fast_pac.c	/^static const char * eap_fast_parse_a_id(struct eap_fast_pac *pac, char *pos)$/;"	f	file:
+eap_fast_parse_a_id_info	eap_fast_pac.c	/^static const char * eap_fast_parse_a_id_info(struct eap_fast_pac *pac,$/;"	f	file:
+eap_fast_parse_decrypted	eap_fast.c	/^static int eap_fast_parse_decrypted(struct wpabuf *decrypted,$/;"	f	file:
+eap_fast_parse_end	eap_fast_pac.c	/^static const char * eap_fast_parse_end(struct eap_fast_pac **pac_root,$/;"	f	file:
+eap_fast_parse_hex	eap_fast_pac.c	/^static u8 * eap_fast_parse_hex(const char *value, size_t *len)$/;"	f	file:
+eap_fast_parse_i_id	eap_fast_pac.c	/^static const char * eap_fast_parse_i_id(struct eap_fast_pac *pac, char *pos)$/;"	f	file:
+eap_fast_parse_pac_info	eap_fast.c	/^static int eap_fast_parse_pac_info(struct eap_fast_pac *entry, int type,$/;"	f	file:
+eap_fast_parse_pac_key	eap_fast_pac.c	/^static const char * eap_fast_parse_pac_key(struct eap_fast_pac *pac, char *pos)$/;"	f	file:
+eap_fast_parse_pac_opaque	eap_fast_pac.c	/^static const char * eap_fast_parse_pac_opaque(struct eap_fast_pac *pac,$/;"	f	file:
+eap_fast_parse_pac_tlv	eap_fast.c	/^static void eap_fast_parse_pac_tlv(struct eap_fast_pac *entry, int type,$/;"	f	file:
+eap_fast_parse_pac_type	eap_fast_pac.c	/^static const char * eap_fast_parse_pac_type(struct eap_fast_pac *pac,$/;"	f	file:
+eap_fast_parse_phase1	eap_fast.c	/^static void eap_fast_parse_phase1(struct eap_fast_data *data,$/;"	f	file:
+eap_fast_parse_start	eap_fast_pac.c	/^static const char * eap_fast_parse_start(struct eap_fast_pac **pac)$/;"	f	file:
+eap_fast_phase2_request	eap_fast.c	/^static int eap_fast_phase2_request(struct eap_sm *sm,$/;"	f	file:
+eap_fast_process	eap_fast.c	/^static struct wpabuf * eap_fast_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_fast_process_crypto_binding	eap_fast.c	/^static struct wpabuf * eap_fast_process_crypto_binding($/;"	f	file:
+eap_fast_process_decrypted	eap_fast.c	/^static int eap_fast_process_decrypted(struct eap_sm *sm,$/;"	f	file:
+eap_fast_process_eap_payload_tlv	eap_fast.c	/^static struct wpabuf * eap_fast_process_eap_payload_tlv($/;"	f	file:
+eap_fast_process_pac	eap_fast.c	/^static struct wpabuf * eap_fast_process_pac(struct eap_sm *sm,$/;"	f	file:
+eap_fast_process_pac_info	eap_fast.c	/^static int eap_fast_process_pac_info(struct eap_fast_pac *entry)$/;"	f	file:
+eap_fast_process_pac_tlv	eap_fast.c	/^static int eap_fast_process_pac_tlv(struct eap_fast_pac *entry,$/;"	f	file:
+eap_fast_process_start	eap_fast.c	/^static int eap_fast_process_start(struct eap_sm *sm,$/;"	f	file:
+eap_fast_read_ctx	eap_fast_pac.c	/^struct eap_fast_read_ctx {$/;"	s	file:
+eap_fast_read_line	eap_fast_pac.c	/^static int eap_fast_read_line(struct eap_fast_read_ctx *rc, char **value)$/;"	f	file:
+eap_fast_remove_pac	eap_fast_pac.c	/^static void eap_fast_remove_pac(struct eap_fast_pac **pac_root,$/;"	f	file:
+eap_fast_save_pac	eap_fast_pac.c	/^int eap_fast_save_pac(struct eap_sm *sm, struct eap_fast_pac *pac_root,$/;"	f
+eap_fast_save_pac_bin	eap_fast_pac.c	/^int eap_fast_save_pac_bin(struct eap_sm *sm, struct eap_fast_pac *pac_root,$/;"	f
+eap_fast_select_pac	eap_fast.c	/^static void eap_fast_select_pac(struct eap_fast_data *data,$/;"	f	file:
+eap_fast_select_phase2_method	eap_fast.c	/^static int eap_fast_select_phase2_method(struct eap_fast_data *data, u8 type)$/;"	f	file:
+eap_fast_session_ticket_cb	eap_fast.c	/^static int eap_fast_session_ticket_cb(void *ctx, const u8 *ticket, size_t len,$/;"	f	file:
+eap_fast_set_provisioning_ciphers	eap_fast.c	/^static int eap_fast_set_provisioning_ciphers(struct eap_sm *sm,$/;"	f	file:
+eap_fast_tlv_nak	eap_fast.c	/^static struct wpabuf * eap_fast_tlv_nak(int vendor_id, int tlv_type)$/;"	f	file:
+eap_fast_tlv_pac_ack	eap_fast.c	/^static struct wpabuf * eap_fast_tlv_pac_ack(void)$/;"	f	file:
+eap_fast_tlv_result	eap_fast.c	/^static struct wpabuf * eap_fast_tlv_result(int status, int intermediate)$/;"	f	file:
+eap_fast_use_pac_opaque	eap_fast.c	/^static int eap_fast_use_pac_opaque(struct eap_sm *sm,$/;"	f	file:
+eap_fast_validate_crypto_binding	eap_fast.c	/^static int eap_fast_validate_crypto_binding($/;"	f	file:
+eap_fast_write	eap_fast_pac.c	/^static void eap_fast_write(char **buf, char **pos, size_t *buf_len,$/;"	f	file:
+eap_fast_write_crypto_binding	eap_fast.c	/^static void eap_fast_write_crypto_binding($/;"	f	file:
+eap_fast_write_pac	eap_fast_pac.c	/^static int eap_fast_write_pac(struct eap_sm *sm, const char *pac_file,$/;"	f	file:
+eap_fast_write_pac_request	eap_fast.c	/^static u8 * eap_fast_write_pac_request(u8 *pos, u16 pac_type)$/;"	f	file:
+eap_get_config	eap.c	/^struct eap_peer_config * eap_get_config(struct eap_sm *sm)$/;"	f
+eap_get_config_blob	eap.c	/^const struct wpa_config_blob * eap_get_config_blob(struct eap_sm *sm,$/;"	f
+eap_get_config_fragment_size	eap.c	/^int eap_get_config_fragment_size(struct eap_sm *sm)$/;"	f
+eap_get_config_identity	eap.c	/^const u8 * eap_get_config_identity(struct eap_sm *sm, size_t *len)$/;"	f
+eap_get_config_new_password	eap.c	/^const u8 * eap_get_config_new_password(struct eap_sm *sm, size_t *len)$/;"	f
+eap_get_config_otp	eap.c	/^const u8 * eap_get_config_otp(struct eap_sm *sm, size_t *len)$/;"	f
+eap_get_config_password	eap.c	/^const u8 * eap_get_config_password(struct eap_sm *sm, size_t *len)$/;"	f
+eap_get_config_password2	eap.c	/^const u8 * eap_get_config_password2(struct eap_sm *sm, size_t *len, int *hash)$/;"	f
+eap_get_config_phase1	eap.c	/^const char * eap_get_config_phase1(struct eap_sm *sm)$/;"	f
+eap_get_config_phase2	eap.c	/^const char * eap_get_config_phase2(struct eap_sm *sm)$/;"	f
+eap_get_eapKeyData	eap.c	/^const u8 * eap_get_eapKeyData(struct eap_sm *sm, size_t *len)$/;"	f
+eap_get_eapRespData	eap.c	/^struct wpabuf * eap_get_eapRespData(struct eap_sm *sm)$/;"	f
+eap_get_eapSessionId	eap.c	/^const u8 * eap_get_eapSessionId(struct eap_sm *sm, size_t *len)$/;"	f
+eap_get_ext_password	eap.c	/^static int eap_get_ext_password(struct eap_sm *sm,$/;"	f	file:
+eap_get_name	eap_methods.c	/^const char * eap_get_name(int vendor, EapType type)$/;"	f
+eap_get_name	eap_methods.h	/^static inline const char * eap_get_name(int vendor, EapType type)$/;"	f
+eap_get_names	eap_methods.c	/^size_t eap_get_names(char *buf, size_t buflen)$/;"	f
+eap_get_names	eap_methods.h	/^static inline size_t eap_get_names(char *buf, size_t buflen)$/;"	f
+eap_get_names_as_string_array	eap_methods.c	/^char ** eap_get_names_as_string_array(size_t *num)$/;"	f
+eap_get_names_as_string_array	eap_methods.h	/^static inline char ** eap_get_names_as_string_array(size_t *num)$/;"	f
+eap_get_phase2_type	eap.c	/^u32 eap_get_phase2_type(const char *name, int *vendor)$/;"	f
+eap_get_phase2_types	eap.c	/^struct eap_method_type * eap_get_phase2_types(struct eap_peer_config *config,$/;"	f
+eap_gpsk_data	eap_gpsk.c	/^struct eap_gpsk_data {$/;"	s	file:
+eap_gpsk_deinit	eap_gpsk.c	/^static void eap_gpsk_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_gpsk_getKey	eap_gpsk.c	/^static u8 * eap_gpsk_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_gpsk_get_emsk	eap_gpsk.c	/^static u8 * eap_gpsk_get_emsk(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_gpsk_get_session_id	eap_gpsk.c	/^static u8 * eap_gpsk_get_session_id(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_gpsk_init	eap_gpsk.c	/^static void * eap_gpsk_init(struct eap_sm *sm)$/;"	f	file:
+eap_gpsk_isKeyAvailable	eap_gpsk.c	/^static Boolean eap_gpsk_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_gpsk_process	eap_gpsk.c	/^static struct wpabuf * eap_gpsk_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_gpsk_process_csuite_list	eap_gpsk.c	/^static const u8 * eap_gpsk_process_csuite_list(struct eap_sm *sm,$/;"	f	file:
+eap_gpsk_process_gpsk_1	eap_gpsk.c	/^static struct wpabuf * eap_gpsk_process_gpsk_1(struct eap_sm *sm,$/;"	f	file:
+eap_gpsk_process_gpsk_3	eap_gpsk.c	/^static struct wpabuf * eap_gpsk_process_gpsk_3(struct eap_sm *sm,$/;"	f	file:
+eap_gpsk_process_id_server	eap_gpsk.c	/^static const u8 * eap_gpsk_process_id_server(struct eap_gpsk_data *data,$/;"	f	file:
+eap_gpsk_process_rand_server	eap_gpsk.c	/^static const u8 * eap_gpsk_process_rand_server(struct eap_gpsk_data *data,$/;"	f	file:
+eap_gpsk_select_csuite	eap_gpsk.c	/^static int eap_gpsk_select_csuite(struct eap_sm *sm,$/;"	f	file:
+eap_gpsk_send_gpsk_2	eap_gpsk.c	/^static struct wpabuf * eap_gpsk_send_gpsk_2(struct eap_gpsk_data *data,$/;"	f	file:
+eap_gpsk_send_gpsk_4	eap_gpsk.c	/^static struct wpabuf * eap_gpsk_send_gpsk_4(struct eap_gpsk_data *data,$/;"	f	file:
+eap_gpsk_state	eap_gpsk.c	/^static void eap_gpsk_state(struct eap_gpsk_data *data, int state)$/;"	f	file:
+eap_gpsk_state_txt	eap_gpsk.c	/^static const char * eap_gpsk_state_txt(int state)$/;"	f	file:
+eap_gpsk_validate_csuite	eap_gpsk.c	/^static const u8 * eap_gpsk_validate_csuite(struct eap_gpsk_data *data,$/;"	f	file:
+eap_gpsk_validate_gpsk_3_mic	eap_gpsk.c	/^static const u8 * eap_gpsk_validate_gpsk_3_mic(struct eap_gpsk_data *data,$/;"	f	file:
+eap_gpsk_validate_id_server	eap_gpsk.c	/^static const u8 * eap_gpsk_validate_id_server(struct eap_gpsk_data *data,$/;"	f	file:
+eap_gpsk_validate_pd_payload_2	eap_gpsk.c	/^static const u8 * eap_gpsk_validate_pd_payload_2(struct eap_gpsk_data *data,$/;"	f	file:
+eap_gpsk_validate_rand	eap_gpsk.c	/^static const u8 * eap_gpsk_validate_rand(struct eap_gpsk_data *data,$/;"	f	file:
+eap_gtc_data	eap_gtc.c	/^struct eap_gtc_data {$/;"	s	file:
+eap_gtc_deinit	eap_gtc.c	/^static void eap_gtc_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_gtc_init	eap_gtc.c	/^static void * eap_gtc_init(struct eap_sm *sm)$/;"	f	file:
+eap_gtc_process	eap_gtc.c	/^static struct wpabuf * eap_gtc_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_home_realm	eap.c	/^static char * eap_home_realm(struct eap_sm *sm)$/;"	f	file:
+eap_ikev2_build_msg	eap_ikev2.c	/^static struct wpabuf * eap_ikev2_build_msg(struct eap_ikev2_data *data,$/;"	f	file:
+eap_ikev2_data	eap_ikev2.c	/^struct eap_ikev2_data {$/;"	s	file:
+eap_ikev2_deinit	eap_ikev2.c	/^static void eap_ikev2_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_ikev2_getKey	eap_ikev2.c	/^static u8 * eap_ikev2_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_ikev2_get_emsk	eap_ikev2.c	/^static u8 * eap_ikev2_get_emsk(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_ikev2_get_session_id	eap_ikev2.c	/^static u8 * eap_ikev2_get_session_id(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_ikev2_init	eap_ikev2.c	/^static void * eap_ikev2_init(struct eap_sm *sm)$/;"	f	file:
+eap_ikev2_isKeyAvailable	eap_ikev2.c	/^static Boolean eap_ikev2_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_ikev2_peer_keymat	eap_ikev2.c	/^static int eap_ikev2_peer_keymat(struct eap_ikev2_data *data)$/;"	f	file:
+eap_ikev2_process	eap_ikev2.c	/^static struct wpabuf * eap_ikev2_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_ikev2_process_cont	eap_ikev2.c	/^static int eap_ikev2_process_cont(struct eap_ikev2_data *data,$/;"	f	file:
+eap_ikev2_process_fragment	eap_ikev2.c	/^static struct wpabuf * eap_ikev2_process_fragment(struct eap_ikev2_data *data,$/;"	f	file:
+eap_ikev2_process_icv	eap_ikev2.c	/^static int eap_ikev2_process_icv(struct eap_ikev2_data *data,$/;"	f	file:
+eap_ikev2_state	eap_ikev2.c	/^static void eap_ikev2_state(struct eap_ikev2_data *data, int state)$/;"	f	file:
+eap_ikev2_state_txt	eap_ikev2.c	/^static const char * eap_ikev2_state_txt(int state)$/;"	f	file:
+eap_invalidate_cached_session	eap.c	/^void eap_invalidate_cached_session(struct eap_sm *sm)$/;"	f
+eap_is_wps_pbc_enrollee	eap.c	/^int eap_is_wps_pbc_enrollee(struct eap_peer_config *conf)$/;"	f
+eap_is_wps_pin_enrollee	eap.c	/^int eap_is_wps_pin_enrollee(struct eap_peer_config *conf)$/;"	f
+eap_key_available	eap.c	/^int eap_key_available(struct eap_sm *sm)$/;"	f
+eap_leap_data	eap_leap.c	/^struct eap_leap_data {$/;"	s	file:
+eap_leap_deinit	eap_leap.c	/^static void eap_leap_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_leap_getKey	eap_leap.c	/^static u8 * eap_leap_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_leap_init	eap_leap.c	/^static void * eap_leap_init(struct eap_sm *sm)$/;"	f	file:
+eap_leap_isKeyAvailable	eap_leap.c	/^static Boolean eap_leap_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_leap_process	eap_leap.c	/^static struct wpabuf * eap_leap_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_leap_process_request	eap_leap.c	/^static struct wpabuf * eap_leap_process_request(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_leap_process_response	eap_leap.c	/^static struct wpabuf * eap_leap_process_response(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_leap_process_success	eap_leap.c	/^static struct wpabuf * eap_leap_process_success(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_len	eap_ttls.c	/^	size_t eap_len;$/;"	m	struct:ttls_parse_avp	file:
+eap_md5_deinit	eap_md5.c	/^static void eap_md5_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_md5_init	eap_md5.c	/^static void * eap_md5_init(struct eap_sm *sm)$/;"	f	file:
+eap_md5_process	eap_md5.c	/^static struct wpabuf * eap_md5_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_method	eap_aka.c	/^	u8 eap_method;$/;"	m	struct:eap_aka_data	file:
+eap_method	eap_i.h	/^struct eap_method {$/;"	s
+eap_method_priv	eap_i.h	/^	void *eap_method_priv;$/;"	m	struct:eap_sm
+eap_method_ret	eap_i.h	/^struct eap_method_ret {$/;"	s
+eap_method_type	eap.h	/^struct eap_method_type {$/;"	s
+eap_methods	eap_config.h	/^	struct eap_method_type *eap_methods;$/;"	m	struct:eap_peer_config	typeref:struct:eap_peer_config::eap_method_type
+eap_methods	eap_methods.c	/^static struct eap_method *eap_methods = NULL;$/;"	v	typeref:struct:eap_method	file:
+eap_mschapv2_challenge	eap_mschapv2.c	/^static struct wpabuf * eap_mschapv2_challenge($/;"	f	file:
+eap_mschapv2_challenge_reply	eap_mschapv2.c	/^static struct wpabuf * eap_mschapv2_challenge_reply($/;"	f	file:
+eap_mschapv2_change_password	eap_mschapv2.c	/^static struct wpabuf * eap_mschapv2_change_password($/;"	f	file:
+eap_mschapv2_check_config	eap_mschapv2.c	/^static int eap_mschapv2_check_config(struct eap_sm *sm)$/;"	f	file:
+eap_mschapv2_check_mslen	eap_mschapv2.c	/^static int eap_mschapv2_check_mslen(struct eap_sm *sm, size_t len,$/;"	f	file:
+eap_mschapv2_copy_challenge	eap_mschapv2.c	/^static void eap_mschapv2_copy_challenge(struct eap_mschapv2_data *data,$/;"	f	file:
+eap_mschapv2_data	eap_mschapv2.c	/^struct eap_mschapv2_data {$/;"	s	file:
+eap_mschapv2_deinit	eap_mschapv2.c	/^static void eap_mschapv2_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_mschapv2_failure	eap_mschapv2.c	/^static struct wpabuf * eap_mschapv2_failure(struct eap_sm *sm,$/;"	f	file:
+eap_mschapv2_failure_txt	eap_mschapv2.c	/^static int eap_mschapv2_failure_txt(struct eap_sm *sm,$/;"	f	file:
+eap_mschapv2_getKey	eap_mschapv2.c	/^static u8 * eap_mschapv2_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_mschapv2_hdr	eap_mschapv2.c	/^struct eap_mschapv2_hdr {$/;"	s	file:
+eap_mschapv2_init	eap_mschapv2.c	/^static void * eap_mschapv2_init(struct eap_sm *sm)$/;"	f	file:
+eap_mschapv2_isKeyAvailable	eap_mschapv2.c	/^static Boolean eap_mschapv2_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_mschapv2_password_changed	eap_mschapv2.c	/^static void eap_mschapv2_password_changed(struct eap_sm *sm,$/;"	f	file:
+eap_mschapv2_process	eap_mschapv2.c	/^static struct wpabuf * eap_mschapv2_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_mschapv2_success	eap_mschapv2.c	/^static struct wpabuf * eap_mschapv2_success(struct eap_sm *sm,$/;"	f	file:
+eap_noob_Base64Decode	eap_noob.c	/^int eap_noob_Base64Decode(char* b64message, unsigned char** buffer, size_t* length) { \/\/Decodes a base64 encoded string$/;"	f
+eap_noob_Base64Encode	eap_noob.c	/^int eap_noob_Base64Encode(const unsigned char* buffer, size_t length, char** b64text) { \/\/Encodes a binary safe base 64 string$/;"	f
+eap_noob_ECDH_KDF_X9_63	eap_noob.c	/^int eap_noob_ECDH_KDF_X9_63(unsigned char *out, size_t outlen,$/;"	f
+eap_noob_assign_config	eap_noob.c	/^static void eap_noob_assign_config(char * conf_name,char * conf_value,struct eap_noob_peer_data * data)$/;"	f	file:
+eap_noob_assign_waittime	eap_noob.c	/^static void eap_noob_assign_waittime(struct eap_sm *sm,struct eap_noob_peer_context *data)$/;"	f	file:
+eap_noob_build_JWK	eap_noob.c	/^static int eap_noob_build_JWK( noob_json_t ** jwk, const char * x_b64) {$/;"	f	file:
+eap_noob_calcDecodeLength	eap_noob.c	/^size_t eap_noob_calcDecodeLength(const char* b64input) { \/\/Calculates the length of a decoded string$/;"	f
+eap_noob_callback	eap_noob.c	/^int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)$/;"	f
+eap_noob_check_compatibility	eap_noob.c	/^int eap_noob_check_compatibility(struct eap_noob_peer_context *data)$/;"	f
+eap_noob_config_change	eap_noob.c	/^static void eap_noob_config_change(struct eap_sm *sm , struct eap_noob_peer_context *data)$/;"	f	file:
+eap_noob_create_db	eap_noob.c	/^static int eap_noob_create_db(struct eap_sm *sm,struct eap_noob_peer_context * data)$/;"	f	file:
+eap_noob_db_entry	eap_noob.c	/^static int eap_noob_db_entry(struct eap_sm *sm,struct eap_noob_peer_context *data)$/;"	f	file:
+eap_noob_db_entry_check	eap_noob.c	/^int eap_noob_db_entry_check(void * priv , int argc, char **argv, char **azColName)$/;"	f
+eap_noob_db_update	eap_noob.c	/^static int eap_noob_db_update (struct eap_noob_peer_context *data, u8 type)$/;"	f	file:
+eap_noob_decode_csuites_array	eap_noob.c	/^static int eap_noob_decode_csuites_array(char * array, struct eap_noob_serv_data *data)$/;"	f	file:
+eap_noob_decode_obj	eap_noob.c	/^static void  eap_noob_decode_obj(struct eap_noob_serv_data * data ,noob_json_t * req_obj){$/;"	f	file:
+eap_noob_decode_vers_array	eap_noob.c	/^static int eap_noob_decode_vers_array(char * array, struct eap_noob_serv_data *data)$/;"	f	file:
+eap_noob_deinit	eap_noob.c	/^static void eap_noob_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_noob_deinit_for_reauth	eap_noob.c	/^static void eap_noob_deinit_for_reauth(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_noob_derive_secret	eap_noob.c	/^static int eap_noob_derive_secret(struct eap_noob_peer_context *data, size_t *secret_len)$/;"	f	file:
+eap_noob_ecdh_kdf_nonce	eap_noob.h	/^struct eap_noob_ecdh_kdf_nonce{$/;"	s
+eap_noob_ecdh_kdf_out	eap_noob.h	/^struct eap_noob_ecdh_kdf_out{$/;"	s
+eap_noob_ecdh_key_exchange	eap_noob.h	/^struct eap_noob_ecdh_key_exchange{$/;"	s
+eap_noob_err_code	eap_noob.h	/^enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};$/;"	g
+eap_noob_err_msg	eap_noob.c	/^static struct wpabuf * eap_noob_err_msg(struct eap_noob_peer_context *data, u8 id)$/;"	f	file:
+eap_noob_exec_hint_queries	eap_noob.c	/^static int eap_noob_exec_hint_queries(struct eap_noob_peer_context * data)$/;"	f	file:
+eap_noob_exec_query	eap_noob.c	/^static int eap_noob_exec_query(const char * query, int(*callback)(void*, int ,char **, char ** ), $/;"	f	file:
+eap_noob_free_ctx	eap_noob.c	/^static void eap_noob_free_ctx(struct eap_noob_peer_context * data)$/;"	f	file:
+eap_noob_gen_KDF	eap_noob.c	/^static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state){$/;"	f	file:
+eap_noob_gen_MAC	eap_noob.c	/^static u8 * eap_noob_gen_MAC(const struct eap_noob_peer_context * data,int type, u8 * key, int keylen, int state){$/;"	f	file:
+eap_noob_getKey	eap_noob.c	/^static u8 * eap_noob_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_noob_get_emsk	eap_noob.c	/^static u8 * eap_noob_get_emsk(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_noob_get_key	eap_noob.c	/^static int eap_noob_get_key(struct eap_noob_serv_data * data)$/;"	f	file:
+eap_noob_globle_conf	eap_noob.c	/^struct eap_noob_globle_conf eap_noob_globle_conf = {0};$/;"	v	typeref:struct:eap_noob_globle_conf
+eap_noob_globle_conf	eap_noob.h	/^struct eap_noob_globle_conf{$/;"	s
+eap_noob_handle_incomplete_conf	eap_noob.c	/^static int eap_noob_handle_incomplete_conf(struct eap_noob_peer_context * data)$/;"	f	file:
+eap_noob_has_reauth_data	eap_noob.c	/^static Boolean eap_noob_has_reauth_data(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_noob_init	eap_noob.c	/^static void * eap_noob_init(struct eap_sm *sm)$/;"	f	file:
+eap_noob_init_for_reauth	eap_noob.c	/^static void * eap_noob_init_for_reauth(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_noob_isKeyAvailable	eap_noob.c	/^static Boolean eap_noob_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_noob_json_array	eap_noob.c	/^static noob_json_t * eap_noob_json_array()$/;"	f	file:
+eap_noob_json_array_append	eap_noob.c	/^static u32  eap_noob_json_array_append(noob_json_t * arr, noob_json_t * value)$/;"	f	file:
+eap_noob_json_dumps	eap_noob.c	/^static char * eap_noob_json_dumps(noob_json_t * root, size_t flags)$/;"	f	file:
+eap_noob_json_integer	eap_noob.c	/^static noob_json_t * eap_noob_json_integer(noob_json_int_t value)$/;"	f	file:
+eap_noob_json_integer_value	eap_noob.c	/^static noob_json_int_t eap_noob_json_integer_value(noob_json_t * value)$/;"	f	file:
+eap_noob_json_is_integer	eap_noob.c	/^static u32 eap_noob_json_is_integer(const noob_json_t * value)$/;"	f	file:
+eap_noob_json_is_object	eap_noob.c	/^static u32 eap_noob_json_is_object(noob_json_t * obj)$/;"	f	file:
+eap_noob_json_loads	eap_noob.c	/^static noob_json_t * eap_noob_json_loads(const char * input, size_t flags, noob_json_error_t * error)$/;"	f	file:
+eap_noob_json_object	eap_noob.c	/^static noob_json_t * eap_noob_json_object()$/;"	f	file:
+eap_noob_json_object_get	eap_noob.c	/^static noob_json_t * eap_noob_json_object_get(noob_json_t * obj, const char * key)$/;"	f	file:
+eap_noob_json_object_set_new	eap_noob.c	/^static u32 eap_noob_json_object_set_new (noob_json_t * obj, const char* key, noob_json_t * value)$/;"	f	file:
+eap_noob_json_string	eap_noob.c	/^static noob_json_t * eap_noob_json_string(const noob_json_str_t * value)$/;"	f	file:
+eap_noob_json_string_value	eap_noob.c	/^static noob_json_str_t * eap_noob_json_string_value(noob_json_t * value)$/;"	f	file:
+eap_noob_json_typeof	eap_noob.c	/^static u32 eap_noob_json_typeof(const noob_json_t * value)$/;"	f	file:
+eap_noob_oob_data	eap_noob.h	/^struct eap_noob_oob_data{$/;"	s
+eap_noob_parse_config	eap_noob.c	/^static void eap_noob_parse_config(char * buff,struct eap_noob_peer_data * data)$/;"	f	file:
+eap_noob_peer_config_params	eap_noob.h	/^struct eap_noob_peer_config_params{	$/;"	s
+eap_noob_peer_context	eap_noob.h	/^struct eap_noob_peer_context{$/;"	s
+eap_noob_peer_ctxt_alloc	eap_noob.c	/^static int eap_noob_peer_ctxt_alloc(struct eap_sm *sm,  struct eap_noob_peer_context * data){$/;"	f	file:
+eap_noob_peer_ctxt_init	eap_noob.c	/^static int eap_noob_peer_ctxt_init(struct eap_sm *sm,  struct eap_noob_peer_context * data)$/;"	f	file:
+eap_noob_peer_data	eap_noob.h	/^struct eap_noob_peer_data{$/;"	s
+eap_noob_prepare_csuites_arr	eap_noob.c	/^static noob_json_t * eap_noob_prepare_csuites_arr(const struct eap_noob_peer_context * data)$/;"	f	file:
+eap_noob_prepare_mac_arr	eap_noob.c	/^static char * eap_noob_prepare_mac_arr(const struct eap_noob_peer_context * data, int type, int state){$/;"	f	file:
+eap_noob_prepare_peer_info_json	eap_noob.c	/^static noob_json_t * eap_noob_prepare_peer_info_json(struct eap_sm *sm,struct eap_noob_peer_config_params * data)$/;"	f	file:
+eap_noob_prepare_vers_arr	eap_noob.c	/^static noob_json_t * eap_noob_prepare_vers_arr(const struct eap_noob_peer_context * data)$/;"	f	file:
+eap_noob_process	eap_noob.c	/^static struct wpabuf * eap_noob_process (struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_noob_read_config	eap_noob.c	/^static int eap_noob_read_config(struct eap_sm *sm,struct eap_noob_peer_context * data)$/;"	f	file:
+eap_noob_req_err_handling	eap_noob.c	/^static void eap_noob_req_err_handling(struct eap_sm *sm,noob_json_t * req_obj , struct eap_noob_peer_context *data,$/;"	f	file:
+eap_noob_req_hint	eap_noob.c	/^static struct wpabuf * eap_noob_req_hint(struct eap_sm *sm,noob_json_t * req_obj , struct eap_noob_peer_context *data,$/;"	f	file:
+eap_noob_req_type_five	eap_noob.c	/^static struct wpabuf * eap_noob_req_type_five(struct eap_sm *sm,noob_json_t * req_obj , struct eap_noob_peer_context *data,$/;"	f	file:
+eap_noob_req_type_four	eap_noob.c	/^static struct wpabuf * eap_noob_req_type_four(struct eap_sm *sm, noob_json_t * req_obj , struct eap_noob_peer_context *data, u8 id){$/;"	f	file:
+eap_noob_req_type_one	eap_noob.c	/^static struct wpabuf * eap_noob_req_type_one(struct eap_sm *sm,noob_json_t * req_obj , struct eap_noob_peer_context *data,$/;"	f	file:
+eap_noob_req_type_seven	eap_noob.c	/^static struct wpabuf * eap_noob_req_type_seven(struct eap_sm *sm, noob_json_t * req_obj , struct eap_noob_peer_context *data, u8 id){$/;"	f	file:
+eap_noob_req_type_six	eap_noob.c	/^static struct wpabuf * eap_noob_req_type_six(struct eap_sm *sm, noob_json_t * req_obj , struct eap_noob_peer_context *data, u8 id){$/;"	f	file:
+eap_noob_req_type_three	eap_noob.c	/^static struct wpabuf * eap_noob_req_type_three(struct eap_sm *sm, noob_json_t * req_obj , struct eap_noob_peer_context *data, u8 id){$/;"	f	file:
+eap_noob_req_type_two	eap_noob.c	/^static struct wpabuf * eap_noob_req_type_two(struct eap_sm *sm, noob_json_t * req_obj , struct eap_noob_peer_context *data, u8 id){$/;"	f	file:
+eap_noob_rsp_hint	eap_noob.c	/^static struct wpabuf * eap_noob_rsp_hint(const struct eap_noob_peer_context *data, u8 id)$/;"	f	file:
+eap_noob_rsp_type_five	eap_noob.c	/^static struct wpabuf * eap_noob_rsp_type_five(struct eap_sm *sm,const struct eap_noob_peer_context *data, u8 id){$/;"	f	file:
+eap_noob_rsp_type_four	eap_noob.c	/^static struct wpabuf * eap_noob_rsp_type_four(const struct eap_noob_peer_context *data, u8 id){$/;"	f	file:
+eap_noob_rsp_type_one	eap_noob.c	/^static struct wpabuf * eap_noob_rsp_type_one(struct eap_sm *sm,const struct eap_noob_peer_context *data, u8 id){$/;"	f	file:
+eap_noob_rsp_type_seven	eap_noob.c	/^static struct wpabuf * eap_noob_rsp_type_seven(const struct eap_noob_peer_context *data, u8 id){$/;"	f	file:
+eap_noob_rsp_type_six	eap_noob.c	/^static struct wpabuf * eap_noob_rsp_type_six(struct eap_noob_peer_context *data, u8 id){$/;"	f	file:
+eap_noob_rsp_type_three	eap_noob.c	/^static struct wpabuf * eap_noob_rsp_type_three(const struct eap_noob_peer_context *data, u8 id){$/;"	f	file:
+eap_noob_rsp_type_two	eap_noob.c	/^static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data, u8 id){$/;"	f	file:
+eap_noob_serv_data	eap_noob.h	/^struct eap_noob_serv_data{$/;"	s
+eap_noob_verify_param_len	eap_noob.c	/^static void eap_noob_verify_param_len(struct eap_noob_serv_data * data)$/;"	f	file:
+eap_noob_verify_peerID	eap_noob.c	/^static struct wpabuf * eap_noob_verify_peerID(struct eap_noob_peer_context * data, u8  id)$/;"	f	file:
+eap_notify_lower_layer_success	eap.c	/^void eap_notify_lower_layer_success(struct eap_sm *sm)$/;"	f
+eap_notify_pending	eap.c	/^void eap_notify_pending(struct eap_sm *sm)$/;"	f
+eap_notify_status	eap.c	/^static void eap_notify_status(struct eap_sm *sm, const char *status,$/;"	f	file:
+eap_notify_success	eap.c	/^void eap_notify_success(struct eap_sm *sm)$/;"	f
+eap_otp_deinit	eap_otp.c	/^static void eap_otp_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_otp_init	eap_otp.c	/^static void * eap_otp_init(struct eap_sm *sm)$/;"	f	file:
+eap_otp_process	eap_otp.c	/^static struct wpabuf * eap_otp_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_param_needed	eap.h	/^	void (*eap_param_needed)(void *ctx, enum wpa_ctrl_req_type field,$/;"	m	struct:eapol_callbacks
+eap_pax_alloc_resp	eap_pax.c	/^static struct wpabuf * eap_pax_alloc_resp(const struct eap_pax_hdr *req,$/;"	f	file:
+eap_pax_data	eap_pax.c	/^struct eap_pax_data {$/;"	s	file:
+eap_pax_deinit	eap_pax.c	/^static void eap_pax_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_pax_getKey	eap_pax.c	/^static u8 * eap_pax_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_pax_get_emsk	eap_pax.c	/^static u8 * eap_pax_get_emsk(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_pax_get_session_id	eap_pax.c	/^static u8 * eap_pax_get_session_id(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_pax_init	eap_pax.c	/^static void * eap_pax_init(struct eap_sm *sm)$/;"	f	file:
+eap_pax_isKeyAvailable	eap_pax.c	/^static Boolean eap_pax_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_pax_process	eap_pax.c	/^static struct wpabuf * eap_pax_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_pax_process_std_1	eap_pax.c	/^static struct wpabuf * eap_pax_process_std_1(struct eap_pax_data *data,$/;"	f	file:
+eap_pax_process_std_3	eap_pax.c	/^static struct wpabuf * eap_pax_process_std_3(struct eap_pax_data *data,$/;"	f	file:
+eap_peap_data	eap_peap.c	/^struct eap_peap_data {$/;"	s	file:
+eap_peap_decrypt	eap_peap.c	/^static int eap_peap_decrypt(struct eap_sm *sm, struct eap_peap_data *data,$/;"	f	file:
+eap_peap_deinit	eap_peap.c	/^static void eap_peap_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_peap_deinit_for_reauth	eap_peap.c	/^static void eap_peap_deinit_for_reauth(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_peap_derive_cmk	eap_peap.c	/^static int eap_peap_derive_cmk(struct eap_sm *sm, struct eap_peap_data *data)$/;"	f	file:
+eap_peap_free_key	eap_peap.c	/^static void eap_peap_free_key(struct eap_peap_data *data)$/;"	f	file:
+eap_peap_getKey	eap_peap.c	/^static u8 * eap_peap_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_peap_get_isk	eap_peap.c	/^static int eap_peap_get_isk(struct eap_sm *sm, struct eap_peap_data *data,$/;"	f	file:
+eap_peap_get_session_id	eap_peap.c	/^static u8 * eap_peap_get_session_id(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_peap_get_status	eap_peap.c	/^static int eap_peap_get_status(struct eap_sm *sm, void *priv, char *buf,$/;"	f	file:
+eap_peap_has_reauth_data	eap_peap.c	/^static Boolean eap_peap_has_reauth_data(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_peap_init	eap_peap.c	/^static void * eap_peap_init(struct eap_sm *sm)$/;"	f	file:
+eap_peap_init_for_reauth	eap_peap.c	/^static void * eap_peap_init_for_reauth(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_peap_isKeyAvailable	eap_peap.c	/^static Boolean eap_peap_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_peap_parse_phase1	eap_peap.c	/^static void eap_peap_parse_phase1(struct eap_peap_data *data,$/;"	f	file:
+eap_peap_phase2_request	eap_peap.c	/^static int eap_peap_phase2_request(struct eap_sm *sm,$/;"	f	file:
+eap_peap_process	eap_peap.c	/^static struct wpabuf * eap_peap_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_peer_aka_prime_register	eap_aka.c	/^int eap_peer_aka_prime_register(void)$/;"	f
+eap_peer_aka_register	eap_aka.c	/^int eap_peer_aka_register(void)$/;"	f
+eap_peer_config	eap_config.h	/^struct eap_peer_config {$/;"	s
+eap_peer_eke_register	eap_eke.c	/^int eap_peer_eke_register(void)$/;"	f
+eap_peer_erp_free_key	eap.c	/^static void eap_peer_erp_free_key(struct eap_erp_key *erp)$/;"	f	file:
+eap_peer_erp_free_keys	eap.c	/^void eap_peer_erp_free_keys(struct eap_sm *sm)$/;"	f
+eap_peer_erp_init	eap.c	/^static void eap_peer_erp_init(struct eap_sm *sm)$/;"	f	file:
+eap_peer_erp_reauth_start	eap.c	/^static int eap_peer_erp_reauth_start(struct eap_sm *sm,$/;"	f	file:
+eap_peer_fast_register	eap_fast.c	/^int eap_peer_fast_register(void)$/;"	f
+eap_peer_finish	eap.c	/^static void eap_peer_finish(struct eap_sm *sm, const struct eap_hdr *hdr,$/;"	f	file:
+eap_peer_get_eap_method	eap_methods.c	/^const struct eap_method * eap_peer_get_eap_method(int vendor, EapType method)$/;"	f
+eap_peer_get_methods	eap_methods.c	/^const struct eap_method * eap_peer_get_methods(size_t *count)$/;"	f
+eap_peer_get_type	eap_methods.c	/^EapType eap_peer_get_type(const char *name, int *vendor)$/;"	f
+eap_peer_get_type	eap_methods.h	/^static inline EapType eap_peer_get_type(const char *name, int *vendor)$/;"	f
+eap_peer_gpsk_register	eap_gpsk.c	/^int eap_peer_gpsk_register(void)$/;"	f
+eap_peer_gtc_register	eap_gtc.c	/^int eap_peer_gtc_register(void)$/;"	f
+eap_peer_ikev2_register	eap_ikev2.c	/^int eap_peer_ikev2_register(void)$/;"	f
+eap_peer_initiate	eap.c	/^static void eap_peer_initiate(struct eap_sm *sm, const struct eap_hdr *hdr,$/;"	f	file:
+eap_peer_leap_register	eap_leap.c	/^int eap_peer_leap_register(void)$/;"	f
+eap_peer_md5_register	eap_md5.c	/^int eap_peer_md5_register(void)$/;"	f
+eap_peer_method_alloc	eap_methods.c	/^struct eap_method * eap_peer_method_alloc(int version, int vendor,$/;"	f
+eap_peer_method_free	eap_methods.c	/^static void eap_peer_method_free(struct eap_method *method)$/;"	f	file:
+eap_peer_method_load	eap_methods.c	/^int eap_peer_method_load(const char *so)$/;"	f
+eap_peer_method_load	eap_methods.h	/^static inline int eap_peer_method_load(const char *so)$/;"	f
+eap_peer_method_register	eap_methods.c	/^int eap_peer_method_register(struct eap_method *method)$/;"	f
+eap_peer_method_unload	eap_methods.c	/^int eap_peer_method_unload(struct eap_method *method)$/;"	f
+eap_peer_method_unload	eap_methods.h	/^static inline int eap_peer_method_unload(struct eap_method *method)$/;"	f
+eap_peer_mschapv2_register	eap_mschapv2.c	/^int eap_peer_mschapv2_register(void)$/;"	f
+eap_peer_noob_register	eap_noob.c	/^int eap_peer_noob_register(void)$/;"	f
+eap_peer_otp_register	eap_otp.c	/^int eap_peer_otp_register(void)$/;"	f
+eap_peer_pax_register	eap_pax.c	/^int eap_peer_pax_register(void)$/;"	f
+eap_peer_peap_register	eap_peap.c	/^int eap_peer_peap_register(void)$/;"	f
+eap_peer_psk_register	eap_psk.c	/^int eap_peer_psk_register(void)$/;"	f
+eap_peer_pwd_register	eap_pwd.c	/^int eap_peer_pwd_register(void)$/;"	f
+eap_peer_register_methods	eap_methods.h	/^static inline int eap_peer_register_methods(void)$/;"	f
+eap_peer_req_is_duplicate	eap.c	/^static int eap_peer_req_is_duplicate(struct eap_sm *sm)$/;"	f	file:
+eap_peer_sake_register	eap_sake.c	/^int eap_peer_sake_register(void)$/;"	f
+eap_peer_select_phase2_methods	eap_tls_common.c	/^int eap_peer_select_phase2_methods(struct eap_peer_config *config,$/;"	f
+eap_peer_sim_register	eap_sim.c	/^int eap_peer_sim_register(void)$/;"	f
+eap_peer_sm_allow_canned	eap.c	/^static int eap_peer_sm_allow_canned(struct eap_sm *sm)$/;"	f	file:
+eap_peer_sm_deinit	eap.c	/^void eap_peer_sm_deinit(struct eap_sm *sm)$/;"	f
+eap_peer_sm_init	eap.c	/^struct eap_sm * eap_peer_sm_init(void *eapol_ctx,$/;"	f
+eap_peer_sm_step	eap.c	/^int eap_peer_sm_step(struct eap_sm *sm)$/;"	f
+eap_peer_sm_step_idle	eap.c	/^static void eap_peer_sm_step_idle(struct eap_sm *sm)$/;"	f	file:
+eap_peer_sm_step_local	eap.c	/^static void eap_peer_sm_step_local(struct eap_sm *sm)$/;"	f	file:
+eap_peer_sm_step_received	eap.c	/^static void eap_peer_sm_step_received(struct eap_sm *sm)$/;"	f	file:
+eap_peer_sm_tls_event	eap.c	/^static void eap_peer_sm_tls_event(void *ctx, enum tls_event ev,$/;"	f	file:
+eap_peer_tls_build_ack	eap_tls_common.c	/^struct wpabuf * eap_peer_tls_build_ack(u8 id, EapType eap_type,$/;"	f
+eap_peer_tls_data_reassemble	eap_tls_common.c	/^static const struct wpabuf * eap_peer_tls_data_reassemble($/;"	f	file:
+eap_peer_tls_decrypt	eap_tls_common.c	/^int eap_peer_tls_decrypt(struct eap_sm *sm, struct eap_ssl_data *data,$/;"	f
+eap_peer_tls_derive_key	eap_tls_common.c	/^u8 * eap_peer_tls_derive_key(struct eap_sm *sm, struct eap_ssl_data *data,$/;"	f
+eap_peer_tls_derive_session_id	eap_tls_common.c	/^u8 * eap_peer_tls_derive_session_id(struct eap_sm *sm,$/;"	f
+eap_peer_tls_encrypt	eap_tls_common.c	/^int eap_peer_tls_encrypt(struct eap_sm *sm, struct eap_ssl_data *data,$/;"	f
+eap_peer_tls_phase2_nak	eap_tls_common.c	/^int eap_peer_tls_phase2_nak(struct eap_method_type *types, size_t num_types,$/;"	f
+eap_peer_tls_process_helper	eap_tls_common.c	/^int eap_peer_tls_process_helper(struct eap_sm *sm, struct eap_ssl_data *data,$/;"	f
+eap_peer_tls_process_init	eap_tls_common.c	/^const u8 * eap_peer_tls_process_init(struct eap_sm *sm,$/;"	f
+eap_peer_tls_reassemble_fragment	eap_tls_common.c	/^static int eap_peer_tls_reassemble_fragment(struct eap_ssl_data *data,$/;"	f	file:
+eap_peer_tls_reauth_init	eap_tls_common.c	/^int eap_peer_tls_reauth_init(struct eap_sm *sm, struct eap_ssl_data *data)$/;"	f
+eap_peer_tls_register	eap_tls.c	/^int eap_peer_tls_register(void)$/;"	f
+eap_peer_tls_reset_input	eap_tls_common.c	/^void eap_peer_tls_reset_input(struct eap_ssl_data *data)$/;"	f
+eap_peer_tls_reset_output	eap_tls_common.c	/^void eap_peer_tls_reset_output(struct eap_ssl_data *data)$/;"	f
+eap_peer_tls_ssl_deinit	eap_tls_common.c	/^void eap_peer_tls_ssl_deinit(struct eap_sm *sm, struct eap_ssl_data *data)$/;"	f
+eap_peer_tls_ssl_init	eap_tls_common.c	/^int eap_peer_tls_ssl_init(struct eap_sm *sm, struct eap_ssl_data *data,$/;"	f
+eap_peer_tls_status	eap_tls_common.c	/^int eap_peer_tls_status(struct eap_sm *sm, struct eap_ssl_data *data,$/;"	f
+eap_peer_tnc_register	eap_tnc.c	/^int eap_peer_tnc_register(void)$/;"	f
+eap_peer_ttls_register	eap_ttls.c	/^int eap_peer_ttls_register(void)$/;"	f
+eap_peer_unauth_tls_register	eap_tls.c	/^int eap_peer_unauth_tls_register(void)$/;"	f
+eap_peer_unregister_methods	eap_methods.c	/^void eap_peer_unregister_methods(void)$/;"	f
+eap_peer_unregister_methods	eap_methods.h	/^static inline void eap_peer_unregister_methods(void)$/;"	f
+eap_peer_vendor_test_register	eap_vendor_test.c	/^int eap_peer_vendor_test_register(void)$/;"	f
+eap_peer_was_failure_expected	eap.c	/^int eap_peer_was_failure_expected(struct eap_sm *sm)$/;"	f
+eap_peer_wfa_unauth_tls_register	eap_tls.c	/^int eap_peer_wfa_unauth_tls_register(void)$/;"	f
+eap_peer_wsc_register	eap_wsc.c	/^int eap_peer_wsc_register(void)$/;"	f
+eap_proxy_cb	eap.h	/^	void (*eap_proxy_cb)(void *ctx);$/;"	m	struct:eapol_callbacks
+eap_proxy_deinit	eap_proxy_dummy.c	/^void eap_proxy_deinit(struct eap_proxy_sm *eap_proxy)$/;"	f
+eap_proxy_get_eapKeyData	eap_proxy_dummy.c	/^const u8 * eap_proxy_get_eapKeyData(struct eap_proxy_sm *sm, size_t *len)$/;"	f
+eap_proxy_get_eapRespData	eap_proxy_dummy.c	/^struct wpabuf * eap_proxy_get_eapRespData(struct eap_proxy_sm *sm)$/;"	f
+eap_proxy_get_imsi	eap_proxy_dummy.c	/^int eap_proxy_get_imsi(struct eap_proxy_sm *eap_proxy, char *imsi_buf,$/;"	f
+eap_proxy_init	eap_proxy_dummy.c	/^eap_proxy_init(void *eapol_ctx, struct eapol_callbacks *eapol_cb,$/;"	f
+eap_proxy_key_available	eap_proxy_dummy.c	/^int eap_proxy_key_available(struct eap_proxy_sm *sm)$/;"	f
+eap_proxy_notify_config	eap_proxy_dummy.c	/^int eap_proxy_notify_config(struct eap_proxy_sm *sm,$/;"	f
+eap_proxy_packet_update	eap_proxy_dummy.c	/^eap_proxy_packet_update(struct eap_proxy_sm *eap_proxy, u8 *eapReqData,$/;"	f
+eap_proxy_sm_get_status	eap_proxy_dummy.c	/^int eap_proxy_sm_get_status(struct eap_proxy_sm *sm, char *buf, size_t buflen,$/;"	f
+eap_proxy_sm_step	eap_proxy_dummy.c	/^int eap_proxy_sm_step(struct eap_proxy_sm *sm, struct eap_sm *eap_sm)$/;"	f
+eap_proxy_status	eap_proxy.h	/^enum eap_proxy_status {$/;"	g
+eap_psk_data	eap_psk.c	/^struct eap_psk_data {$/;"	s	file:
+eap_psk_deinit	eap_psk.c	/^static void eap_psk_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_psk_getKey	eap_psk.c	/^static u8 * eap_psk_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_psk_get_emsk	eap_psk.c	/^static u8 * eap_psk_get_emsk(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_psk_get_session_id	eap_psk.c	/^static u8 * eap_psk_get_session_id(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_psk_init	eap_psk.c	/^static void * eap_psk_init(struct eap_sm *sm)$/;"	f	file:
+eap_psk_isKeyAvailable	eap_psk.c	/^static Boolean eap_psk_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_psk_process	eap_psk.c	/^static struct wpabuf * eap_psk_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_psk_process_1	eap_psk.c	/^static struct wpabuf * eap_psk_process_1(struct eap_psk_data *data,$/;"	f	file:
+eap_psk_process_3	eap_psk.c	/^static struct wpabuf * eap_psk_process_3(struct eap_psk_data *data,$/;"	f	file:
+eap_pwd_data	eap_pwd.c	/^struct eap_pwd_data {$/;"	s	file:
+eap_pwd_deinit	eap_pwd.c	/^static void eap_pwd_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_pwd_get_emsk	eap_pwd.c	/^static u8 * eap_pwd_get_emsk(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_pwd_get_session_id	eap_pwd.c	/^static u8 * eap_pwd_get_session_id(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_pwd_getkey	eap_pwd.c	/^static u8 * eap_pwd_getkey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_pwd_init	eap_pwd.c	/^static void * eap_pwd_init(struct eap_sm *sm)$/;"	f	file:
+eap_pwd_key_available	eap_pwd.c	/^static Boolean eap_pwd_key_available(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_pwd_perform_commit_exchange	eap_pwd.c	/^eap_pwd_perform_commit_exchange(struct eap_sm *sm, struct eap_pwd_data *data,$/;"	f	file:
+eap_pwd_perform_confirm_exchange	eap_pwd.c	/^eap_pwd_perform_confirm_exchange(struct eap_sm *sm, struct eap_pwd_data *data,$/;"	f	file:
+eap_pwd_perform_id_exchange	eap_pwd.c	/^eap_pwd_perform_id_exchange(struct eap_sm *sm, struct eap_pwd_data *data,$/;"	f	file:
+eap_pwd_process	eap_pwd.c	/^eap_pwd_process(struct eap_sm *sm, void *priv, struct eap_method_ret *ret,$/;"	f	file:
+eap_pwd_state	eap_pwd.c	/^static void eap_pwd_state(struct eap_pwd_data *data, int state)$/;"	f	file:
+eap_pwd_state_txt	eap_pwd.c	/^static const char * eap_pwd_state_txt(int state)$/;"	f	file:
+eap_register_scard_ctx	eap.c	/^void eap_register_scard_ctx(struct eap_sm *sm, void *ctx)$/;"	f
+eap_sake_build_msg	eap_sake.c	/^static struct wpabuf * eap_sake_build_msg(struct eap_sake_data *data,$/;"	f	file:
+eap_sake_data	eap_sake.c	/^struct eap_sake_data {$/;"	s	file:
+eap_sake_deinit	eap_sake.c	/^static void eap_sake_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_sake_getKey	eap_sake.c	/^static u8 * eap_sake_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_sake_get_emsk	eap_sake.c	/^static u8 * eap_sake_get_emsk(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_sake_get_session_id	eap_sake.c	/^static u8 * eap_sake_get_session_id(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_sake_init	eap_sake.c	/^static void * eap_sake_init(struct eap_sm *sm)$/;"	f	file:
+eap_sake_isKeyAvailable	eap_sake.c	/^static Boolean eap_sake_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_sake_process	eap_sake.c	/^static struct wpabuf * eap_sake_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_sake_process_challenge	eap_sake.c	/^static struct wpabuf * eap_sake_process_challenge(struct eap_sm *sm,$/;"	f	file:
+eap_sake_process_confirm	eap_sake.c	/^static struct wpabuf * eap_sake_process_confirm(struct eap_sm *sm,$/;"	f	file:
+eap_sake_process_identity	eap_sake.c	/^static struct wpabuf * eap_sake_process_identity(struct eap_sm *sm,$/;"	f	file:
+eap_sake_state	eap_sake.c	/^static void eap_sake_state(struct eap_sake_data *data, int state)$/;"	f	file:
+eap_sake_state_txt	eap_sake.c	/^static const char * eap_sake_state_txt(int state)$/;"	f	file:
+eap_set_anon_id	eap.c	/^void eap_set_anon_id(struct eap_sm *sm, const u8 *id, size_t len)$/;"	f
+eap_set_config_blob	eap.c	/^void eap_set_config_blob(struct eap_sm *sm, struct wpa_config_blob *blob)$/;"	f
+eap_set_external_sim	eap.c	/^void eap_set_external_sim(struct eap_sm *sm, int external_sim)$/;"	f
+eap_set_fast_reauth	eap.c	/^void eap_set_fast_reauth(struct eap_sm *sm, int enabled)$/;"	f
+eap_set_force_disabled	eap.c	/^void eap_set_force_disabled(struct eap_sm *sm, int disabled)$/;"	f
+eap_set_workaround	eap.c	/^void eap_set_workaround(struct eap_sm *sm, unsigned int workaround)$/;"	f
+eap_sim_clear_identities	eap_sim.c	/^static void eap_sim_clear_identities(struct eap_sm *sm,$/;"	f	file:
+eap_sim_clear_keys	eap_sim.c	/^static void eap_sim_clear_keys(struct eap_sim_data *data, int reauth)$/;"	f	file:
+eap_sim_client_error	eap_sim.c	/^static struct wpabuf * eap_sim_client_error(struct eap_sim_data *data, u8 id,$/;"	f	file:
+eap_sim_data	eap_sim.c	/^struct eap_sim_data {$/;"	s	file:
+eap_sim_deinit	eap_sim.c	/^static void eap_sim_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_sim_deinit_for_reauth	eap_sim.c	/^static void eap_sim_deinit_for_reauth(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_sim_ext_sim_req	eap_sim.c	/^static int eap_sim_ext_sim_req(struct eap_sm *sm, struct eap_sim_data *data)$/;"	f	file:
+eap_sim_ext_sim_result	eap_sim.c	/^static int eap_sim_ext_sim_result(struct eap_sm *sm, struct eap_sim_data *data,$/;"	f	file:
+eap_sim_getKey	eap_sim.c	/^static u8 * eap_sim_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_sim_get_emsk	eap_sim.c	/^static u8 * eap_sim_get_emsk(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_sim_get_identity	eap_sim.c	/^static const u8 * eap_sim_get_identity(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_sim_get_session_id	eap_sim.c	/^static u8 * eap_sim_get_session_id(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_sim_gsm_auth	eap_sim.c	/^static int eap_sim_gsm_auth(struct eap_sm *sm, struct eap_sim_data *data)$/;"	f	file:
+eap_sim_has_reauth_data	eap_sim.c	/^static Boolean eap_sim_has_reauth_data(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_sim_init	eap_sim.c	/^static void * eap_sim_init(struct eap_sm *sm)$/;"	f	file:
+eap_sim_init_for_reauth	eap_sim.c	/^static void * eap_sim_init_for_reauth(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_sim_isKeyAvailable	eap_sim.c	/^static Boolean eap_sim_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_sim_learn_ids	eap_sim.c	/^static int eap_sim_learn_ids(struct eap_sm *sm, struct eap_sim_data *data,$/;"	f	file:
+eap_sim_process	eap_sim.c	/^static struct wpabuf * eap_sim_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_sim_process_challenge	eap_sim.c	/^static struct wpabuf * eap_sim_process_challenge(struct eap_sm *sm,$/;"	f	file:
+eap_sim_process_notification	eap_sim.c	/^static struct wpabuf * eap_sim_process_notification($/;"	f	file:
+eap_sim_process_notification_auth	eap_sim.c	/^static int eap_sim_process_notification_auth(struct eap_sim_data *data,$/;"	f	file:
+eap_sim_process_notification_reauth	eap_sim.c	/^static int eap_sim_process_notification_reauth(struct eap_sim_data *data,$/;"	f	file:
+eap_sim_process_reauthentication	eap_sim.c	/^static struct wpabuf * eap_sim_process_reauthentication($/;"	f	file:
+eap_sim_process_start	eap_sim.c	/^static struct wpabuf * eap_sim_process_start(struct eap_sm *sm,$/;"	f	file:
+eap_sim_response_challenge	eap_sim.c	/^static struct wpabuf * eap_sim_response_challenge(struct eap_sim_data *data,$/;"	f	file:
+eap_sim_response_notification	eap_sim.c	/^static struct wpabuf * eap_sim_response_notification(struct eap_sim_data *data,$/;"	f	file:
+eap_sim_response_reauth	eap_sim.c	/^static struct wpabuf * eap_sim_response_reauth(struct eap_sim_data *data,$/;"	f	file:
+eap_sim_response_start	eap_sim.c	/^static struct wpabuf * eap_sim_response_start(struct eap_sm *sm,$/;"	f	file:
+eap_sim_state	eap_sim.c	/^static void eap_sim_state(struct eap_sim_data *data, int state)$/;"	f	file:
+eap_sim_state_txt	eap_sim.c	/^static const char * eap_sim_state_txt(int state)$/;"	f	file:
+eap_sim_supported_ver	eap_sim.c	/^static int eap_sim_supported_ver(int version)$/;"	f	file:
+eap_sm	eap_i.h	/^struct eap_sm {$/;"	s
+eap_sm_abort	eap.c	/^void eap_sm_abort(struct eap_sm *sm)$/;"	f
+eap_sm_allowMethod	eap.c	/^static Boolean eap_sm_allowMethod(struct eap_sm *sm, int vendor,$/;"	f	file:
+eap_sm_append_3gpp_realm	eap.c	/^static int eap_sm_append_3gpp_realm(struct eap_sm *sm, char *imsi,$/;"	f	file:
+eap_sm_buildIdentity	eap.c	/^struct wpabuf * eap_sm_buildIdentity(struct eap_sm *sm, int id, int encrypted)$/;"	f
+eap_sm_buildNak	eap.c	/^static struct wpabuf * eap_sm_buildNak(struct eap_sm *sm, int id)$/;"	f	file:
+eap_sm_buildNotify	eap.c	/^static struct wpabuf * eap_sm_buildNotify(int id)$/;"	f	file:
+eap_sm_build_expanded_nak	eap.c	/^static struct wpabuf * eap_sm_build_expanded_nak($/;"	f	file:
+eap_sm_decision_txt	eap.c	/^static const char * eap_sm_decision_txt(EapDecision decision)$/;"	f	file:
+eap_sm_free_key	eap.c	/^static void eap_sm_free_key(struct eap_sm *sm)$/;"	f	file:
+eap_sm_get_method_name	eap.c	/^const char * eap_sm_get_method_name(struct eap_sm *sm)$/;"	f
+eap_sm_get_scard_identity	eap.c	/^static int eap_sm_get_scard_identity(struct eap_sm *sm,$/;"	f	file:
+eap_sm_get_status	eap.c	/^int eap_sm_get_status(struct eap_sm *sm, char *buf, size_t buflen, int verbose)$/;"	f
+eap_sm_imsi_identity	eap.c	/^static int eap_sm_imsi_identity(struct eap_sm *sm,$/;"	f	file:
+eap_sm_method_state_txt	eap.c	/^static const char * eap_sm_method_state_txt(EapMethodState state)$/;"	f	file:
+eap_sm_notify_ctrl_attached	eap.c	/^void eap_sm_notify_ctrl_attached(struct eap_sm *sm)$/;"	f
+eap_sm_parseEapReq	eap.c	/^static void eap_sm_parseEapReq(struct eap_sm *sm, const struct wpabuf *req)$/;"	f	file:
+eap_sm_processIdentity	eap.c	/^static void eap_sm_processIdentity(struct eap_sm *sm, const struct wpabuf *req)$/;"	f	file:
+eap_sm_processNotify	eap.c	/^static void eap_sm_processNotify(struct eap_sm *sm, const struct wpabuf *req)$/;"	f	file:
+eap_sm_request	eap.c	/^static void eap_sm_request(struct eap_sm *sm, enum wpa_ctrl_req_type field,$/;"	f	file:
+eap_sm_request_identity	eap.c	/^void eap_sm_request_identity(struct eap_sm *sm)$/;"	f
+eap_sm_request_new_password	eap.c	/^void eap_sm_request_new_password(struct eap_sm *sm)$/;"	f
+eap_sm_request_otp	eap.c	/^void eap_sm_request_otp(struct eap_sm *sm, const char *msg, size_t msg_len)$/;"	f
+eap_sm_request_passphrase	eap.c	/^void eap_sm_request_passphrase(struct eap_sm *sm)$/;"	f
+eap_sm_request_password	eap.c	/^void eap_sm_request_password(struct eap_sm *sm)$/;"	f
+eap_sm_request_pin	eap.c	/^void eap_sm_request_pin(struct eap_sm *sm)$/;"	f
+eap_sm_request_sim	eap.c	/^void eap_sm_request_sim(struct eap_sm *sm, const char *req)$/;"	f
+eap_sm_set_ext_pw_ctx	eap.c	/^void eap_sm_set_ext_pw_ctx(struct eap_sm *sm, struct ext_password_data *ext)$/;"	f
+eap_sm_set_scard_pin	eap.c	/^static int eap_sm_set_scard_pin(struct eap_sm *sm,$/;"	f	file:
+eap_sm_state_txt	eap.c	/^static const char * eap_sm_state_txt(int state)$/;"	f	file:
+eap_ssl_data	eap_tls_common.h	/^struct eap_ssl_data {$/;"	s
+eap_success_workaround	eap.c	/^static int eap_success_workaround(struct eap_sm *sm, int reqId, int lastId)$/;"	f	file:
+eap_tls_check_blob	eap_tls_common.c	/^static int eap_tls_check_blob(struct eap_sm *sm, const char **name,$/;"	f	file:
+eap_tls_data	eap_tls.c	/^struct eap_tls_data {$/;"	s	file:
+eap_tls_deinit	eap_tls.c	/^static void eap_tls_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_tls_deinit_for_reauth	eap_tls.c	/^static void eap_tls_deinit_for_reauth(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_tls_failure	eap_tls.c	/^static struct wpabuf * eap_tls_failure(struct eap_sm *sm,$/;"	f	file:
+eap_tls_free_key	eap_tls.c	/^static void eap_tls_free_key(struct eap_tls_data *data)$/;"	f	file:
+eap_tls_getKey	eap_tls.c	/^static u8 * eap_tls_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_tls_get_emsk	eap_tls.c	/^static u8 * eap_tls_get_emsk(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_tls_get_session_id	eap_tls.c	/^static u8 * eap_tls_get_session_id(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_tls_get_status	eap_tls.c	/^static int eap_tls_get_status(struct eap_sm *sm, void *priv, char *buf,$/;"	f	file:
+eap_tls_has_reauth_data	eap_tls.c	/^static Boolean eap_tls_has_reauth_data(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_tls_init	eap_tls.c	/^static void * eap_tls_init(struct eap_sm *sm)$/;"	f	file:
+eap_tls_init_connection	eap_tls_common.c	/^static int eap_tls_init_connection(struct eap_sm *sm,$/;"	f	file:
+eap_tls_init_for_reauth	eap_tls.c	/^static void * eap_tls_init_for_reauth(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_tls_isKeyAvailable	eap_tls.c	/^static Boolean eap_tls_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_tls_msg_alloc	eap_tls_common.c	/^static struct wpabuf * eap_tls_msg_alloc(EapType type, size_t payload_len,$/;"	f	file:
+eap_tls_params_flags	eap_tls_common.c	/^static void eap_tls_params_flags(struct tls_connection_params *params,$/;"	f	file:
+eap_tls_params_from_conf	eap_tls_common.c	/^static int eap_tls_params_from_conf(struct eap_sm *sm,$/;"	f	file:
+eap_tls_params_from_conf1	eap_tls_common.c	/^static void eap_tls_params_from_conf1(struct tls_connection_params *params,$/;"	f	file:
+eap_tls_params_from_conf2	eap_tls_common.c	/^static void eap_tls_params_from_conf2(struct tls_connection_params *params,$/;"	f	file:
+eap_tls_process	eap_tls.c	/^static struct wpabuf * eap_tls_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_tls_process_input	eap_tls_common.c	/^static int eap_tls_process_input(struct eap_sm *sm, struct eap_ssl_data *data,$/;"	f	file:
+eap_tls_process_output	eap_tls_common.c	/^static int eap_tls_process_output(struct eap_ssl_data *data, EapType eap_type,$/;"	f	file:
+eap_tls_success	eap_tls.c	/^static void eap_tls_success(struct eap_sm *sm, struct eap_tls_data *data,$/;"	f	file:
+eap_tlv_add_cryptobinding	eap_peap.c	/^static int eap_tlv_add_cryptobinding(struct eap_sm *sm,$/;"	f	file:
+eap_tlv_build_nak	eap_peap.c	/^static struct wpabuf * eap_tlv_build_nak(int id, u16 nak_type)$/;"	f	file:
+eap_tlv_build_result	eap_peap.c	/^static struct wpabuf * eap_tlv_build_result(struct eap_sm *sm,$/;"	f	file:
+eap_tlv_process	eap_peap.c	/^static int eap_tlv_process(struct eap_sm *sm, struct eap_peap_data *data,$/;"	f	file:
+eap_tlv_validate_cryptobinding	eap_peap.c	/^static int eap_tlv_validate_cryptobinding(struct eap_sm *sm,$/;"	f	file:
+eap_tnc_build_frag_ack	eap_tnc.c	/^static struct wpabuf * eap_tnc_build_frag_ack(u8 id, u8 code)$/;"	f	file:
+eap_tnc_build_msg	eap_tnc.c	/^static struct wpabuf * eap_tnc_build_msg(struct eap_tnc_data *data,$/;"	f	file:
+eap_tnc_data	eap_tnc.c	/^struct eap_tnc_data {$/;"	s	file:
+eap_tnc_deinit	eap_tnc.c	/^static void eap_tnc_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_tnc_init	eap_tnc.c	/^static void * eap_tnc_init(struct eap_sm *sm)$/;"	f	file:
+eap_tnc_process	eap_tnc.c	/^static struct wpabuf * eap_tnc_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_tnc_process_cont	eap_tnc.c	/^static int eap_tnc_process_cont(struct eap_tnc_data *data,$/;"	f	file:
+eap_tnc_process_fragment	eap_tnc.c	/^static struct wpabuf * eap_tnc_process_fragment(struct eap_tnc_data *data,$/;"	f	file:
+eap_ttls_avp_add	eap_ttls.c	/^static u8 * eap_ttls_avp_add(u8 *start, u8 *avphdr, u32 avp_code,$/;"	f	file:
+eap_ttls_avp_encapsulate	eap_ttls.c	/^static int eap_ttls_avp_encapsulate(struct wpabuf **resp, u32 avp_code,$/;"	f	file:
+eap_ttls_avp_hdr	eap_ttls.c	/^static u8 * eap_ttls_avp_hdr(u8 *avphdr, u32 avp_code, u32 vendor_id,$/;"	f	file:
+eap_ttls_check_auth_status	eap_ttls.c	/^static void eap_ttls_check_auth_status(struct eap_sm *sm, $/;"	f	file:
+eap_ttls_data	eap_ttls.c	/^struct eap_ttls_data {$/;"	s	file:
+eap_ttls_decrypt	eap_ttls.c	/^static int eap_ttls_decrypt(struct eap_sm *sm, struct eap_ttls_data *data,$/;"	f	file:
+eap_ttls_deinit	eap_ttls.c	/^static void eap_ttls_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_ttls_deinit_for_reauth	eap_ttls.c	/^static void eap_ttls_deinit_for_reauth(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_ttls_encrypt_response	eap_ttls.c	/^static int eap_ttls_encrypt_response(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_fake_identity_request	eap_ttls.c	/^static u8 * eap_ttls_fake_identity_request(void)$/;"	f	file:
+eap_ttls_free_key	eap_ttls.c	/^static void eap_ttls_free_key(struct eap_ttls_data *data)$/;"	f	file:
+eap_ttls_getKey	eap_ttls.c	/^static u8 * eap_ttls_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_ttls_get_emsk	eap_ttls.c	/^static u8 * eap_ttls_get_emsk(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_ttls_get_session_id	eap_ttls.c	/^static u8 * eap_ttls_get_session_id(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_ttls_get_status	eap_ttls.c	/^static int eap_ttls_get_status(struct eap_sm *sm, void *priv, char *buf,$/;"	f	file:
+eap_ttls_has_reauth_data	eap_ttls.c	/^static Boolean eap_ttls_has_reauth_data(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_ttls_implicit_challenge	eap_ttls.c	/^static u8 * eap_ttls_implicit_challenge(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_implicit_identity_request	eap_ttls.c	/^static int eap_ttls_implicit_identity_request(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_init	eap_ttls.c	/^static void * eap_ttls_init(struct eap_sm *sm)$/;"	f	file:
+eap_ttls_init_for_reauth	eap_ttls.c	/^static void * eap_ttls_init_for_reauth(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_ttls_isKeyAvailable	eap_ttls.c	/^static Boolean eap_ttls_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_ttls_parse_attr_eap	eap_ttls.c	/^static int eap_ttls_parse_attr_eap(const u8 *dpos, size_t dlen,$/;"	f	file:
+eap_ttls_parse_avp	eap_ttls.c	/^static int eap_ttls_parse_avp(u8 *pos, size_t left,$/;"	f	file:
+eap_ttls_parse_avps	eap_ttls.c	/^static int eap_ttls_parse_avps(struct wpabuf *in_decrypted,$/;"	f	file:
+eap_ttls_phase2_eap_deinit	eap_ttls.c	/^static void eap_ttls_phase2_eap_deinit(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_phase2_eap_process	eap_ttls.c	/^static int eap_ttls_phase2_eap_process(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_phase2_request	eap_ttls.c	/^static int eap_ttls_phase2_request(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_phase2_request_chap	eap_ttls.c	/^static int eap_ttls_phase2_request_chap(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_phase2_request_eap	eap_ttls.c	/^static int eap_ttls_phase2_request_eap(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_phase2_request_eap_method	eap_ttls.c	/^static int eap_ttls_phase2_request_eap_method(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_phase2_request_mschap	eap_ttls.c	/^static int eap_ttls_phase2_request_mschap(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_phase2_request_mschapv2	eap_ttls.c	/^static int eap_ttls_phase2_request_mschapv2(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_phase2_request_pap	eap_ttls.c	/^static int eap_ttls_phase2_request_pap(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_phase2_select_eap_method	eap_ttls.c	/^static void eap_ttls_phase2_select_eap_method(struct eap_ttls_data *data,$/;"	f	file:
+eap_ttls_phase2_start	eap_ttls.c	/^static int eap_ttls_phase2_start(struct eap_sm *sm, struct eap_ttls_data *data,$/;"	f	file:
+eap_ttls_process	eap_ttls.c	/^static struct wpabuf * eap_ttls_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_ttls_process_decrypted	eap_ttls.c	/^static int eap_ttls_process_decrypted(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_process_handshake	eap_ttls.c	/^static int eap_ttls_process_handshake(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_process_phase2_eap	eap_ttls.c	/^static int eap_ttls_process_phase2_eap(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_process_phase2_mschapv2	eap_ttls.c	/^static int eap_ttls_process_phase2_mschapv2(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_process_tnc_start	eap_ttls.c	/^static int eap_ttls_process_tnc_start(struct eap_sm *sm,$/;"	f	file:
+eap_ttls_v0_derive_key	eap_ttls.c	/^static int eap_ttls_v0_derive_key(struct eap_sm *sm,$/;"	f	file:
+eap_type	eap_tls.c	/^	u8 eap_type;$/;"	m	struct:eap_tls_data	file:
+eap_type	eap_tls_common.h	/^	u8 eap_type;$/;"	m	struct:eap_ssl_data
+eap_unauth_tls_init	eap_tls.c	/^static void * eap_unauth_tls_init(struct eap_sm *sm)$/;"	f	file:
+eap_vendor_ready	eap_vendor_test.c	/^static void eap_vendor_ready(void *eloop_ctx, void *timeout_ctx)$/;"	f	file:
+eap_vendor_test_data	eap_vendor_test.c	/^struct eap_vendor_test_data {$/;"	s	file:
+eap_vendor_test_deinit	eap_vendor_test.c	/^static void eap_vendor_test_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_vendor_test_getKey	eap_vendor_test.c	/^static u8 * eap_vendor_test_getKey(struct eap_sm *sm, void *priv, size_t *len)$/;"	f	file:
+eap_vendor_test_init	eap_vendor_test.c	/^static void * eap_vendor_test_init(struct eap_sm *sm)$/;"	f	file:
+eap_vendor_test_isKeyAvailable	eap_vendor_test.c	/^static Boolean eap_vendor_test_isKeyAvailable(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_vendor_test_process	eap_vendor_test.c	/^static struct wpabuf * eap_vendor_test_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_wfa_unauth_tls_init	eap_tls.c	/^static void * eap_wfa_unauth_tls_init(struct eap_sm *sm)$/;"	f	file:
+eap_wsc_build_msg	eap_wsc.c	/^static struct wpabuf * eap_wsc_build_msg(struct eap_wsc_data *data,$/;"	f	file:
+eap_wsc_data	eap_wsc.c	/^struct eap_wsc_data {$/;"	s	file:
+eap_wsc_deinit	eap_wsc.c	/^static void eap_wsc_deinit(struct eap_sm *sm, void *priv)$/;"	f	file:
+eap_wsc_init	eap_wsc.c	/^static void * eap_wsc_init(struct eap_sm *sm)$/;"	f	file:
+eap_wsc_new_ap_settings	eap_wsc.c	/^static int eap_wsc_new_ap_settings(struct wps_credential *cred,$/;"	f	file:
+eap_wsc_process	eap_wsc.c	/^static struct wpabuf * eap_wsc_process(struct eap_sm *sm, void *priv,$/;"	f	file:
+eap_wsc_process_cont	eap_wsc.c	/^static int eap_wsc_process_cont(struct eap_wsc_data *data,$/;"	f	file:
+eap_wsc_process_fragment	eap_wsc.c	/^static struct wpabuf * eap_wsc_process_fragment(struct eap_wsc_data *data,$/;"	f	file:
+eap_wsc_state	eap_wsc.c	/^static void eap_wsc_state(struct eap_wsc_data *data, int state)$/;"	f	file:
+eap_wsc_state_txt	eap_wsc.c	/^static const char * eap_wsc_state_txt(int state)$/;"	f	file:
+eapdata	eap_ttls.c	/^	u8 *eapdata;$/;"	m	struct:ttls_parse_avp	file:
+eapol_bool_var	eap.h	/^enum eapol_bool_var {$/;"	g
+eapol_callbacks	eap.h	/^struct eapol_callbacks {$/;"	s
+eapol_cb	eap_i.h	/^	const struct eapol_callbacks *eapol_cb;$/;"	m	struct:eap_sm	typeref:struct:eap_sm::eapol_callbacks
+eapol_ctx	eap_i.h	/^	void *eapol_ctx;$/;"	m	struct:eap_sm
+eapol_get_bool	eap.c	/^static Boolean eapol_get_bool(struct eap_sm *sm, enum eapol_bool_var var)$/;"	f	file:
+eapol_get_eapReqData	eap.c	/^static struct wpabuf * eapol_get_eapReqData(struct eap_sm *sm)$/;"	f	file:
+eapol_get_int	eap.c	/^static unsigned int eapol_get_int(struct eap_sm *sm, enum eapol_int_var var)$/;"	f	file:
+eapol_int_var	eap.h	/^enum eapol_int_var {$/;"	g
+eapol_set_bool	eap.c	/^static void eapol_set_bool(struct eap_sm *sm, enum eapol_bool_var var,$/;"	f	file:
+eapol_set_int	eap.c	/^static void eapol_set_int(struct eap_sm *sm, enum eapol_int_var var,$/;"	f	file:
+ecdh_exchange_data	eap_noob.h	/^	struct eap_noob_ecdh_key_exchange * ecdh_exchange_data;$/;"	m	struct:eap_noob_serv_data	typeref:struct:eap_noob_serv_data::eap_noob_ecdh_key_exchange
+emsk	eap_aka.c	/^	u8 emsk[EAP_EMSK_LEN];$/;"	m	struct:eap_aka_data	file:
+emsk	eap_eke.c	/^	u8 emsk[EAP_EMSK_LEN];$/;"	m	struct:eap_eke_data	file:
+emsk	eap_fast.c	/^	u8 emsk[EAP_EMSK_LEN];$/;"	m	struct:eap_fast_data	file:
+emsk	eap_gpsk.c	/^	u8 emsk[EAP_EMSK_LEN];$/;"	m	struct:eap_gpsk_data	file:
+emsk	eap_noob.h	/^	u8 * emsk;$/;"	m	struct:eap_noob_ecdh_kdf_out
+emsk	eap_psk.c	/^	u8 emsk[EAP_EMSK_LEN];$/;"	m	struct:eap_psk_data	file:
+emsk	eap_pwd.c	/^	u8 emsk[EAP_EMSK_LEN];$/;"	m	struct:eap_pwd_data	file:
+emsk	eap_sake.c	/^	u8 emsk[EAP_EMSK_LEN];$/;"	m	struct:eap_sake_data	file:
+emsk	eap_sim.c	/^	u8 emsk[EAP_EMSK_LEN];$/;"	m	struct:eap_sim_data	file:
+emsk_b64	eap_noob.h	/^	char * emsk_b64;$/;"	m	struct:eap_noob_ecdh_kdf_out
+encr	eap_eke.c	/^	u8 encr; \/* forced encryption algorithm or 0 to allow all supported *\/$/;"	m	struct:eap_eke_data	file:
+encr	ikev2.h	/^	int encr;$/;"	m	struct:ikev2_proposal_data
+encr_hash	eap_mschapv2.c	/^	u8 encr_hash[16];$/;"	m	struct:ms_change_password	file:
+encr_password	eap_mschapv2.c	/^	u8 encr_password[516];$/;"	m	struct:ms_change_password	file:
+end	eap_fast_pac.c	/^	const char *end;$/;"	m	struct:eap_fast_read_ctx	file:
+engine	eap_config.h	/^	int engine;$/;"	m	struct:eap_peer_config
+engine2	eap_config.h	/^	int engine2;$/;"	m	struct:eap_peer_config
+engine2_id	eap_config.h	/^	char *engine2_id;$/;"	m	struct:eap_peer_config
+engine_id	eap_config.h	/^	char *engine_id;$/;"	m	struct:eap_peer_config
+erp	eap_config.h	/^	int erp;$/;"	m	struct:eap_peer_config
+erp_keys	eap_i.h	/^	struct dl_list erp_keys; \/* struct eap_erp_key *\/$/;"	m	struct:eap_sm	typeref:struct:eap_sm::dl_list
+erp_seq	eap_i.h	/^	u32 erp_seq;$/;"	m	struct:eap_sm
+err_code	eap_noob.h	/^   	enum eap_noob_err_code err_code; $/;"	m	struct:eap_noob_serv_data	typeref:enum:eap_noob_serv_data::eap_noob_err_code
+error_code	eap_noob.h	/^const int error_code[] = {0,1001,1002,1003,1004,1005,1006,2001,2002,3001,3002,3003,4001,5001,5002,5003};$/;"	v
+error_info	eap_noob.h	/^const char *error_info[] = { "No error",$/;"	v
+error_type	ikev2.h	/^	u16 error_type;$/;"	m	struct:ikev2_responder_data
+expected_failure	eap_i.h	/^	unsigned int expected_failure:1;$/;"	m	struct:eap_sm
+ext_cert_check	eap_i.h	/^	unsigned int ext_cert_check:1;$/;"	m	struct:eap_sm
+ext_pw	eap_i.h	/^	struct ext_password_data *ext_pw;$/;"	m	struct:eap_sm	typeref:struct:eap_sm::ext_password_data
+ext_pw_buf	eap_i.h	/^	struct wpabuf *ext_pw_buf;$/;"	m	struct:eap_sm	typeref:struct:eap_sm::wpabuf
+external_sim	eap_i.h	/^	int external_sim;$/;"	m	struct:eap_sm
+external_sim_resp	eap_config.h	/^	char *external_sim_resp;$/;"	m	struct:eap_peer_config
+f	eap_fast_pac.c	/^	FILE *f;$/;"	m	struct:eap_fast_read_ctx	file:
+fast_reauth	eap_i.h	/^	int fast_reauth;$/;"	m	struct:eap_sm
+fast_version	eap_fast.c	/^	int fast_version;$/;"	m	struct:eap_fast_data	file:
+first_try	eap_vendor_test.c	/^	int first_try;$/;"	m	struct:eap_vendor_test_data	file:
+flags	eap_config.h	/^	u32 flags;$/;"	m	struct:eap_peer_config
+flags	eap_mschapv2.c	/^	u8 flags;$/;"	m	struct:ms_response	file:
+flags	eap_mschapv2.c	/^	u8 flags[2];$/;"	m	struct:ms_change_password	file:
+force_disabled	eap_i.h	/^	int force_disabled;$/;"	m	struct:eap_sm
+force_new_label	eap_peap.c	/^	int peap_version, force_peap_version, force_new_label;$/;"	m	struct:eap_peap_data	file:
+force_peap_version	eap_peap.c	/^	int peap_version, force_peap_version, force_new_label;$/;"	m	struct:eap_peap_data	file:
+forced_cipher	eap_gpsk.c	/^	u16 forced_cipher; \/* force cipher or 0 to allow all supported *\/$/;"	m	struct:eap_gpsk_data	file:
+fragment_size	eap_config.h	/^	int fragment_size;$/;"	m	struct:eap_peer_config
+fragment_size	eap_ikev2.c	/^	size_t fragment_size;$/;"	m	struct:eap_ikev2_data	file:
+fragment_size	eap_tnc.c	/^	size_t fragment_size;$/;"	m	struct:eap_tnc_data	file:
+fragment_size	eap_wsc.c	/^	size_t fragment_size;$/;"	m	struct:eap_wsc_data	file:
+free	eap_i.h	/^	void (*free)(struct eap_method *method);$/;"	m	struct:eap_method
+getKey	eap_i.h	/^	u8 * (*getKey)(struct eap_sm *sm, void *priv, size_t *len);$/;"	m	struct:eap_method
+getSessionId	eap_i.h	/^	u8 * (*getSessionId)(struct eap_sm *sm, void *priv, size_t *len);$/;"	m	struct:eap_method
+get_bool	eap.h	/^	Boolean (*get_bool)(void *ctx, enum eapol_bool_var variable);$/;"	m	struct:eapol_callbacks
+get_config	eap.h	/^	struct eap_peer_config * (*get_config)(void *ctx);$/;"	m	struct:eapol_callbacks	typeref:struct:eapol_callbacks::get_config
+get_config_blob	eap.h	/^	const struct wpa_config_blob * (*get_config_blob)(void *ctx,$/;"	m	struct:eapol_callbacks	typeref:struct:eapol_callbacks::get_config_blob
+get_eapReqData	eap.h	/^	struct wpabuf * (*get_eapReqData)(void *ctx);$/;"	m	struct:eapol_callbacks	typeref:struct:eapol_callbacks::get_eapReqData
+get_emsk	eap_i.h	/^	u8 * (*get_emsk)(struct eap_sm *sm, void *priv, size_t *len);$/;"	m	struct:eap_method
+get_identity	eap_i.h	/^	const u8 * (*get_identity)(struct eap_sm *sm, void *priv, size_t *len);$/;"	m	struct:eap_method
+get_int	eap.h	/^	unsigned int (*get_int)(void *ctx, enum eapol_int_var variable);$/;"	m	struct:eapol_callbacks
+get_status	eap_i.h	/^	int (*get_status)(struct eap_sm *sm, void *priv, char *buf,$/;"	m	struct:eap_method
+group_num	eap_pwd.c	/^	u16 group_num;$/;"	m	struct:eap_pwd_data	file:
+grp	eap_pwd.c	/^	EAP_PWD_group *grp;$/;"	m	struct:eap_pwd_data	file:
+has_reauth_data	eap_i.h	/^	Boolean (*has_reauth_data)(struct eap_sm *sm, void *priv);$/;"	m	struct:eap_method
+hint	eap_noob.h	/^	u8 * hint;$/;"	m	struct:eap_noob_oob_data
+hint_b64	eap_noob.h	/^	char * hint_b64;$/;"	m	struct:eap_noob_oob_data
+hint_len	eap_noob.h	/^	size_t hint_len;$/;"	m	struct:eap_noob_oob_data
+hoob	eap_noob.h	/^	u8 * hoob;$/;"	m	struct:eap_noob_oob_data
+hoob_b64	eap_noob.h	/^	char * hoob_b64;$/;"	m	struct:eap_noob_oob_data
+i_dh_public	ikev2.h	/^	struct wpabuf *i_dh_public;$/;"	m	struct:ikev2_responder_data	typeref:struct:ikev2_responder_data::wpabuf
+i_id	eap_fast_pac.h	/^	u8 *i_id;$/;"	m	struct:eap_fast_pac
+i_id_len	eap_fast_pac.h	/^	size_t i_id_len;$/;"	m	struct:eap_fast_pac
+i_nonce	ikev2.h	/^	u8 i_nonce[IKEV2_NONCE_MAX_LEN];$/;"	m	struct:ikev2_responder_data
+i_nonce_len	ikev2.h	/^	size_t i_nonce_len;$/;"	m	struct:ikev2_responder_data
+i_sign_msg	ikev2.h	/^	struct wpabuf *i_sign_msg;$/;"	m	struct:ikev2_responder_data	typeref:struct:ikev2_responder_data::wpabuf
+i_spi	ikev2.h	/^	u8 i_spi[IKEV2_SPI_LEN];$/;"	m	struct:ikev2_responder_data
+ick	eap_pax.c	/^	u8 ick[EAP_PAX_ICK_LEN];$/;"	m	struct:eap_pax_data	file:
+id_len	eap_fast.c	/^	size_t id_len;$/;"	m	struct:eap_fast_data	file:
+id_len	eap_gpsk.c	/^	size_t id_len;$/;"	m	struct:eap_gpsk_data	file:
+id_len	eap_peap.c	/^	size_t id_len;$/;"	m	struct:eap_peap_data	file:
+id_len	eap_tls.c	/^	size_t id_len;$/;"	m	struct:eap_tls_data	file:
+id_len	eap_ttls.c	/^	size_t id_len;$/;"	m	struct:eap_ttls_data	file:
+id_msgs	eap_aka.c	/^	struct wpabuf *id_msgs;$/;"	m	struct:eap_aka_data	typeref:struct:eap_aka_data::wpabuf	file:
+id_p	eap_psk.c	/^	u8 *id_s, *id_p;$/;"	m	struct:eap_psk_data	file:
+id_p_len	eap_psk.c	/^	size_t id_s_len, id_p_len;$/;"	m	struct:eap_psk_data	file:
+id_peer	eap_gpsk.c	/^	u8 *id_peer;$/;"	m	struct:eap_gpsk_data	file:
+id_peer	eap_pwd.c	/^	u8 *id_peer;$/;"	m	struct:eap_pwd_data	file:
+id_peer_len	eap_gpsk.c	/^	size_t id_peer_len;$/;"	m	struct:eap_gpsk_data	file:
+id_peer_len	eap_pwd.c	/^	size_t id_peer_len;$/;"	m	struct:eap_pwd_data	file:
+id_s	eap_psk.c	/^	u8 *id_s, *id_p;$/;"	m	struct:eap_psk_data	file:
+id_s_len	eap_psk.c	/^	size_t id_s_len, id_p_len;$/;"	m	struct:eap_psk_data	file:
+id_server	eap_gpsk.c	/^	u8 *id_server;$/;"	m	struct:eap_gpsk_data	file:
+id_server	eap_pwd.c	/^	u8 *id_server;$/;"	m	struct:eap_pwd_data	file:
+id_server_len	eap_gpsk.c	/^	size_t id_server_len;$/;"	m	struct:eap_gpsk_data	file:
+id_server_len	eap_pwd.c	/^	size_t id_server_len;$/;"	m	struct:eap_pwd_data	file:
+ident	eap_ttls.c	/^	u8 ident;$/;"	m	struct:eap_ttls_data	file:
+identity	eap_config.h	/^	u8 *identity;$/;"	m	struct:eap_peer_config
+identity_len	eap_config.h	/^	size_t identity_len;$/;"	m	struct:eap_peer_config
+ignore	eap_i.h	/^	Boolean ignore;$/;"	m	struct:eap_method_ret
+ignore	eap_i.h	/^	Boolean ignore;$/;"	m	struct:eap_sm
+ik	eap_aka.c	/^	u8 ik[EAP_AKA_IK_LEN], ck[EAP_AKA_CK_LEN], res[EAP_AKA_RES_MAX_LEN];$/;"	m	struct:eap_aka_data	file:
+ikev2	eap_ikev2.c	/^	struct ikev2_responder_data ikev2;$/;"	m	struct:eap_ikev2_data	typeref:struct:eap_ikev2_data::ikev2_responder_data	file:
+ikev2_build_auth	ikev2.c	/^static int ikev2_build_auth(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_build_hdr	ikev2.c	/^static void ikev2_build_hdr(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_build_idr	ikev2.c	/^static int ikev2_build_idr(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_build_ker	ikev2.c	/^static int ikev2_build_ker(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_build_notification	ikev2.c	/^static int ikev2_build_notification(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_build_notify	ikev2.c	/^static struct wpabuf * ikev2_build_notify(struct ikev2_responder_data *data)$/;"	f	file:
+ikev2_build_nr	ikev2.c	/^static int ikev2_build_nr(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_build_sa_auth	ikev2.c	/^static struct wpabuf * ikev2_build_sa_auth(struct ikev2_responder_data *data)$/;"	f	file:
+ikev2_build_sa_init	ikev2.c	/^static struct wpabuf * ikev2_build_sa_init(struct ikev2_responder_data *data)$/;"	f	file:
+ikev2_build_sar1	ikev2.c	/^static int ikev2_build_sar1(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_derive_keys	ikev2.c	/^static int ikev2_derive_keys(struct ikev2_responder_data *data)$/;"	f	file:
+ikev2_parse_proposal	ikev2.c	/^static int ikev2_parse_proposal(struct ikev2_proposal_data *prop,$/;"	f	file:
+ikev2_parse_transform	ikev2.c	/^static int ikev2_parse_transform(struct ikev2_proposal_data *prop,$/;"	f	file:
+ikev2_process_auth	ikev2.c	/^static int ikev2_process_auth(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_process_auth_cert	ikev2.c	/^static int ikev2_process_auth_cert(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_process_auth_secret	ikev2.c	/^static int ikev2_process_auth_secret(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_process_cert	ikev2.c	/^static int ikev2_process_cert(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_process_idi	ikev2.c	/^static int ikev2_process_idi(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_process_kei	ikev2.c	/^static int ikev2_process_kei(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_process_ni	ikev2.c	/^static int ikev2_process_ni(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_process_sa_auth	ikev2.c	/^static int ikev2_process_sa_auth(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_process_sa_auth_decrypted	ikev2.c	/^static int ikev2_process_sa_auth_decrypted(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_process_sa_init	ikev2.c	/^static int ikev2_process_sa_init(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_process_sai1	ikev2.c	/^static int ikev2_process_sai1(struct ikev2_responder_data *data,$/;"	f	file:
+ikev2_proposal_data	ikev2.h	/^struct ikev2_proposal_data {$/;"	s
+ikev2_responder_build	ikev2.c	/^struct wpabuf * ikev2_responder_build(struct ikev2_responder_data *data)$/;"	f
+ikev2_responder_data	ikev2.h	/^struct ikev2_responder_data {$/;"	s
+ikev2_responder_deinit	ikev2.c	/^void ikev2_responder_deinit(struct ikev2_responder_data *data)$/;"	f
+ikev2_responder_process	ikev2.c	/^int ikev2_responder_process(struct ikev2_responder_data *data,$/;"	f
+ikev2_validate_rx_state	ikev2.c	/^static int ikev2_validate_rx_state(struct ikev2_responder_data *data,$/;"	f	file:
+imc	tncc.c	/^	struct tnc_if_imc *imc;$/;"	m	struct:tncc_data	typeref:struct:tncc_data::tnc_if_imc	file:
+imcID	tncc.c	/^	TNC_IMCID imcID;$/;"	m	struct:tnc_if_imc	file:
+imc_send	tncc.c	/^	u8 *imc_send;$/;"	m	struct:tnc_if_imc	file:
+imc_send_len	tncc.c	/^	size_t imc_send_len;$/;"	m	struct:tnc_if_imc	file:
+in_buf	eap_ikev2.c	/^	struct wpabuf *in_buf;$/;"	m	struct:eap_ikev2_data	typeref:struct:eap_ikev2_data::wpabuf	file:
+in_buf	eap_tnc.c	/^	struct wpabuf *in_buf;$/;"	m	struct:eap_tnc_data	typeref:struct:eap_tnc_data::wpabuf	file:
+in_buf	eap_wsc.c	/^	struct wpabuf *in_buf;$/;"	m	struct:eap_wsc_data	typeref:struct:eap_wsc_data::wpabuf	file:
+in_frag_pos	eap_pwd.c	/^	size_t in_frag_pos;$/;"	m	struct:eap_pwd_data	file:
+in_op_code	eap_wsc.c	/^	enum wsc_op_code in_op_code, out_op_code;$/;"	m	struct:eap_wsc_data	typeref:enum:eap_wsc_data::wsc_op_code	file:
+inbuf	eap_pwd.c	/^	struct wpabuf *inbuf;$/;"	m	struct:eap_pwd_data	typeref:struct:eap_pwd_data::wpabuf	file:
+include_tls_length	eap_tls_common.h	/^	int include_tls_length;$/;"	m	struct:eap_ssl_data
+init	eap_i.h	/^	void * (*init)(struct eap_sm *sm);$/;"	m	struct:eap_method
+init_for_reauth	eap_i.h	/^	void * (*init_for_reauth)(struct eap_sm *sm, void *priv);$/;"	m	struct:eap_method
+init_phase2	eap_i.h	/^	int init_phase2;$/;"	m	struct:eap_sm
+integ	ikev2.h	/^	int integ;$/;"	m	struct:ikev2_proposal_data
+ipmk	eap_peap.c	/^	u8 ipmk[40];$/;"	m	struct:eap_peap_data	file:
+isKeyAvailable	eap_i.h	/^	Boolean (*isKeyAvailable)(struct eap_sm *sm, void *priv);$/;"	m	struct:eap_method
+jwk_peer	eap_noob.h	/^	noob_json_t * jwk_peer;$/;"	m	struct:eap_noob_ecdh_key_exchange
+jwk_serv	eap_noob.h	/^	noob_json_t * jwk_serv;$/;"	m	struct:eap_noob_ecdh_key_exchange
+k	eap_pwd.c	/^	BIGNUM *k;$/;"	m	struct:eap_pwd_data	file:
+k_aut	eap_aka.c	/^	u8 k_aut[EAP_AKA_PRIME_K_AUT_LEN];$/;"	m	struct:eap_aka_data	file:
+k_aut	eap_sim.c	/^	u8 k_aut[EAP_SIM_K_AUT_LEN];$/;"	m	struct:eap_sim_data	file:
+k_encr	eap_aka.c	/^	u8 k_encr[EAP_SIM_K_ENCR_LEN];$/;"	m	struct:eap_aka_data	file:
+k_encr	eap_sim.c	/^	u8 k_encr[EAP_SIM_K_ENCR_LEN];$/;"	m	struct:eap_sim_data	file:
+k_re	eap_aka.c	/^	u8 k_re[EAP_AKA_PRIME_K_RE_LEN]; \/* EAP-AKA' only *\/$/;"	m	struct:eap_aka_data	file:
+kc	eap_sim.c	/^	u8 kc[3][EAP_SIM_KC_LEN];$/;"	m	struct:eap_sim_data	file:
+kdf	eap_aka.c	/^	u16 kdf;$/;"	m	struct:eap_aka_data	file:
+kdf_negotiation	eap_aka.c	/^	int kdf_negotiation;$/;"	m	struct:eap_aka_data	file:
+kdf_nonce_data	eap_noob.h	/^	struct eap_noob_ecdh_kdf_nonce * kdf_nonce_data;$/;"	m	struct:eap_noob_serv_data	typeref:struct:eap_noob_serv_data::eap_noob_ecdh_kdf_nonce
+kdf_out	eap_noob.h	/^	struct eap_noob_ecdh_kdf_out * kdf_out;$/;"	m	struct:eap_noob_serv_data	typeref:struct:eap_noob_serv_data::eap_noob_ecdh_kdf_out
+kdk	eap_psk.c	/^	u8 ak[EAP_PSK_AK_LEN], kdk[EAP_PSK_KDK_LEN], tek[EAP_PSK_TEK_LEN];$/;"	m	struct:eap_psk_data	file:
+key2_id	eap_config.h	/^	char *key2_id;$/;"	m	struct:eap_peer_config
+key_block_p	eap_fast.c	/^	struct eap_fast_key_block_provisioning *key_block_p;$/;"	m	struct:eap_fast_data	typeref:struct:eap_fast_data::eap_fast_key_block_provisioning	file:
+key_data	eap_fast.c	/^	u8 key_data[EAP_FAST_KEY_LEN];$/;"	m	struct:eap_fast_data	file:
+key_data	eap_peap.c	/^	u8 *key_data;$/;"	m	struct:eap_peap_data	file:
+key_data	eap_tls.c	/^	u8 *key_data;$/;"	m	struct:eap_tls_data	file:
+key_data	eap_ttls.c	/^	u8 *key_data;$/;"	m	struct:eap_ttls_data	file:
+key_id	eap_config.h	/^	char *key_id;$/;"	m	struct:eap_peer_config
+key_pad	ikev2.h	/^	u8 *key_pad;$/;"	m	struct:ikev2_responder_data
+key_pad_len	ikev2.h	/^	size_t key_pad_len;$/;"	m	struct:ikev2_responder_data
+keymat	eap_ikev2.c	/^	u8 keymat[EAP_MSK_LEN + EAP_EMSK_LEN];$/;"	m	struct:eap_ikev2_data	file:
+keymat_ok	eap_ikev2.c	/^	int keymat_ok;$/;"	m	struct:eap_ikev2_data	file:
+keyname_nai	eap_i.h	/^	char keyname_nai[];$/;"	m	struct:eap_erp_key
+keys	ikev2.h	/^	struct ikev2_keys keys;$/;"	m	struct:ikev2_responder_data	typeref:struct:ikev2_responder_data::ikev2_keys
+keys_ready	eap_ikev2.c	/^	int keys_ready;$/;"	m	struct:eap_ikev2_data	file:
+kmp	eap_noob.h	/^	u8 * kmp;$/;"	m	struct:eap_noob_ecdh_kdf_out
+kmp_b64	eap_noob.h	/^	char * kmp_b64;$/;"	m	struct:eap_noob_ecdh_kdf_out
+kms	eap_noob.h	/^	u8 * kms;$/;"	m	struct:eap_noob_ecdh_kdf_out
+kms_b64	eap_noob.h	/^	char * kms_b64;$/;"	m	struct:eap_noob_ecdh_kdf_out
+kz	eap_noob.h	/^	u8 * kz;$/;"	m	struct:eap_noob_ecdh_kdf_out
+kz_b64	eap_noob.h	/^	char * kz_b64;$/;"	m	struct:eap_noob_ecdh_kdf_out
+lastId	eap_i.h	/^	int lastId;$/;"	m	struct:eap_sm
+lastRespData	eap_i.h	/^	struct wpabuf *lastRespData;$/;"	m	struct:eap_sm	typeref:struct:eap_sm::wpabuf
+last_batchid	tncc.c	/^	unsigned int last_batchid;$/;"	m	struct:tncc_data	file:
+last_config	eap_i.h	/^	struct eap_peer_config *last_config;$/;"	m	struct:eap_sm	typeref:struct:eap_sm::eap_peer_config
+last_eap_identity	eap_aka.c	/^	u8 *last_eap_identity;$/;"	m	struct:eap_aka_data	file:
+last_eap_identity	eap_sim.c	/^	u8 *last_eap_identity;$/;"	m	struct:eap_sim_data	file:
+last_eap_identity_len	eap_aka.c	/^	size_t last_eap_identity_len;$/;"	m	struct:eap_aka_data	file:
+last_eap_identity_len	eap_sim.c	/^	size_t last_eap_identity_len;$/;"	m	struct:eap_sim_data	file:
+last_msg	ikev2.h	/^	enum { LAST_MSG_SA_INIT, LAST_MSG_SA_AUTH } last_msg;$/;"	m	struct:ikev2_responder_data	typeref:enum:ikev2_responder_data::__anon15
+last_sha1	eap_i.h	/^	u8 last_sha1[20]; \/* SHA1() of the previously received EAP packet; used$/;"	m	struct:eap_sm
+leap_done	eap_i.h	/^	Boolean leap_done;$/;"	m	struct:eap_sm
+len	eap_config.h	/^	size_t len;$/;"	m	struct:wpa_config_blob
+line	eap_fast_pac.c	/^	int line;$/;"	m	struct:eap_fast_read_ctx	file:
+list	eap_i.h	/^	struct dl_list list;$/;"	m	struct:eap_erp_key	typeref:struct:eap_erp_key::dl_list
+m	eap_i.h	/^	const struct eap_method *m; \/* selected EAP method *\/$/;"	m	struct:eap_sm	typeref:struct:eap_sm::eap_method
+mac	eap_eke.c	/^	u8 mac; \/* forced MAC or 0 to allow all supported *\/$/;"	m	struct:eap_eke_data	file:
+mac_id	eap_pax.c	/^	u8 mac_id, dh_group_id, public_key_id;$/;"	m	struct:eap_pax_data	file:
+master_key	eap_mschapv2.c	/^	u8 master_key[MSCHAPV2_MASTER_KEY_LEN];$/;"	m	struct:eap_mschapv2_data	file:
+master_key	eap_ttls.c	/^	u8 master_key[MSCHAPV2_MASTER_KEY_LEN]; \/* MSCHAPv2 master key *\/$/;"	m	struct:eap_ttls_data	file:
+master_key_valid	eap_mschapv2.c	/^	int master_key_valid;$/;"	m	struct:eap_mschapv2_data	file:
+max_pac_list_len	eap_fast.c	/^	size_t max_pac_list_len;$/;"	m	struct:eap_fast_data	file:
+method	eap.h	/^	u32 method;$/;"	m	struct:eap_method_type
+method	eap_i.h	/^	EapType method;$/;"	m	struct:eap_method
+methodState	eap_i.h	/^	EapMethodState methodState;$/;"	m	struct:eap_method_ret
+methodState	eap_i.h	/^	EapMethodState methodState;$/;"	m	struct:eap_sm
+mid	eap_pax.c	/^	u8 mid[EAP_PAX_MID_LEN];$/;"	m	struct:eap_pax_data	file:
+min_num_chal	eap_sim.c	/^	size_t min_num_chal, num_chal;$/;"	m	struct:eap_sim_data	file:
+minsleep	eap_noob.h	/^        u32 minsleep;$/;"	m	struct:eap_noob_peer_data
+minsleep	eap_noob.h	/^        u32 minsleep;$/;"	m	struct:eap_noob_serv_data
+mk	eap_aka.c	/^	u8 mk[EAP_SIM_MK_LEN];$/;"	m	struct:eap_aka_data	file:
+mk	eap_pax.c	/^	u8 mk[EAP_PAX_MK_LEN];$/;"	m	struct:eap_pax_data	file:
+mk	eap_sim.c	/^	u8 mk[EAP_SIM_MK_LEN];$/;"	m	struct:eap_sim_data	file:
+mnc_len_from_imsi	eap.c	/^static int mnc_len_from_imsi(const char *imsi)$/;"	f	file:
+ms_change_password	eap_mschapv2.c	/^struct ms_change_password {$/;"	s	file:
+ms_length	eap_mschapv2.c	/^	u8 ms_length[2]; \/* Note: misaligned; length - 5 *\/$/;"	m	struct:eap_mschapv2_hdr	file:
+ms_response	eap_mschapv2.c	/^struct ms_response {$/;"	s	file:
+mschapv2	eap_ttls.c	/^	u8 *mschapv2;$/;"	m	struct:ttls_parse_avp	file:
+mschapv2_derive_response	mschapv2.c	/^int mschapv2_derive_response(const u8 *identity, size_t identity_len,$/;"	f
+mschapv2_error	eap_ttls.c	/^	int mschapv2_error;$/;"	m	struct:ttls_parse_avp	file:
+mschapv2_id	eap_mschapv2.c	/^	u8 mschapv2_id; \/* usually same as EAP identifier; must be changed$/;"	m	struct:eap_mschapv2_hdr	file:
+mschapv2_remove_domain	mschapv2.c	/^const u8 * mschapv2_remove_domain(const u8 *username, size_t *len)$/;"	f
+mschapv2_retry	eap_config.h	/^	int mschapv2_retry;$/;"	m	struct:eap_peer_config
+mschapv2_verify_auth_response	mschapv2.c	/^int mschapv2_verify_auth_response(const u8 *auth_response,$/;"	f
+msg_ctx	eap_i.h	/^	void *msg_ctx;$/;"	m	struct:eap_sm
+msgs	eap_eke.c	/^	struct wpabuf *msgs;$/;"	m	struct:eap_eke_data	typeref:struct:eap_eke_data::wpabuf	file:
+msk	eap_aka.c	/^	u8 msk[EAP_SIM_KEYING_DATA_LEN];$/;"	m	struct:eap_aka_data	file:
+msk	eap_eke.c	/^	u8 msk[EAP_MSK_LEN];$/;"	m	struct:eap_eke_data	file:
+msk	eap_gpsk.c	/^	u8 msk[EAP_MSK_LEN];$/;"	m	struct:eap_gpsk_data	file:
+msk	eap_noob.h	/^	u8 * msk;$/;"	m	struct:eap_noob_ecdh_kdf_out
+msk	eap_psk.c	/^	u8 msk[EAP_MSK_LEN];$/;"	m	struct:eap_psk_data	file:
+msk	eap_pwd.c	/^	u8 msk[EAP_MSK_LEN];$/;"	m	struct:eap_pwd_data	file:
+msk	eap_sake.c	/^	u8 msk[EAP_MSK_LEN];$/;"	m	struct:eap_sake_data	file:
+msk	eap_sim.c	/^	u8 msk[EAP_SIM_KEYING_DATA_LEN];$/;"	m	struct:eap_sim_data	file:
+msk_b64	eap_noob.h	/^	char * msk_b64;$/;"	m	struct:eap_noob_ecdh_kdf_out
+mtu	eap_pwd.c	/^	size_t mtu;$/;"	m	struct:eap_pwd_data	file:
+my_element	eap_pwd.c	/^	EC_POINT *my_element;$/;"	m	struct:eap_pwd_data	file:
+my_scalar	eap_pwd.c	/^	BIGNUM *my_scalar;$/;"	m	struct:eap_pwd_data	file:
+name	eap_config.h	/^	char *name;$/;"	m	struct:wpa_config_blob
+name	eap_i.h	/^	const char *name;$/;"	m	struct:eap_method
+name	tncc.c	/^	char *name;$/;"	m	struct:tnc_if_imc	file:
+network_name	eap_aka.c	/^	u8 *network_name;$/;"	m	struct:eap_aka_data	file:
+network_name_len	eap_aka.c	/^	size_t network_name_len;$/;"	m	struct:eap_aka_data	file:
+new_password	eap_config.h	/^	u8 *new_password;$/;"	m	struct:eap_peer_config
+new_password_len	eap_config.h	/^	size_t new_password_len;$/;"	m	struct:eap_peer_config
+next	eap_config.h	/^	struct wpa_config_blob *next;$/;"	m	struct:wpa_config_blob	typeref:struct:wpa_config_blob::wpa_config_blob
+next	eap_fast_pac.h	/^	struct eap_fast_pac *next;$/;"	m	struct:eap_fast_pac	typeref:struct:eap_fast_pac::eap_fast_pac
+next	eap_i.h	/^	struct eap_method *next;$/;"	m	struct:eap_method	typeref:struct:eap_method::eap_method
+next	tncc.c	/^	struct tnc_if_imc *next;$/;"	m	struct:tnc_if_imc	typeref:struct:tnc_if_imc::tnc_if_imc	file:
+next_seq	eap_i.h	/^	u32 next_seq;$/;"	m	struct:eap_erp_key
+nonce_mt	eap_sim.c	/^	u8 nonce_mt[EAP_SIM_NONCE_MT_LEN], nonce_s[EAP_SIM_NONCE_S_LEN];$/;"	m	struct:eap_sim_data	file:
+nonce_p	eap_eke.c	/^	u8 nonce_p[EAP_EKE_MAX_NONCE_LEN];$/;"	m	struct:eap_eke_data	file:
+nonce_peer	eap_noob.h	/^	u8 * nonce_peer;$/;"	m	struct:eap_noob_ecdh_kdf_nonce
+nonce_peer_b64	eap_noob.h	/^	char * nonce_peer_b64;$/;"	m	struct:eap_noob_ecdh_kdf_nonce
+nonce_s	eap_aka.c	/^	u8 nonce_s[EAP_SIM_NONCE_S_LEN];$/;"	m	struct:eap_aka_data	file:
+nonce_s	eap_eke.c	/^	u8 nonce_s[EAP_EKE_MAX_NONCE_LEN];$/;"	m	struct:eap_eke_data	file:
+nonce_s	eap_sim.c	/^	u8 nonce_mt[EAP_SIM_NONCE_MT_LEN], nonce_s[EAP_SIM_NONCE_S_LEN];$/;"	m	struct:eap_sim_data	file:
+nonce_serv	eap_noob.h	/^	u8 * nonce_serv;$/;"	m	struct:eap_noob_ecdh_kdf_nonce
+nonce_serv_b64	eap_noob.h	/^	char * nonce_serv_b64;$/;"	m	struct:eap_noob_ecdh_kdf_nonce
+noob	eap_noob.h	/^	u8 * noob;$/;"	m	struct:eap_noob_oob_data
+noob_b64	eap_noob.h	/^	char * noob_b64;$/;"	m	struct:eap_noob_oob_data
+noob_json_error_t	eap_noob.h	/^typedef json_error_t 	noob_json_error_t;$/;"	t
+noob_json_int_t	eap_noob.h	/^typedef json_int_t 	noob_json_int_t;$/;"	t
+noob_json_str_t	eap_noob.h	/^typedef char		noob_json_str_t;$/;"	t
+noob_json_t	eap_noob.h	/^typedef json_t 		noob_json_t;	$/;"	t
+notify_cert	eap.h	/^	void (*notify_cert)(void *ctx, int depth, const char *subject,$/;"	m	struct:eapol_callbacks
+notify_pending	eap.h	/^	void (*notify_pending)(void *ctx);$/;"	m	struct:eapol_callbacks
+notify_status	eap.h	/^	void (*notify_status)(void *ctx, const char *status,$/;"	m	struct:eapol_callbacks
+nt_response	eap_mschapv2.c	/^	u8 nt_response[MSCHAPV2_NT_RESPONSE_LEN];$/;"	m	struct:ms_change_password	file:
+nt_response	eap_mschapv2.c	/^	u8 nt_response[MSCHAPV2_NT_RESPONSE_LEN];$/;"	m	struct:ms_response	file:
+num_chal	eap_sim.c	/^	size_t min_num_chal, num_chal;$/;"	m	struct:eap_sim_data	file:
+num_id_req	eap_aka.c	/^	int num_id_req, num_notification;$/;"	m	struct:eap_aka_data	file:
+num_id_req	eap_sim.c	/^	int num_id_req, num_notification;$/;"	m	struct:eap_sim_data	file:
+num_notification	eap_aka.c	/^	int num_id_req, num_notification;$/;"	m	struct:eap_aka_data	file:
+num_notification	eap_sim.c	/^	int num_id_req, num_notification;$/;"	m	struct:eap_sim_data	file:
+num_phase2_eap_types	eap_ttls.c	/^	size_t num_phase2_eap_types;$/;"	m	struct:eap_ttls_data	file:
+num_phase2_types	eap_fast.c	/^	size_t num_phase2_types;$/;"	m	struct:eap_fast_data	file:
+num_phase2_types	eap_peap.c	/^	size_t num_phase2_types;$/;"	m	struct:eap_peap_data	file:
+num_rounds	eap_i.h	/^	int num_rounds;$/;"	m	struct:eap_sm
+num_supported_types	tncc.c	/^	size_t num_supported_types;$/;"	m	struct:tnc_if_imc	file:
+ocsp	eap_config.h	/^	int ocsp;$/;"	m	struct:eap_peer_config
+oob_data	eap_noob.h	/^	struct eap_noob_oob_data * oob_data;$/;"	m	struct:eap_noob_serv_data	typeref:struct:eap_noob_serv_data::eap_noob_oob_data
+oob_enc_fmt	eap_noob.h	/^	u32 oob_enc_fmt;$/;"	m	struct:eap_noob_globle_conf
+op_code	eap_mschapv2.c	/^	u8 op_code; \/* MSCHAPV2_OP_* *\/$/;"	m	struct:eap_mschapv2_hdr	file:
+opensc_engine_path	eap.h	/^	const char *opensc_engine_path;$/;"	m	struct:eap_config
+openssl_ciphers	eap.h	/^	const char *openssl_ciphers;$/;"	m	struct:eap_config
+openssl_ciphers	eap_config.h	/^	char *openssl_ciphers;$/;"	m	struct:eap_peer_config
+otp	eap_config.h	/^	u8 *otp;$/;"	m	struct:eap_peer_config
+otp_len	eap_config.h	/^	size_t otp_len;$/;"	m	struct:eap_peer_config
+out_buf	eap_ikev2.c	/^	struct wpabuf *out_buf;$/;"	m	struct:eap_ikev2_data	typeref:struct:eap_ikev2_data::wpabuf	file:
+out_buf	eap_tnc.c	/^	struct wpabuf *out_buf;$/;"	m	struct:eap_tnc_data	typeref:struct:eap_tnc_data::wpabuf	file:
+out_buf	eap_wsc.c	/^	struct wpabuf *out_buf;$/;"	m	struct:eap_wsc_data	typeref:struct:eap_wsc_data::wpabuf	file:
+out_frag_pos	eap_pwd.c	/^	size_t out_frag_pos;$/;"	m	struct:eap_pwd_data	file:
+out_op_code	eap_wsc.c	/^	enum wsc_op_code in_op_code, out_op_code;$/;"	m	struct:eap_wsc_data	typeref:enum:eap_wsc_data::	file:
+out_used	eap_ikev2.c	/^	size_t out_used;$/;"	m	struct:eap_ikev2_data	file:
+out_used	eap_tnc.c	/^	size_t out_used;$/;"	m	struct:eap_tnc_data	file:
+out_used	eap_wsc.c	/^	size_t out_used;$/;"	m	struct:eap_wsc_data	file:
+outbuf	eap_pwd.c	/^	struct wpabuf *outbuf;$/;"	m	struct:eap_pwd_data	typeref:struct:eap_pwd_data::wpabuf	file:
+pac	eap_fast.c	/^	struct eap_fast_pac *pac;$/;"	m	struct:eap_fast_data	typeref:struct:eap_fast_data::eap_fast_pac	file:
+pac_file	eap_config.h	/^	char *pac_file;$/;"	m	struct:eap_peer_config
+pac_file_hdr	eap_fast_pac.c	/^static const char *pac_file_hdr =$/;"	v	file:
+pac_info	eap_fast_pac.h	/^	u8 *pac_info;$/;"	m	struct:eap_fast_pac
+pac_info_len	eap_fast_pac.h	/^	size_t pac_info_len;$/;"	m	struct:eap_fast_pac
+pac_key	eap_fast_pac.h	/^	u8 pac_key[EAP_FAST_PAC_KEY_LEN];$/;"	m	struct:eap_fast_pac
+pac_opaque	eap_fast_pac.h	/^	u8 *pac_opaque;$/;"	m	struct:eap_fast_pac
+pac_opaque_len	eap_fast_pac.h	/^	size_t pac_opaque_len;$/;"	m	struct:eap_fast_pac
+pac_type	eap_fast_pac.h	/^	u16 pac_type;$/;"	m	struct:eap_fast_pac
+passwd_change_challenge	eap_mschapv2.c	/^	u8 passwd_change_challenge[PASSWD_CHANGE_CHAL_LEN];$/;"	m	struct:eap_mschapv2_data	file:
+passwd_change_challenge_valid	eap_mschapv2.c	/^	int passwd_change_challenge_valid;$/;"	m	struct:eap_mschapv2_data	file:
+passwd_change_version	eap_mschapv2.c	/^	int passwd_change_version;$/;"	m	struct:eap_mschapv2_data	file:
+password	eap_config.h	/^	u8 *password;$/;"	m	struct:eap_peer_config
+password	eap_pwd.c	/^	u8 *password;$/;"	m	struct:eap_pwd_data	file:
+password_hash	eap_pwd.c	/^	int password_hash;$/;"	m	struct:eap_pwd_data	file:
+password_len	eap_config.h	/^	size_t password_len;$/;"	m	struct:eap_peer_config
+password_len	eap_pwd.c	/^	size_t password_len;$/;"	m	struct:eap_pwd_data	file:
+path	tncc.c	/^	char *path;$/;"	m	struct:tnc_if_imc	file:
+pcsc	eap_config.h	/^	char *pcsc;$/;"	m	struct:eap_peer_config
+peap_done	eap_i.h	/^	Boolean peap_done;$/;"	m	struct:eap_sm
+peap_outer_success	eap_peap.c	/^	int peap_outer_success; \/* 0 = PEAP terminated on Phase 2 inner$/;"	m	struct:eap_peap_data	file:
+peap_version	eap_peap.c	/^	int peap_version, force_peap_version, force_new_label;$/;"	m	struct:eap_peap_data	file:
+peerDB	eap_noob.h	/^	sqlite3 * peerDB;$/;"	m	struct:eap_noob_peer_context
+peerID	eap_noob.h	/^        char * peerID;$/;"	m	struct:eap_noob_peer_data
+peerID	eap_noob.h	/^        char * peerID;$/;"	m	struct:eap_noob_serv_data
+peer_attr	eap_noob.h	/^        struct eap_noob_peer_data *peer_attr;$/;"	m	struct:eap_noob_peer_context	typeref:struct:eap_noob_peer_context::eap_noob_peer_data
+peer_auth	ikev2.h	/^	enum { PEER_AUTH_CERT, PEER_AUTH_SECRET } peer_auth;$/;"	m	struct:ikev2_responder_data	typeref:enum:ikev2_responder_data::__anon14
+peer_challenge	eap_i.h	/^	u8 *peer_challenge, *auth_challenge;$/;"	m	struct:eap_sm
+peer_challenge	eap_leap.c	/^	u8 peer_challenge[LEAP_CHALLENGE_LEN];$/;"	m	struct:eap_leap_data	file:
+peer_challenge	eap_mschapv2.c	/^	u8 *peer_challenge;$/;"	m	struct:eap_mschapv2_data	file:
+peer_challenge	eap_mschapv2.c	/^	u8 peer_challenge[MSCHAPV2_CHAL_LEN];$/;"	m	struct:ms_change_password	file:
+peer_challenge	eap_mschapv2.c	/^	u8 peer_challenge[MSCHAPV2_CHAL_LEN];$/;"	m	struct:ms_response	file:
+peer_config_params	eap_noob.h	/^	struct eap_noob_peer_config_params * peer_config_params;$/;"	m	struct:eap_noob_peer_data	typeref:struct:eap_noob_peer_data::eap_noob_peer_config_params
+peer_info	eap_noob.h	/^	char * peer_info;$/;"	m	struct:eap_noob_peer_data
+peer_response	eap_leap.c	/^	u8 peer_response[LEAP_RESPONSE_LEN];$/;"	m	struct:eap_leap_data	file:
+peer_type	eap_noob.h	/^	char * peer_type;	$/;"	m	struct:eap_noob_globle_conf
+peerid	eap_eke.c	/^	u8 *peerid;$/;"	m	struct:eap_eke_data	file:
+peerid	eap_sake.c	/^	u8 *peerid;$/;"	m	struct:eap_sake_data	file:
+peerid_len	eap_eke.c	/^	size_t peerid_len;$/;"	m	struct:eap_eke_data	file:
+peerid_len	eap_sake.c	/^	size_t peerid_len;$/;"	m	struct:eap_sake_data	file:
+pending_ext_cert_check	eap_config.h	/^	} pending_ext_cert_check;$/;"	m	struct:eap_peer_config	typeref:enum:eap_peer_config::__anon7
+pending_phase2_req	eap_fast.c	/^	struct wpabuf *pending_phase2_req;$/;"	m	struct:eap_fast_data	typeref:struct:eap_fast_data::wpabuf	file:
+pending_phase2_req	eap_peap.c	/^	struct wpabuf *pending_phase2_req;$/;"	m	struct:eap_peap_data	typeref:struct:eap_peap_data::wpabuf	file:
+pending_phase2_req	eap_ttls.c	/^	struct wpabuf *pending_phase2_req;$/;"	m	struct:eap_ttls_data	typeref:struct:eap_ttls_data::wpabuf	file:
+pending_req_identity	eap_config.h	/^	int pending_req_identity;$/;"	m	struct:eap_peer_config
+pending_req_new_password	eap_config.h	/^	int pending_req_new_password;$/;"	m	struct:eap_peer_config
+pending_req_otp	eap_config.h	/^	char *pending_req_otp;$/;"	m	struct:eap_peer_config
+pending_req_otp_len	eap_config.h	/^	size_t pending_req_otp_len;$/;"	m	struct:eap_peer_config
+pending_req_passphrase	eap_config.h	/^	int pending_req_passphrase;$/;"	m	struct:eap_peer_config
+pending_req_password	eap_config.h	/^	int pending_req_password;$/;"	m	struct:eap_peer_config
+pending_req_pin	eap_config.h	/^	int pending_req_pin;$/;"	m	struct:eap_peer_config
+pending_resp	eap_fast.c	/^	struct wpabuf *pending_resp;$/;"	m	struct:eap_fast_data	typeref:struct:eap_fast_data::wpabuf	file:
+pending_resp	eap_peap.c	/^	struct wpabuf *pending_resp;$/;"	m	struct:eap_peap_data	typeref:struct:eap_peap_data::wpabuf	file:
+pending_resp	eap_tls.c	/^	struct wpabuf *pending_resp;$/;"	m	struct:eap_tls_data	typeref:struct:eap_tls_data::wpabuf	file:
+pending_resp	eap_ttls.c	/^	struct wpabuf *pending_resp;$/;"	m	struct:eap_ttls_data	typeref:struct:eap_ttls_data::wpabuf	file:
+phase1	eap_config.h	/^	char *phase1;$/;"	m	struct:eap_peer_config
+phase2	eap_config.h	/^	char *phase2;$/;"	m	struct:eap_peer_config
+phase2	eap_mschapv2.c	/^	int phase2;$/;"	m	struct:eap_mschapv2_data	file:
+phase2	eap_tls_common.h	/^	int phase2;$/;"	m	struct:eap_ssl_data
+phase2_eap_started	eap_peap.c	/^	int phase2_eap_started;$/;"	m	struct:eap_peap_data	file:
+phase2_eap_success	eap_peap.c	/^	int phase2_eap_success;$/;"	m	struct:eap_peap_data	file:
+phase2_eap_type	eap_ttls.c	/^	struct eap_method_type phase2_eap_type;$/;"	m	struct:eap_ttls_data	typeref:struct:eap_ttls_data::eap_method_type	file:
+phase2_eap_types	eap_ttls.c	/^	struct eap_method_type *phase2_eap_types;$/;"	m	struct:eap_ttls_data	typeref:struct:eap_ttls_data::eap_method_type	file:
+phase2_method	eap_fast.c	/^	const struct eap_method *phase2_method;$/;"	m	struct:eap_fast_data	typeref:struct:eap_fast_data::eap_method	file:
+phase2_method	eap_peap.c	/^	const struct eap_method *phase2_method;$/;"	m	struct:eap_peap_data	typeref:struct:eap_peap_data::eap_method	file:
+phase2_method	eap_ttls.c	/^	const struct eap_method *phase2_method;$/;"	m	struct:eap_ttls_data	typeref:struct:eap_ttls_data::eap_method	file:
+phase2_priv	eap_fast.c	/^	void *phase2_priv;$/;"	m	struct:eap_fast_data	file:
+phase2_priv	eap_peap.c	/^	void *phase2_priv;$/;"	m	struct:eap_peap_data	file:
+phase2_priv	eap_ttls.c	/^	void *phase2_priv;$/;"	m	struct:eap_ttls_data	file:
+phase2_start	eap_ttls.c	/^	int phase2_start;$/;"	m	struct:eap_ttls_data	file:
+phase2_success	eap_fast.c	/^	int phase2_success;$/;"	m	struct:eap_fast_data	file:
+phase2_success	eap_peap.c	/^	int phase2_success;$/;"	m	struct:eap_peap_data	file:
+phase2_success	eap_ttls.c	/^	int phase2_success;$/;"	m	struct:eap_ttls_data	file:
+phase2_type	eap_fast.c	/^	struct eap_method_type phase2_type;$/;"	m	struct:eap_fast_data	typeref:struct:eap_fast_data::eap_method_type	file:
+phase2_type	eap_peap.c	/^	struct eap_method_type phase2_type;$/;"	m	struct:eap_peap_data	typeref:struct:eap_peap_data::eap_method_type	file:
+phase2_type	eap_ttls.c	/^	} phase2_type;$/;"	m	struct:eap_ttls_data	typeref:enum:eap_ttls_data::phase2_types	file:
+phase2_types	eap_fast.c	/^	struct eap_method_type *phase2_types;$/;"	m	struct:eap_fast_data	typeref:struct:eap_fast_data::eap_method_type	file:
+phase2_types	eap_peap.c	/^	struct eap_method_type *phase2_types;$/;"	m	struct:eap_peap_data	typeref:struct:eap_peap_data::eap_method_type	file:
+phase2_types	eap_ttls.c	/^	enum phase2_types {$/;"	g	struct:eap_ttls_data	file:
+pin	eap_config.h	/^	char *pin;$/;"	m	struct:eap_peer_config
+pin2	eap_config.h	/^	char *pin2;$/;"	m	struct:eap_peer_config
+pk	eap_gpsk.c	/^	u8 pk[EAP_GPSK_MAX_PK_LEN];$/;"	m	struct:eap_gpsk_data	file:
+pk_len	eap_gpsk.c	/^	size_t pk_len;$/;"	m	struct:eap_gpsk_data	file:
+pkcs11_engine_path	eap.h	/^	const char *pkcs11_engine_path;$/;"	m	struct:eap_config
+pkcs11_module_path	eap.h	/^	const char *pkcs11_module_path;$/;"	m	struct:eap_config
+pos	eap_fast_pac.c	/^	const char *pos;$/;"	m	struct:eap_fast_read_ctx	file:
+prefix	eap_gtc.c	/^	int prefix;$/;"	m	struct:eap_gtc_data	file:
+prev_challenge	eap_mschapv2.c	/^	struct wpabuf *prev_challenge;$/;"	m	struct:eap_mschapv2_data	typeref:struct:eap_mschapv2_data::wpabuf	file:
+prev_error	eap_mschapv2.c	/^	int prev_error;$/;"	m	struct:eap_mschapv2_data	file:
+prev_failure	eap_i.h	/^	int prev_failure;$/;"	m	struct:eap_sm
+prev_id	eap_aka.c	/^	int prev_id;$/;"	m	struct:eap_aka_data	file:
+prf	eap_eke.c	/^	u8 prf; \/* forced PRF or 0 to allow all supported *\/$/;"	m	struct:eap_eke_data	file:
+prf	ikev2.h	/^	int prf;$/;"	m	struct:ikev2_proposal_data
+private_key	eap_config.h	/^	u8 *private_key;$/;"	m	struct:eap_peer_config
+private_key2	eap_config.h	/^	u8 *private_key2;$/;"	m	struct:eap_peer_config
+private_key2_passwd	eap_config.h	/^	char *private_key2_passwd;$/;"	m	struct:eap_peer_config
+private_key_passwd	eap_config.h	/^	char *private_key_passwd;$/;"	m	struct:eap_peer_config
+private_value	eap_pwd.c	/^	BIGNUM *private_value;$/;"	m	struct:eap_pwd_data	file:
+process	eap_i.h	/^	struct wpabuf * (*process)(struct eap_sm *sm, void *priv,$/;"	m	struct:eap_method	typeref:struct:eap_method::process
+proposal	ikev2.h	/^	struct ikev2_proposal_data proposal;$/;"	m	struct:ikev2_responder_data	typeref:struct:ikev2_responder_data::ikev2_proposal_data
+proposal_num	ikev2.h	/^	u8 proposal_num;$/;"	m	struct:ikev2_proposal_data
+provisioning	eap_fast.c	/^	int provisioning; \/* doing PAC provisioning (not the normal auth) *\/$/;"	m	struct:eap_fast_data	file:
+provisioning_allowed	eap_fast.c	/^	int provisioning_allowed; \/* Allowed PAC provisioning modes *\/$/;"	m	struct:eap_fast_data	file:
+pseudonym	eap_aka.c	/^	u8 *pseudonym;$/;"	m	struct:eap_aka_data	file:
+pseudonym	eap_sim.c	/^	u8 *pseudonym;$/;"	m	struct:eap_sim_data	file:
+pseudonym_len	eap_aka.c	/^	size_t pseudonym_len;$/;"	m	struct:eap_aka_data	file:
+pseudonym_len	eap_sim.c	/^	size_t pseudonym_len;$/;"	m	struct:eap_sim_data	file:
+psk	eap_gpsk.c	/^	u8 *psk;$/;"	m	struct:eap_gpsk_data	file:
+psk_len	eap_gpsk.c	/^	size_t psk_len;$/;"	m	struct:eap_gpsk_data	file:
+public_key_id	eap_pax.c	/^	u8 mac_id, dh_group_id, public_key_id;$/;"	m	struct:eap_pax_data	file:
+r	eap_pax.c	/^		} r;$/;"	m	union:eap_pax_data::__anon27	typeref:struct:eap_pax_data::__anon27::__anon28	file:
+rIK	eap_i.h	/^	u8 rIK[ERP_MAX_KEY_LEN];$/;"	m	struct:eap_erp_key
+rIK_len	eap_i.h	/^	size_t rIK_len;$/;"	m	struct:eap_erp_key
+rRK	eap_i.h	/^	u8 rRK[ERP_MAX_KEY_LEN];$/;"	m	struct:eap_erp_key
+rRK_len	eap_i.h	/^	size_t rRK_len;$/;"	m	struct:eap_erp_key
+r_dh_private	ikev2.h	/^	struct wpabuf *r_dh_private;$/;"	m	struct:ikev2_responder_data	typeref:struct:ikev2_responder_data::wpabuf
+r_nonce	ikev2.h	/^	u8 r_nonce[IKEV2_NONCE_MAX_LEN];$/;"	m	struct:ikev2_responder_data
+r_nonce_len	ikev2.h	/^	size_t r_nonce_len;$/;"	m	struct:ikev2_responder_data
+r_sign_msg	ikev2.h	/^	struct wpabuf *r_sign_msg;$/;"	m	struct:ikev2_responder_data	typeref:struct:ikev2_responder_data::wpabuf
+r_spi	ikev2.h	/^	u8 r_spi[IKEV2_SPI_LEN];$/;"	m	struct:ikev2_responder_data
+rand	eap_aka.c	/^	u8 rand[EAP_AKA_RAND_LEN], autn[EAP_AKA_AUTN_LEN];$/;"	m	struct:eap_aka_data	file:
+rand	eap_pax.c	/^	} rand;$/;"	m	struct:eap_pax_data	typeref:union:eap_pax_data::__anon27	file:
+rand	eap_sim.c	/^	u8 rand[3][GSM_RAND_LEN];$/;"	m	struct:eap_sim_data	file:
+rand_p	eap_psk.c	/^	u8 rand_p[EAP_PSK_RAND_LEN];$/;"	m	struct:eap_psk_data	file:
+rand_p	eap_sake.c	/^	u8 rand_p[EAP_SAKE_RAND_LEN];$/;"	m	struct:eap_sake_data	file:
+rand_peer	eap_gpsk.c	/^	u8 rand_peer[EAP_GPSK_RAND_LEN];$/;"	m	struct:eap_gpsk_data	file:
+rand_s	eap_psk.c	/^	u8 rand_s[EAP_PSK_RAND_LEN];$/;"	m	struct:eap_psk_data	file:
+rand_s	eap_sake.c	/^	u8 rand_s[EAP_SAKE_RAND_LEN];$/;"	m	struct:eap_sake_data	file:
+rand_server	eap_gpsk.c	/^	u8 rand_server[EAP_GPSK_RAND_LEN];$/;"	m	struct:eap_gpsk_data	file:
+rcvd_params	eap_noob.h	/^	u32 rcvd_params;$/;"	m	struct:eap_noob_serv_data
+read_conf	eap_noob.h	/^	u32 read_conf;$/;"	m	struct:eap_noob_globle_conf
+ready_for_tnc	eap_ttls.c	/^	int ready_for_tnc;$/;"	m	struct:eap_ttls_data	file:
+realm	eap_noob.h	/^	char * realm;$/;"	m	struct:eap_noob_peer_data
+realm	eap_noob.h	/^	char * realm;$/;"	m	struct:eap_noob_serv_data
+reauth	eap_aka.c	/^	int reauth;$/;"	m	struct:eap_aka_data	file:
+reauth	eap_peap.c	/^	int reauth; \/* reauthentication *\/$/;"	m	struct:eap_peap_data	file:
+reauth	eap_sim.c	/^	int reauth;$/;"	m	struct:eap_sim_data	file:
+reauth	eap_ttls.c	/^	int reauth; \/* reauthentication *\/$/;"	m	struct:eap_ttls_data	file:
+reauthInit	eap_i.h	/^	Boolean reauthInit; \/* send EAP-Identity\/Re-auth *\/$/;"	m	struct:eap_sm
+reauth_id	eap_aka.c	/^	u8 *reauth_id;$/;"	m	struct:eap_aka_data	file:
+reauth_id	eap_sim.c	/^	u8 *reauth_id;$/;"	m	struct:eap_sim_data	file:
+reauth_id_len	eap_aka.c	/^	size_t reauth_id_len;$/;"	m	struct:eap_aka_data	file:
+reauth_id_len	eap_sim.c	/^	size_t reauth_id_len;$/;"	m	struct:eap_sim_data	file:
+record_present	eap_noob.h	/^	Boolean record_present;$/;"	m	struct:eap_noob_serv_data
+registrar	eap_wsc.c	/^	int registrar;$/;"	m	struct:eap_wsc_data	file:
+reqId	eap_i.h	/^	int reqId;$/;"	m	struct:eap_sm
+reqMethod	eap_i.h	/^	EapType reqMethod;$/;"	m	struct:eap_sm
+reqVendor	eap_i.h	/^	int reqVendor;$/;"	m	struct:eap_sm
+reqVendorMethod	eap_i.h	/^	u32 reqVendorMethod;$/;"	m	struct:eap_sm
+req_sha1	eap_i.h	/^	u8 req_sha1[20]; \/* SHA1() of the current EAP packet *\/$/;"	m	struct:eap_sm
+res	eap_aka.c	/^	u8 ik[EAP_AKA_IK_LEN], ck[EAP_AKA_CK_LEN], res[EAP_AKA_RES_MAX_LEN];$/;"	m	struct:eap_aka_data	file:
+res_len	eap_aka.c	/^	size_t res_len;$/;"	m	struct:eap_aka_data	file:
+reserved	eap_mschapv2.c	/^	u8 reserved[8];$/;"	m	struct:ms_change_password	file:
+reserved	eap_mschapv2.c	/^	u8 reserved[8];$/;"	m	struct:ms_response	file:
+result_ind	eap_aka.c	/^	int result_ind, use_result_ind;$/;"	m	struct:eap_aka_data	file:
+result_ind	eap_sim.c	/^	int result_ind, use_result_ind;$/;"	m	struct:eap_sim_data	file:
+resuming	eap_fast.c	/^	int resuming; \/* starting a resumed session *\/$/;"	m	struct:eap_fast_data	file:
+resuming	eap_peap.c	/^	int resuming; \/* starting a resumed session *\/$/;"	m	struct:eap_peap_data	file:
+resuming	eap_ttls.c	/^	int resuming; \/* starting a resumed session *\/$/;"	m	struct:eap_ttls_data	file:
+root_secret_a	eap_sake.c	/^	u8 root_secret_a[EAP_SAKE_ROOT_SECRET_LEN];$/;"	m	struct:eap_sake_data	file:
+root_secret_b	eap_sake.c	/^	u8 root_secret_b[EAP_SAKE_ROOT_SECRET_LEN];$/;"	m	struct:eap_sake_data	file:
+rxFailure	eap_i.h	/^	Boolean rxFailure;$/;"	m	struct:eap_sm
+rxReq	eap_i.h	/^	Boolean rxReq;$/;"	m	struct:eap_sm
+rxResp	eap_i.h	/^	Boolean rxResp \/* LEAP only *\/;$/;"	m	struct:eap_sm
+rxSuccess	eap_i.h	/^	Boolean rxSuccess;$/;"	m	struct:eap_sm
+scard_ctx	eap_i.h	/^	void *scard_ctx;$/;"	m	struct:eap_sm
+selectedMethod	eap_i.h	/^	EapType selectedMethod;$/;"	m	struct:eap_sm
+selected_version	eap_sim.c	/^	int selected_version;$/;"	m	struct:eap_sim_data	file:
+serv_attr	eap_noob.h	/^	struct eap_noob_serv_data *serv_attr;$/;"	m	struct:eap_noob_peer_context	typeref:struct:eap_noob_peer_context::eap_noob_serv_data
+serv_info	eap_noob.h	/^	char * serv_info;$/;"	m	struct:eap_noob_serv_data
+server_element	eap_pwd.c	/^	EC_POINT *server_element;$/;"	m	struct:eap_pwd_data	file:
+server_scalar	eap_pwd.c	/^	BIGNUM *server_scalar;$/;"	m	struct:eap_pwd_data	file:
+serverid	eap_eke.c	/^	u8 *serverid;$/;"	m	struct:eap_eke_data	file:
+serverid	eap_sake.c	/^	u8 *serverid;$/;"	m	struct:eap_sake_data	file:
+serverid_len	eap_eke.c	/^	size_t serverid_len;$/;"	m	struct:eap_eke_data	file:
+serverid_len	eap_sake.c	/^	size_t serverid_len;$/;"	m	struct:eap_sake_data	file:
+sess	eap_eke.c	/^	struct eap_eke_session sess;$/;"	m	struct:eap_eke_data	typeref:struct:eap_eke_data::eap_eke_session	file:
+session_id	eap_fast.c	/^	u8 *session_id;$/;"	m	struct:eap_fast_data	file:
+session_id	eap_gpsk.c	/^	u8 session_id[128];$/;"	m	struct:eap_gpsk_data	file:
+session_id	eap_peap.c	/^	u8 *session_id;$/;"	m	struct:eap_peap_data	file:
+session_id	eap_pwd.c	/^	u8 session_id[1 + SHA256_MAC_LEN];$/;"	m	struct:eap_pwd_data	file:
+session_id	eap_sake.c	/^	u8 session_id;$/;"	m	struct:eap_sake_data	file:
+session_id	eap_tls.c	/^	u8 *session_id;$/;"	m	struct:eap_tls_data	file:
+session_id	eap_ttls.c	/^	u8 *session_id;$/;"	m	struct:eap_ttls_data	file:
+session_id_set	eap_sake.c	/^	int session_id_set;$/;"	m	struct:eap_sake_data	file:
+session_ticket_used	eap_fast.c	/^	int session_ticket_used;$/;"	m	struct:eap_fast_data	file:
+set_anon_id	eap.h	/^	void (*set_anon_id)(void *ctx, const u8 *id, size_t len);$/;"	m	struct:eapol_callbacks
+set_bool	eap.h	/^	void (*set_bool)(void *ctx, enum eapol_bool_var variable,$/;"	m	struct:eapol_callbacks
+set_config_blob	eap.h	/^	void (*set_config_blob)(void *ctx, struct wpa_config_blob *blob);$/;"	m	struct:eapol_callbacks
+set_int	eap.h	/^	void (*set_int)(void *ctx, enum eapol_int_var variable,$/;"	m	struct:eapol_callbacks
+shared_key	eap_noob.h	/^	u8 * shared_key;$/;"	m	struct:eap_noob_ecdh_key_exchange
+shared_key_b64	eap_noob.h	/^	char * shared_key_b64;$/;"	m	struct:eap_noob_ecdh_key_exchange
+shared_key_b64_len	eap_noob.h	/^	size_t shared_key_b64_len;$/;"	m	struct:eap_noob_ecdh_key_exchange
+shared_secret	ikev2.h	/^	u8 *shared_secret;$/;"	m	struct:ikev2_responder_data
+shared_secret_len	ikev2.h	/^	size_t shared_secret_len;$/;"	m	struct:ikev2_responder_data
+sim_num	eap_config.h	/^	int sim_num;$/;"	m	struct:eap_peer_config
+simck	eap_fast.c	/^	u8 simck[EAP_FAST_SIMCK_LEN];$/;"	m	struct:eap_fast_data	file:
+simck_idx	eap_fast.c	/^	int simck_idx;$/;"	m	struct:eap_fast_data	file:
+sk	eap_gpsk.c	/^	u8 sk[EAP_GPSK_MAX_SK_LEN];$/;"	m	struct:eap_gpsk_data	file:
+sk_len	eap_gpsk.c	/^	size_t sk_len;$/;"	m	struct:eap_gpsk_data	file:
+soh	eap_peap.c	/^	int soh; \/* Whether IF-TNCCS-SOH (Statement of Health; Microsoft NAP)$/;"	m	struct:eap_peap_data	file:
+specifier	eap_gpsk.c	/^	int specifier; \/* CSuite\/Specifier *\/$/;"	m	struct:eap_gpsk_data	file:
+sres	eap_sim.c	/^	u8 sres[3][EAP_SIM_SRES_LEN];$/;"	m	struct:eap_sim_data	file:
+ssid	eap_noob.h	/^        char * ssid;$/;"	m	struct:eap_noob_serv_data
+ssl	eap_fast.c	/^	struct eap_ssl_data ssl;$/;"	m	struct:eap_fast_data	typeref:struct:eap_fast_data::eap_ssl_data	file:
+ssl	eap_peap.c	/^	struct eap_ssl_data ssl;$/;"	m	struct:eap_peap_data	typeref:struct:eap_peap_data::eap_ssl_data	file:
+ssl	eap_tls.c	/^	struct eap_ssl_data ssl;$/;"	m	struct:eap_tls_data	typeref:struct:eap_tls_data::eap_ssl_data	file:
+ssl	eap_ttls.c	/^	struct eap_ssl_data ssl;$/;"	m	struct:eap_ttls_data	typeref:struct:eap_ttls_data::eap_ssl_data	file:
+ssl_ctx	eap_i.h	/^	void *ssl_ctx;$/;"	m	struct:eap_sm
+ssl_ctx	eap_tls.c	/^	void *ssl_ctx;$/;"	m	struct:eap_tls_data	file:
+ssl_ctx	eap_tls_common.h	/^	void *ssl_ctx;$/;"	m	struct:eap_ssl_data
+ssl_ctx2	eap_i.h	/^	void *ssl_ctx2;$/;"	m	struct:eap_sm
+state	eap_aka.c	/^	} state;$/;"	m	struct:eap_aka_data	typeref:enum:eap_aka_data::__anon6	file:
+state	eap_eke.c	/^	} state;$/;"	m	struct:eap_eke_data	typeref:enum:eap_eke_data::__anon4	file:
+state	eap_gpsk.c	/^	enum { GPSK_1, GPSK_3, SUCCESS, FAILURE } state;$/;"	m	struct:eap_gpsk_data	typeref:enum:eap_gpsk_data::__anon17	file:
+state	eap_ikev2.c	/^	enum { WAIT_START, PROC_MSG, WAIT_FRAG_ACK, DONE, FAIL } state;$/;"	m	struct:eap_ikev2_data	typeref:enum:eap_ikev2_data::__anon30	file:
+state	eap_leap.c	/^	} state;$/;"	m	struct:eap_leap_data	typeref:enum:eap_leap_data::__anon5	file:
+state	eap_noob.h	/^        u32 state;$/;"	m	struct:eap_noob_peer_data
+state	eap_noob.h	/^        u32 state;$/;"	m	struct:eap_noob_serv_data
+state	eap_pax.c	/^	enum { PAX_INIT, PAX_STD_2_SENT, PAX_DONE } state;$/;"	m	struct:eap_pax_data	typeref:enum:eap_pax_data::__anon26	file:
+state	eap_psk.c	/^	enum { PSK_INIT, PSK_MAC_SENT, PSK_DONE } state;$/;"	m	struct:eap_psk_data	typeref:enum:eap_psk_data::__anon3	file:
+state	eap_pwd.c	/^	} state;$/;"	m	struct:eap_pwd_data	typeref:enum:eap_pwd_data::__anon24	file:
+state	eap_sake.c	/^	enum { IDENTITY, CHALLENGE, CONFIRM, SUCCESS, FAILURE } state;$/;"	m	struct:eap_sake_data	typeref:enum:eap_sake_data::__anon1	file:
+state	eap_sim.c	/^	} state;$/;"	m	struct:eap_sim_data	typeref:enum:eap_sim_data::__anon9	file:
+state	eap_tnc.c	/^	enum { WAIT_START, PROC_MSG, WAIT_FRAG_ACK, DONE, FAIL } state;$/;"	m	struct:eap_tnc_data	typeref:enum:eap_tnc_data::__anon16	file:
+state	eap_vendor_test.c	/^	enum { INIT, CONFIRM, SUCCESS } state;$/;"	m	struct:eap_vendor_test_data	typeref:enum:eap_vendor_test_data::__anon18	file:
+state	eap_wsc.c	/^	enum { WAIT_START, MESG, WAIT_FRAG_ACK, FAIL } state;$/;"	m	struct:eap_wsc_data	typeref:enum:eap_wsc_data::__anon29	file:
+state	ikev2.h	/^		state;$/;"	m	struct:ikev2_responder_data	typeref:enum:ikev2_responder_data::__anon13
+state_message_check	eap_noob.h	/^const int state_message_check[NUM_OF_STATES][MAX_MSG_TYPES] = {$/;"	v
+subject_match	eap_config.h	/^	u8 *subject_match;$/;"	m	struct:eap_peer_config
+subject_match2	eap_config.h	/^	u8 *subject_match2;$/;"	m	struct:eap_peer_config
+success	eap_fast.c	/^	int success;$/;"	m	struct:eap_fast_data	file:
+success	eap_mschapv2.c	/^	int success;$/;"	m	struct:eap_mschapv2_data	file:
+supported_types	tncc.c	/^	TNC_MessageTypeList supported_types;$/;"	m	struct:tnc_if_imc	file:
+tek	eap_psk.c	/^	u8 ak[EAP_PSK_AK_LEN], kdk[EAP_PSK_KDK_LEN], tek[EAP_PSK_TEK_LEN];$/;"	m	struct:eap_psk_data	file:
+tek	eap_sake.c	/^	} tek;$/;"	m	struct:eap_sake_data	typeref:struct:eap_sake_data::__anon2	file:
+test_pending_req	eap_vendor_test.c	/^	int test_pending_req;$/;"	m	struct:eap_vendor_test_data	file:
+tls_in	eap_tls_common.h	/^	struct wpabuf *tls_in;$/;"	m	struct:eap_ssl_data	typeref:struct:eap_ssl_data::wpabuf
+tls_in_left	eap_tls_common.h	/^	size_t tls_in_left;$/;"	m	struct:eap_ssl_data
+tls_in_total	eap_tls_common.h	/^	size_t tls_in_total;$/;"	m	struct:eap_ssl_data
+tls_out	eap_tls_common.h	/^	struct wpabuf *tls_out;$/;"	m	struct:eap_ssl_data	typeref:struct:eap_ssl_data::wpabuf
+tls_out_limit	eap_tls_common.h	/^	size_t tls_out_limit;$/;"	m	struct:eap_ssl_data
+tls_out_pos	eap_tls_common.h	/^	size_t tls_out_pos;$/;"	m	struct:eap_ssl_data
+tnc_if_imc	tncc.c	/^struct tnc_if_imc {$/;"	s	file:
+tnc_imc	tncc.c	/^static struct tnc_if_imc *tnc_imc[TNC_MAX_IMC_ID] = { NULL };$/;"	v	typeref:struct:tnc_if_imc	file:
+tnc_started	eap_ttls.c	/^	int tnc_started;$/;"	m	struct:eap_ttls_data	file:
+tncc	eap_tnc.c	/^	struct tncc_data *tncc;$/;"	m	struct:eap_tnc_data	typeref:struct:eap_tnc_data::tncc_data	file:
+tncc_build_soh	tncc.c	/^static struct wpabuf * tncc_build_soh(int ver)$/;"	f	file:
+tncc_copy_send_buf	tncc.c	/^u8 * tncc_copy_send_buf(struct tncc_data *tncc, u8 *pos)$/;"	f
+tncc_data	tncc.c	/^struct tncc_data {$/;"	s	file:
+tncc_deinit	tncc.c	/^void tncc_deinit(struct tncc_data *tncc)$/;"	f
+tncc_get_base64	tncc.c	/^static unsigned char * tncc_get_base64(char *start, size_t *decoded_len)$/;"	f	file:
+tncc_get_recommendation	tncc.c	/^static enum tncc_process_res tncc_get_recommendation(char *start)$/;"	f	file:
+tncc_get_sym	tncc.c	/^static void * tncc_get_sym(void *handle, char *func)$/;"	f	file:
+tncc_get_type	tncc.c	/^static int tncc_get_type(char *start, unsigned int *type)$/;"	f	file:
+tncc_if_tnccs_end	tncc.c	/^char * tncc_if_tnccs_end(void)$/;"	f
+tncc_if_tnccs_start	tncc.c	/^char * tncc_if_tnccs_start(struct tncc_data *tncc)$/;"	f
+tncc_imc_begin_handshake	tncc.c	/^static int tncc_imc_begin_handshake(struct tnc_if_imc *imc)$/;"	f	file:
+tncc_imc_initialize	tncc.c	/^static int tncc_imc_initialize(struct tnc_if_imc *imc)$/;"	f	file:
+tncc_imc_notify_connection_change	tncc.c	/^static int tncc_imc_notify_connection_change(struct tnc_if_imc *imc,$/;"	f	file:
+tncc_imc_provide_bind_function	tncc.c	/^static int tncc_imc_provide_bind_function(struct tnc_if_imc *imc)$/;"	f	file:
+tncc_imc_resolve_funcs	tncc.c	/^static int tncc_imc_resolve_funcs(struct tnc_if_imc *imc)$/;"	f	file:
+tncc_imc_terminate	tncc.c	/^static int tncc_imc_terminate(struct tnc_if_imc *imc)$/;"	f	file:
+tncc_init	tncc.c	/^struct tncc_data * tncc_init(void)$/;"	f
+tncc_init_connection	tncc.c	/^void tncc_init_connection(struct tncc_data *tncc)$/;"	f
+tncc_load_imc	tncc.c	/^static int tncc_load_imc(struct tnc_if_imc *imc)$/;"	f	file:
+tncc_notify_recommendation	tncc.c	/^static void tncc_notify_recommendation(struct tncc_data *tncc,$/;"	f	file:
+tncc_parse_imc	tncc.c	/^static struct tnc_if_imc * tncc_parse_imc(char *start, char *end, int *error)$/;"	f	file:
+tncc_process_if_tnccs	tncc.c	/^enum tncc_process_res tncc_process_if_tnccs(struct tncc_data *tncc,$/;"	f
+tncc_process_res	tncc.h	/^enum tncc_process_res {$/;"	g
+tncc_process_soh_request	tncc.c	/^struct wpabuf * tncc_process_soh_request(int ver, const u8 *data, size_t len)$/;"	f
+tncc_read_config	tncc.c	/^static int tncc_read_config(struct tncc_data *tncc)$/;"	f	file:
+tncc_read_config_reg	tncc.c	/^static int tncc_read_config_reg(struct tncc_data *tncc, HKEY hive)$/;"	f	file:
+tncc_send_to_imcs	tncc.c	/^static void tncc_send_to_imcs(struct tncc_data *tncc, unsigned int type,$/;"	f	file:
+tncc_supported_type	tncc.c	/^static int tncc_supported_type(struct tnc_if_imc *imc, unsigned int type)$/;"	f	file:
+tncc_total_send_len	tncc.c	/^size_t tncc_total_send_len(struct tncc_data *tncc)$/;"	f
+tncc_unload_imc	tncc.c	/^static void tncc_unload_imc(struct tnc_if_imc *imc)$/;"	f	file:
+ttls_parse_avp	eap_ttls.c	/^struct ttls_parse_avp {$/;"	s	file:
+ttls_version	eap_ttls.c	/^	int ttls_version;$/;"	m	struct:eap_ttls_data	file:
+use_pac_binary_format	eap_fast.c	/^	int use_pac_binary_format;$/;"	m	struct:eap_fast_data	file:
+use_result_ind	eap_aka.c	/^	int result_ind, use_result_ind;$/;"	m	struct:eap_aka_data	file:
+use_result_ind	eap_sim.c	/^	int result_ind, use_result_ind;$/;"	m	struct:eap_sim_data	file:
+vendor	eap.h	/^	int vendor;$/;"	m	struct:eap_method_type
+vendor	eap_gpsk.c	/^	int vendor; \/* CSuite\/Specifier *\/$/;"	m	struct:eap_gpsk_data	file:
+vendor	eap_i.h	/^	int vendor;$/;"	m	struct:eap_method
+ver_list	eap_sim.c	/^	u8 *ver_list;$/;"	m	struct:eap_sim_data	file:
+ver_list_len	eap_sim.c	/^	size_t ver_list_len;$/;"	m	struct:eap_sim_data	file:
+version	eap_i.h	/^	int version;$/;"	m	struct:eap_method
+version	eap_noob.h	/^        u32 version;$/;"	m	struct:eap_noob_peer_data
+version	eap_noob.h	/^        u32 version[MAX_SUP_VER];$/;"	m	struct:eap_noob_serv_data
+waiting_ext_cert_check	eap_i.h	/^	unsigned int waiting_ext_cert_check:1;$/;"	m	struct:eap_sm
+wired	eap_noob.h	/^	int wired;$/;"	m	struct:eap_noob_peer_context
+workaround	eap_i.h	/^	unsigned int workaround;$/;"	m	struct:eap_sm
+wpa_config_blob	eap_config.h	/^struct wpa_config_blob {$/;"	s
+wps	eap.h	/^	struct wps_context *wps;$/;"	m	struct:eap_config	typeref:struct:eap_config::wps_context
+wps	eap_i.h	/^	struct wps_context *wps;$/;"	m	struct:eap_sm	typeref:struct:eap_sm::wps_context
+wps	eap_wsc.c	/^	struct wps_data *wps;$/;"	m	struct:eap_wsc_data	typeref:struct:eap_wsc_data::wps_data	file:
+wps_ctx	eap_wsc.c	/^	struct wps_context *wps_ctx;$/;"	m	struct:eap_wsc_data	typeref:struct:eap_wsc_data::wps_context	file:
+x	eap_pax.c	/^			u8 x[EAP_PAX_RAND_LEN]; \/* server rand *\/$/;"	m	struct:eap_pax_data::__anon27::__anon28	file:
+x_b64	eap_noob.h	/^	char * x_b64;$/;"	m	struct:eap_noob_ecdh_key_exchange
+x_len	eap_noob.h	/^	size_t x_len;$/;"	m	struct:eap_noob_ecdh_key_exchange
+x_serv_b64	eap_noob.h	/^	char * x_serv_b64;$/;"	m	struct:eap_noob_ecdh_key_exchange
+y	eap_pax.c	/^			u8 y[EAP_PAX_RAND_LEN]; \/* client rand *\/$/;"	m	struct:eap_pax_data::__anon27::__anon28	file:
+y_b64	eap_noob.h	/^	char * y_b64;$/;"	m	struct:eap_noob_ecdh_key_exchange
+y_len	eap_noob.h	/^	size_t y_len; $/;"	m	struct:eap_noob_ecdh_key_exchange
+y_serv_b64	eap_noob.h	/^	char * y_serv_b64;$/;"	m	struct:eap_noob_ecdh_key_exchange
