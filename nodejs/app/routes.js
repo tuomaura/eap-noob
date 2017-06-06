@@ -12,7 +12,7 @@ var rad_cli_path = configDB.radCliPath;
 var enableAC = parseInt(configDB.enableAccessControl,10);
 
 var OobRetries =  parseInt(configDB.OobRetries,10);
-
+var noob_timeout = parseInt(configDB.NoobTimeout,10) * 1000; //converting to milliseconds
 
 var PythonShell = require('python-shell');
 
@@ -113,7 +113,21 @@ module.exports = function(app, passport) {
 	}
     });
 
-    
+    function noobTimeoutCallback (peer_id,noob_id) {
+        console.log('Noob Timeout Called  '+peer_id +"  "+noob_id);
+	db = new sqlite3.Database(conn_str);
+
+                        db.serialize(function() {
+                                var stmt = db.prepare("DELETE FROM devices WHERE PeerID = ? AND Hint = ?");
+                                stmt.run(peer_id,noob_id);
+                                stmt.finalize();
+                        });
+
+                        db.close();
+        console.log('Noob Timeout Deleted the expired noob');	
+    }
+
+
     app.get('/insertDevice',isLoggedIn,function(req, res) {
     	//console.log(req);
         var peer_id = req.query.PeerId;
@@ -159,8 +173,12 @@ module.exports = function(app, passport) {
                		 		var hint =  base64url.encode(digest_hex);
             				db.get('INSERT INTO devices (PeerID, serv_state, PeerInfo, Noob, Hoob,Hint,errorCode, username) values(?,?,?,?,?,?,?,?)', peer_id, row.serv_state, row.PeerInfo, noob, hoob, hint.slice(0,32),0, req.user.username, function(err, row) {
             					db.close();
+
                 				if (err){console.log(err);res.json({"status": "failed"});}
-						else {res.json({"status": "success"});}
+						else {
+							setTimeout(noobTimeoutCallback, noob_timeout, peer_id, hint.slice(0,32)); 
+							res.json({"status": "success"});
+						}
             				});
 				}
         		});
@@ -521,6 +539,8 @@ module.exports = function(app, passport) {
 	if(req.session.returnTo){       
           res.redirect(req.session.returnTo || '/');  delete req.session.returnTo; 
 	}else{
+	  //setTimeout(myFunc, 1500, 'funky', 'fun');
+	  //console.log("Here called");	
           res.redirect('/profile');
 	}  
 	});
@@ -578,6 +598,10 @@ module.exports = function(app, passport) {
 
 
     });
+
+     function myFunc (arg1,arg2) {
+     	console.log('arg was => ' + arg1 + arg2);
+     }
 
     // process QR-code
     app.get('/sendOOB/',isLoggedIn, function (req, res) {
@@ -787,9 +811,9 @@ function isLoggedIn(req, res, next) {
 
     if(str == "/sendOOB/") req.flash('loginMessage','Login to register device now or click \"Deliver OOB\" to register later');
 
-    if(peer_id != undefined)  str = str + '?PeerId=' + peer_id;
-    if(noob != undefined)  str = str + '&Noob=' + noob;
-    if(hoob != undefined)  str = str + '&Hoob=' + hoob;
+    if(peer_id != undefined)  str = str + '?P=' + peer_id;
+    if(noob != undefined)  str = str + '&=' + noob;
+    if(hoob != undefined)  str = str + '&H=' + hoob;
     req.session.returnTo = str;
     res.redirect('/login');
 }
