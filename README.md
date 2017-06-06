@@ -55,7 +55,7 @@ Dependencies
 
 Following packages have to be installed before compiling any applications from  eapnoobimplimentation.
 
-Openssl-dev (OpenSSL dev library).
+Openssl-dev (OpenSSL dev library version 1.1.0e).
 libsqlite3-dev (Sqlite3 dev library).
 [Jansson](http://jansson.readthedocs.io/en/2.7/index.html).
 nodejs-legacy (NodeJS package).
