@@ -74,7 +74,7 @@
 #define CSUITES_SERV			"Cryptosuites"
 #define DIRECTION_SERV			"Dirs"
 #define NONCE_SERV			"Ns"
-#define MINSLEEP			"minsleep"
+#define MINSLEEP			"SleepTime"
 #define PEERID				"PeerId"
 #define PUBLICKEY_SERV			"PKs"
 #define SERV_INFO			"ServerInfo"
@@ -197,7 +197,7 @@ const int state_message_check[NUM_OF_STATES][MAX_MSG_TYPES] = {
 enum	{COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW}; //Flag used during KDF and MAC generation
 enum 	{UNREG, WAITING, OOB, RECONNECT,REGISTERED};
 enum	{NONE, EAP_NOOB_TYPE_1,EAP_NOOB_TYPE_2,EAP_NOOB_TYPE_3,EAP_NOOB_TYPE_4,EAP_NOOB_TYPE_5,EAP_NOOB_TYPE_6,EAP_NOOB_TYPE_7,EAP_NOOB_HINT};
-enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};
+enum 	eap_noob_err_code{NO_ERROR,E1001,E1002,E1003,E1004,E1005,E1006,E1007,E2001,E2002,E3001,E3002,E3003,E4001,E5001,E5002,E5003};
 enum 	{HOOB,MACS,MACP};
 enum    {UPDATE_ALL,UPDATE_STATE,UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,UPDATE_STATE_ERROR,UPDATE_OOB, DELETE_EXPIRED_NOOB};
 
@@ -330,7 +330,7 @@ struct eap_noob_serv_data{
 		
 };
 
-const int error_code[] = {0,1001,1002,1003,1004,1005,1006,2001,2002,3001,3002,3003,4001,5001,5002,5003};
+const int error_code[] = {0,1001,1002,1003,1004,1005,1006,1007,2001,2002,3001,3002,3003,4001,5001,5002,5003};
 
 const char *error_info[] = { "No error",
                              "Invalid NAI or peer state",
@@ -338,6 +338,7 @@ const char *error_info[] = { "No error",
                              "Invalid data",
                              "Unexpected message type",
                              "Unexpected peer identifier",
+			     "Unrecognized OOB message identifier",
                              "Invalid ECDH key",
                              "Unwanted peer",
                              "State mismatch, user action required",

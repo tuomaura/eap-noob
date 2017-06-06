@@ -793,7 +793,7 @@ int eap_noob_exec_no_hint_queries(struct eap_noob_serv_context * data)
 	return FAILURE;
 }
 
-
+#if 0
 int eap_noob_hint_request_check(void * priv , int argc, char **argv, char **azColName){
 
 	int res = 0;
@@ -820,7 +820,7 @@ int eap_noob_is_hint_required(struct eap_noob_serv_context * data){
 		data,data));
 
 }
-
+#endif
 static int eap_noob_get_next_req(struct eap_noob_serv_context * data){
 
 	int retval = 0;
@@ -833,7 +833,8 @@ static int eap_noob_get_next_req(struct eap_noob_serv_context * data){
 	
 	printf("**********DIRp =%d\n",data->peer_attr->dir);
 	/*code change to include the hint message for serv_to_peer direction*/
-	if((data->peer_attr->dir == SERV_TO_PEER)  && (retval == EAP_NOOB_TYPE_4) && FAILURE != eap_noob_is_hint_required(data) && data->peer_attr->hint_required) {
+	//if((data->peer_attr->dir == SERV_TO_PEER)  && (retval == EAP_NOOB_TYPE_4) && FAILURE != eap_noob_is_hint_required(data) && data->peer_attr->hint_required) {
+	if((data->peer_attr->dir == SERV_TO_PEER)  && (retval == EAP_NOOB_TYPE_4)) {
 		retval = EAP_NOOB_TYPE_HINT;
 		wpa_printf(MSG_DEBUG,"EAP-NOOB: Hint Required: True");
 	}else if((data->peer_attr->dir == SERV_TO_PEER)  && (retval == EAP_NOOB_TYPE_4) && !data->peer_attr->hint_required){
@@ -3654,12 +3655,13 @@ static int eap_noob_exec_hint_queries(struct eap_noob_serv_context * data)
 		snprintf(query,MAX_LINE_SIZE,"SELECT Noob, Hoob from %s where PeerID='%s' and  Hint='%s'",DEVICE_TABLE,
 			data->peer_attr->peerID_gen,data->peer_attr->oob_data->hint_b64);
 		printf("Query = %s\n",query);
-		if(eap_noob_exec_query(query, eap_noob_callback,data,data)){
+		if(eap_noob_exec_query(query, eap_noob_callback,data,data) && data->peer_attr->oob_data->noob != NULL){
 			return eap_noob_db_update(data,UPDATE_OOB);
 
 		}
 		os_free(query);
 	}
+	printf("No NoobId found========================\n");
 	return FAILURE;
 }
 
@@ -3681,13 +3683,14 @@ static void eap_noob_rsp_hint(struct eap_sm *sm,
 	}
 	
 	if(!eap_noob_verify_peerID(data)){ 
+		eap_noob_set_error(data->peer_attr,E1005);
 		eap_noob_set_done(data, NOT_DONE);
 		return;
 	}
 
-	if(!eap_noob_verify_peerID(data) || !eap_noob_exec_hint_queries(data)){
-		eap_noob_set_done(data,DONE);
-		eap_noob_set_success(data,FAILURE);
+	if(!eap_noob_exec_hint_queries(data) || NULL == data->peer_attr->oob_data->hint_b64){	
+		eap_noob_set_error(data->peer_attr,E1006);
+		eap_noob_set_done(data,NOT_DONE);
 	}else{
 		eap_noob_set_done(data, NOT_DONE);
 		data->peer_attr->next_req = EAP_NOOB_TYPE_4;

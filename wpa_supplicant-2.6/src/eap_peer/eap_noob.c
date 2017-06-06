@@ -2784,14 +2784,15 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_sm *sm, noob_json_t * r
 		resp = eap_noob_err_msg(data,id);
 		return resp;
 	}
-	// TODO : verify received MAC here.
-	/*generate KDF*/
-	if(data->peer_attr->dir == PEER_TO_SERV && FAILURE == eap_noob_exec_hint_queries(data)){		
-		data->serv_attr->err_code = E1002;
+	/*Execute Hint query in peer to server direction*/
+	if(data->peer_attr->dir == PEER_TO_SERV && (FAILURE == eap_noob_exec_hint_queries(data) || data->serv_attr->oob_data->noob_b64 == NULL)){		
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: Unrecognized NoobId");
+		data->serv_attr->err_code = E1006;
                 resp = eap_noob_err_msg(data,id);
                 return resp;
 
 	}	
+	/*generate Keys*/
 	eap_noob_gen_KDF(data,COMPLETION_EXCHANGE);
 
 	if(NULL == (resp = eap_noob_verify_peerID(data,id))){

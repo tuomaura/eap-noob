@@ -23,7 +23,7 @@ global conf_file
 interval_threads = []
 timeout_threads = []
 noob_interval = 30
-noob_timeout = 80
+noob_timeout = 180
 db_name = 'peer_connection_db'
 conn_tbl = 'connections'
 oobs_tbl = "oobs"
@@ -41,6 +41,8 @@ noob_timeout_keyword = 'NoobTimeout'
 def set_max_oob_tries():
 
 	global max_oob_tries
+	global noob_interval
+	global noob_timeout
 	noob_conf = open(noob_conf_file, 'r')
 
 	for line in noob_conf:
@@ -476,9 +478,9 @@ def prepare(iface):
 
 	runbash(cmd)		
 	conf_file = open(config_file,'w')
-	conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=60\n\n")
+	conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=1200\n\n")
 	conf_file.close()
-	cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant -dd"
+	cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant -d"
 	subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
 
 def network_scan():
@@ -629,7 +631,8 @@ def main():
 	check_if_table_exists()
 	
 	set_max_oob_tries()
-
+	print("===================================="+str(noob_timeout))
+	print("===================================="+ str(noob_interval))
 	if direction is '2':
 		print("Server to peer direction")
 		if args.nfc == 'nfc':
