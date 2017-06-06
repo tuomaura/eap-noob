@@ -1,0 +1,2 @@
+# RADIUS client configuration for the RADIUS server
+0.0.0.0/0	radius1234
