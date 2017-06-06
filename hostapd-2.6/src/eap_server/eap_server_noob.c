@@ -1886,18 +1886,18 @@ static int eap_noob_derive_session_secret(struct eap_noob_serv_context *data, si
 static int eap_noob_get_key(struct eap_noob_serv_context * data)
 {
 
-	char * priv_key = "MC4CAQAwBQYDK2VuBCIEIHcHbQpzGKV9PBbBclGyZkXfTC+H68CZKrF3+6UduSwq";
+	/*char * priv_key = "MC4CAQAwBQYDK2VuBCIEIHcHbQpzGKV9PBbBclGyZkXfTC+H68CZKrF3+6UduSwq";
 
 	BIO* b641 = BIO_new(BIO_f_base64());
 
-        BIO* mem1 = BIO_new(BIO_s_mem());
+        BIO* mem1 = BIO_new(BIO_s_mem());*/
 	
 
         EVP_PKEY_CTX *pctx;
         BIO * mem_pub = BIO_new(BIO_s_mem());
         unsigned char * pub_key_char;
         size_t pub_key_len;
-#if 0
+
         /*Initialize context to generate keys - Curve25519*/
         if(NULL == (pctx = EVP_PKEY_CTX_new_id(NID_X25519, NULL))){
 
@@ -1910,9 +1910,8 @@ static int eap_noob_get_key(struct eap_noob_serv_context * data)
         /*Generate X25519 key pair*/
         EVP_PKEY_keygen(pctx, &data->peer_attr->ecdh_exchange_data->dh_key);
 
-
+/*
 	d2i_PrivateKey_bio(mem1,&data->peer_attr->ecdh_exchange_data->dh_key);
-#endif
 
 	
         BIO_set_flags(b641,BIO_FLAGS_BASE64_NO_NL);
@@ -1920,7 +1919,7 @@ static int eap_noob_get_key(struct eap_noob_serv_context * data)
 
         mem1 = BIO_push(b641,mem1);
 	d2i_PrivateKey_bio(mem1,&data->peer_attr->ecdh_exchange_data->dh_key);
-	
+*/	
 	PEM_write_PrivateKey(stdout, data->peer_attr->ecdh_exchange_data->dh_key, NULL, NULL, 0, NULL, NULL);
 	PEM_write_PUBKEY(stdout, data->peer_attr->ecdh_exchange_data->dh_key);
 
