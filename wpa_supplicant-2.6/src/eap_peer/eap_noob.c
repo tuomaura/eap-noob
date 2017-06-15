@@ -1935,7 +1935,10 @@ static int eap_noob_db_update (struct eap_noob_peer_context *data, u8 type)
 			snprintf(query,MAX_QUERY_LEN,"DELETE FROM '%s' WHERE expired='%d'", 
 				"oobs",1);
 			break;
-			
+		case DELETE_SSID:
+			snprintf(query,MAX_QUERY_LEN,"DELETE FROM '%s' WHERE PeerID='%s'", 
+				data->db_table_name, data->serv_attr->peerID);
+			break;	
 
 		default:
                		wpa_printf(MSG_ERROR, "EAP-NOOB: Wrong DB update type");
@@ -3135,6 +3138,15 @@ static struct wpabuf * eap_noob_process (struct eap_sm *sm, void *priv,
 		wpa_printf(MSG_DEBUG, "EAP-NOOB: State mismatch");
 		os_free(req_obj);
 		return resp;
+	}else if((data->serv_attr->state == WAITING || data->serv_attr->state == OOB) && msgtype == EAP_NOOB_TYPE_1){
+		
+		 if(FAILURE == eap_noob_db_update(data, DELETE_SSID)){
+			wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to delete SSID");
+                        return NULL;
+                }
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: Deleted SSID");
+		
+
 	}
 
 	switch(msgtype){
@@ -3582,17 +3594,17 @@ static int eap_noob_peer_ctxt_init(struct eap_sm *sm,  struct eap_noob_peer_cont
 	
 		printf("************* STATE = %d\n",data->serv_attr->state);
 	
-		if(data->serv_attr->state == UNREG || 
+		/*if(data->serv_attr->state == UNREG || 
 			data->serv_attr->state == RECONNECT || 
-				eap_noob_globle_conf.read_conf == 0){	
+				eap_noob_globle_conf.read_conf == 0){*/	
 
 			if(FAILURE == eap_noob_read_config(sm,data)){
 				wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to initialize context");
 				return FAILURE;
 			}
 
-			eap_noob_globle_conf.read_conf = 1;
-		}
+			//eap_noob_globle_conf.read_conf = 1;
+		//}
 	}
 
 
