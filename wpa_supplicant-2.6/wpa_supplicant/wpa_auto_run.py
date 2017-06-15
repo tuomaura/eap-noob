@@ -4,7 +4,6 @@ import subprocess
 import signal
 import os
 import time
-import webbrowser 
 import sqlite3
 import json
 import sys, getopt
@@ -19,7 +18,18 @@ import base64
 import hashlib
 import threading
 
+from selenium import webdriver
+#from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.keys import Keys
+
+#chromedriver = "/usr/local/bin/chromedriver"
+#os.environ["webdriver.chrome.driver"] = chromedriver
+#chrome_options = Options()
+#chrome_options.add_argument("--disable-sync")
+#chrome_options.add_argument("--no-sandbox")
+
 global conf_file
+global driver
 interval_threads = []
 timeout_threads = []
 noob_interval = 30
@@ -531,9 +541,15 @@ def check_result():
 	return False 
 
 def launch_browser():
-    	url = "test.html"
-    	webbrowser.open(url,new=1,autoraise=True)
-    	#signal.signal(signal.SIGUSR1, update_file)
+	global driver
+	#url = "test.html"
+	url = "file:///" + os.getcwd() + "/test.html"
+	#subprocess.Popen("sudo pkill -9 firefox",shell=True)
+	#webbrowser.open(url,new=1,autoraise=True)
+	#signal.signal(signal.SIGUSR1, update_file)
+	driver = webdriver.Firefox()
+	driver.get(url)
+	driver.maximize_window()
 
 
 def get_direction():
@@ -594,6 +610,7 @@ def main():
 	
 	#cmd = 'sudo systemctl stop NetworkManager.service'   
 	#runbash(cmd)
+	global driver
 
 	interface=None
 	no_result=0
@@ -672,8 +689,22 @@ def main():
 	cmd = 'sudo ifconfig '+interface+' 0.0.0.0 up ; dhclient '+interface   
 	#cmd = 'sudo dhclient '+interface   
 	runbash(cmd)
-	time.sleep(5)
-	webbrowser.open_new_tab('https://www.youtube.com/watch?v=YlHHTmIkdis')
+	#subprocess.Popen("sudo pkill -9 firefox",shell=True)
+	#time.sleep(5)
+	#webbrowser.open_new_tab('https://www.youtube.com/watch?v=YlHHTmIkdis')
+	driver.close()
+	url = "https://www.youtube.com/watch?v=YlHHTmIkdis"
+
+	driver = webdriver.Firefox()
+	driver.get(url)
+	fullscreen = driver.find_elements_by_class_name('ytp-fullscreen-button')[0]
+	fullscreen.click()
+	while True:
+		key = input()
+		if key == "r" or key == "R":
+			driver.close()
+			main()
+
 
 if __name__=='__main__':
     main()
