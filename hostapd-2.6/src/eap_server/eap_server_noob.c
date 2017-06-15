@@ -1139,7 +1139,14 @@ static int eap_noob_create_db(struct eap_noob_serv_context * data)
 			}else{
 
 				wpa_printf(MSG_ERROR, "EAP-NOOB: No record found ");
-				//TODO :  send peer ID mismatch error code.
+
+				if(data->peer_attr->peer_state != REGISTERED && data->peer_attr->peer_state != RECONNECT){
+					data->peer_attr->peer_state = UNREG;
+					return SUCCESS;
+				}
+
+				eap_noob_set_error(data->peer_attr,E1005);
+
 				return FAILURE;
 			}
 		}
@@ -1460,7 +1467,8 @@ static int eap_noob_serv_ctxt_init( struct eap_noob_serv_context * data, struct 
                                 return FAILURE;
                 }
 
-		if(SUCCESS == (retval = eap_noob_parse_NAI(data,len))){			
+		if(SUCCESS == (retval = eap_noob_parse_NAI(data,len))){
+			
 			if(!(retval = eap_noob_create_db(data))) return retval;
 			
 			if(data->peer_attr->peerID_gen){
@@ -1512,7 +1520,7 @@ static void * eap_noob_init(struct eap_sm *sm)
 		return NULL;
 	}
 	//TODO: check if hard coded initialization can be avoided
-	if(FAILURE == eap_noob_serv_ctxt_init(data,sm) && data ->peer_attr->err_code != E1001){
+	if(FAILURE == eap_noob_serv_ctxt_init(data,sm) && data ->peer_attr->err_code == NO_ERROR){
 		wpa_printf(MSG_DEBUG,"EAP-NOOB: INIT SERVER Fail to initialize context");
 		return NULL;
 	}
