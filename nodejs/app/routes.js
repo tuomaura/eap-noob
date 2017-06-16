@@ -1,4 +1,4 @@
-// app/routes.js
+
 var base64url = require('base64url');
 var crypto = require('crypto');
 var sqlite3 = require('sqlite3').verbose();
@@ -126,6 +126,22 @@ module.exports = function(app, passport) {
                         db.close();
         console.log('Noob Timeout Deleted the expired noob');	
     }
+
+    app.get('/deletePeers',isLoggedIn,function(req, res) {
+	console.log('Delete peers Called');
+        db = new sqlite3.Database(conn_str);
+
+                        db.serialize(function() {
+                                var stmt = db.prepare("DELETE FROM peers_connected where serv_state != 4 AND serv_state != 3");
+                                stmt.run();
+                                stmt.finalize();
+                        });
+
+                        db.close();
+        console.log('Deleted');
+	
+        res.redirect('/profile');
+    });
 
 
     app.get('/insertDevice',isLoggedIn,function(req, res) {
