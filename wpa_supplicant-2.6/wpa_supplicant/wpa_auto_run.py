@@ -605,12 +605,18 @@ def terminate_threads():
 	exe_db_query(query_str)	
 	print("All timers cancelled")
 
+def test_internet(interface):
+	cmd = "ping -c 8 -I " + interface +" 8.8.8.8"
+	p = subprocess.Popen(cmd,shell=True)
+	status = p.wait()
+
 def main():
 
 	
 	#cmd = 'sudo systemctl stop NetworkManager.service'   
 	#runbash(cmd)
 	global driver
+
 
 	interface=None
 	no_result=0
@@ -629,6 +635,8 @@ def main():
 		return
 
 	interface=args.interface
+
+	test_internet(interface)
 
 	signal.signal(signal.SIGINT, sigint_handler)
 	prepare(interface)
@@ -685,7 +693,7 @@ def main():
 	
 	if direction is '1':
 		terminate_threads()
-	time.sleep(2)
+	time.sleep(0.5)
 	cmd = 'sudo ifconfig '+interface+' 0.0.0.0 up ; dhclient '+interface   
 	#cmd = 'sudo dhclient '+interface   
 	runbash(cmd)
