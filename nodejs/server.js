@@ -19,6 +19,9 @@ var db;
 var configDB = require('./config/database.js');
 var conn_str = configDB.dbPath;
 
+var common = require('./common');
+var connMap = common.connMap;
+
 var fs = require('fs');
 var https = require('https');
 var options = {
@@ -28,6 +31,78 @@ var options = {
     requestCert: true,
     rejectUnauthorized: false
 };
+
+var WebSocketServer = require('ws').Server;
+var ws = require('nodejs-websocket');
+
+var property = {
+  secure:true,
+  key: fs.readFileSync('./ssl/server.key'),
+  cert: fs.readFileSync('./ssl/server.crt'),
+  ca: fs.readFileSync('./ssl/ca.crt'),
+  requestCert: true,
+  rejectUnauthorized: false
+};
+
+var server = ws.createServer(property, function (conn) {
+    console.log("==== WebSocket Connection ====");
+    console.log("New connection requested to: " + conn.path);
+    console.log(conn.path);
+
+    var connectionID = conn.path.substring(1);
+    console.log(connectionID);
+    connMap[1] = conn;
+
+    conn.on('close', function (code, reason) {
+        console.log("WebSocket connection closed");
+
+    });
+
+    // parse received text
+    conn.on('text', function(str) {
+        console.log('WebSocket received text');
+	console.log(str);
+        msg = JSON.parse(str);
+	if(msg['type'] == "softwareUpdated"){
+		console.log("Updated received");
+    		var serverDB = new sqlite3.Database(conn_str);
+		query = 'UPDATE peers_connected set DevUpdate = 0 where PeerId = ?';
+                serverDB.run(query, msg['peerId']);
+	}
+    });
+
+    var deviceID;
+  
+    var serverDB = new sqlite3.Database(conn_str);
+    serverDB.get('select UserName, PeerID from peers_connected where PeerID = ? AND serv_state = 4', connectionID, function(err, row) {
+
+        console.log('DeviceID: ' + row.PeerID);
+        if (!err && row != null) {
+	    var query = 'INSERT OR IGNORE INTO devicesSocket (peerId,userName) VALUES ("' + row.PeerID + '","' + row.UserName + '")';
+	    var peer_id = row.PeerID;
+
+	    serverDB.run(query, function(err1,data){
+		if(err1){
+			console.log("error" + err1);
+		}else{
+			serverDB.get('select deviceId from devicesSocket where peerId = ?', peer_id, function (err2,data1){
+				query = 'UPDATE peers_connected set DevUpdate = 3 where PeerId = "' + peer_id + '"';
+                		serverDB.run(query);
+                        	if (data1 != undefined) {
+                        		console.log("inserted: " + data1.deviceId);
+                        		connMap[data1.deviceId] = conn;
+                        	}	
+                        	else {
+                                	console.log('ERROR: ' + err);
+                        	}
+
+			});
+		}
+
+	    });
+    }});
+
+}).listen(9000);
 
 app.use(express.static(__dirname + '/public'));
 
@@ -56,8 +131,11 @@ require('./app/routes.js')(app, passport); // load our routes and pass in our ap
         db.run('DROP TABLE IF EXISTS roleAccessLevel');
         db.run('DROP TABLE IF EXISTS fqdnACLevel');
         db.run('DROP TABLE IF EXISTS roleBasedAC');
+        db.run('DROP TABLE IF EXISTS devicesSocket');
         //db.run('DROP TABLE IF EXISTS logs');
         //db.run('DROP TABLE IF EXISTS users');
+  	db.run('UPDATE OR IGNORE peers_connected set DevUpdate = 0');	
+  	db.run('CREATE TABLE  IF NOT EXISTS devicesSocket ( deviceId INTEGER PRIMARY KEY AUTOINCREMENT, peerId TEXT, userName TEXT, UNIQUE(peerId));');	
 
 	
   	db.run('CREATE TABLE  IF NOT EXISTS logs ( id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT, srcMAC TEXT, src TEXT, dst TEXT, UNIQUE(srcMAC,dst));');	

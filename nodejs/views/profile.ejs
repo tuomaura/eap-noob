@@ -73,6 +73,55 @@
 	    }
 	}
     </style>
+
+        <style>
+	/* Center the loader */
+	#loader {
+	  position: absolute;
+	  left: 50%;
+	  top: 50%;
+	  z-index: 1;
+	  width: 150px;
+	  height: 150px;
+	  margin: -75px 0 0 -75px;
+	  border: 16px solid #f3f3f3;
+	  border-radius: 50%;
+	  border-top: 16px solid #3498db;
+	  width: 120px;
+	  height: 120px;
+	  -webkit-animation: spin 2s linear infinite;
+	  animation: spin 2s linear infinite;
+	}
+	@-webkit-keyframes spin {
+	  0% { -webkit-transform: rotate(0deg); }
+	  100% { -webkit-transform: rotate(360deg); }
+	}
+	@keyframes spin {
+	  0% { transform: rotate(0deg); }
+	  100% { transform: rotate(360deg); }
+	}
+	/* Add animation to "page content" */
+	.animate-bottom {
+	  position: relative;
+	  -webkit-animation-name: animatebottom;
+	  -webkit-animation-duration: 1s;
+	  animation-name: animatebottom;
+	  animation-duration: 1s
+	}
+	@-webkit-keyframes animatebottom {
+	  from { bottom:-100px; opacity:0 } 
+	  to { bottom:0px; opacity:1 }
+	}
+	@keyframes animatebottom { 
+	  from{ bottom:-100px; opacity:0 } 
+	  to{ bottom:0; opacity:1 }
+	}
+	#myDiv {
+	  display: none;
+	  text-align: center;
+	}
+   </style>
+
 </head>
 <body>
 
@@ -88,7 +137,9 @@
   </div>
 
 </div>
-<div class="container">
+
+<div id="loader" style = "display:none"></div>
+<div class="container" id = "container">
 
     <div class="page-header text-center">
         <h1><span class="fa fa-anchor"></span> IoT Command and Control Center</h1>
@@ -137,7 +188,8 @@
 			 <div> </div>
 			 <button onclick="openNav(this)" value1 = <%=deviceInfo[j].noob%> value2 = <%=deviceInfo[j].hoob%> value3 = <%=deviceInfo[j].peer_id%>>QR Code</button>
 			 <button onclick="sendNFC(this)" value1 = <%=deviceInfo[j].noob%> value2 = <%=deviceInfo[j].hoob%> value3 = <%=deviceInfo[j].peer_id%>>NFC Send</button>
-			 <button onclick="deleteDeviceTemp(this)" value = <%=deviceInfo[j].peer_id%>>Remove</button> 
+			 <button onclick="deleteDeviceTemp(this)" value = <%=deviceInfo[j].peer_id%>>Remove</button>
+			 
                     </p>
             </div>
 	    <% } %>
@@ -150,14 +202,20 @@
                     <p>
   			 <strong>Device Make</strong>: <%= userInfo[i].peer_name %><br>
 			 <strong>Device Mac </strong>: <%= userInfo[i].peer_num %><br>
-			 <strong>Software Status </strong>: <%= userInfo[i].dev_update %><br>
+			 <% if (userInfo[i].dev_update != 'Up to date') { %>
+			 	<strong>Software Status </strong>: <font color="blue"><%= userInfo[i].dev_update %></font><br>
+			 <% } else {%>
+				<strong>Software Status </strong>: <%= userInfo[i].dev_update %><br>
+			 <% }%>
+			 
 			 <%var id_val = 'Dcountdown' + i + j %>
 			 <strong id = <%=id_val%> value1 = <%=userInfo[i].peer_id%> value2 = <%=userInfo[i].state_num%> >Device Status: <%= userInfo[i].state %></strong><br>
 			 <%var id_val = 'countdown' + i + j %>
           		 <div id= <%=id_val%> value = <%=userInfo[i].sTime%> ></div>
 			 <button onclick="deleteDevice(this)" value = <%=userInfo[i].peer_id%>>Delete</button> 
+			  
     			<% if (userInfo[i].dev_update != 'Up to date') { %>
-			 	<button onclick="UpdateSoftware(this)" value = <%=userInfo[i].peer_id%>>update</button> 
+			 	<button onclick="clickSoftwareUpdate(this)" value = <%=userInfo[i].peer_id%>>Update</button> 
     			<% } %>
                     </p>
             </div>
@@ -171,14 +229,56 @@
 
 <script>
 
+function startLoading(){
+	document.getElementById("loader").style.display = "block";
+  	document.getElementById("container").style.display = "none";
+}
+function stopLoading(){
+	window.location.reload();
+	document.getElementById("loader").style.display = "none";
+  	document.getElementById("container").style.display = "block";
+}
+
+function clickSoftwareUpdate(btn) {
+
+	var xhttp = new XMLHttpRequest();
+	var url = "/control?deviceID=" + btn.getAttribute("value") + "&contentType=softwareUpdate"
+		+ "&action=update";
+	xhttp.onreadystatechange = function() {
+    		if (xhttp.readyState == 4 && xhttp.status == 200) {
+			var obj = JSON.parse(xhttp.responseText)
+			if(obj.status == "success"){
+				setTimeout(stopLoading, 4000);
+			}
+			else if(obj.status == "refresh"){
+
+				var retVal = confirm("Stale Page. Do you want to refresh the page ?");
+   				if (retVal == true) {
+	    				window.location.reload();	
+					
+   				} else {
+    	
+   				}	
+			}
+			else{
+				document.getElementById('message_div').innerHTML = "Device Delete Unsuccessful";
+				div_alert.style.display='block';
+				setTimeout(hideAlert, 6000);				
+			}
+			
+    		}
+  	};
+	
+	xhttp.open("POST", url, true);
+	xhttp.send();
+	startLoading();
+}
+
+
 function sendNFC(btn) {
         var url_str = "<%=url%>";
         var val = url_str + "/?PeerID=" + btn.getAttribute("value3")+"&Noob=" + btn.getAttribute("value1") + "&Hoob=" + btn.getAttribute("value2");
         Android.sendOOB(val);
-}
-
-function UpdateSoftware(peer_id){
-
 }
 
 function deletePostTemp(peer_id){
