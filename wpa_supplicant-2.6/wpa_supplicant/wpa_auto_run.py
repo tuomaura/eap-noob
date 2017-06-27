@@ -18,6 +18,12 @@ import base64
 import hashlib
 import threading
 
+from ws4py.client.threadedclient import WebSocketClient
+import json
+from socket import error as socket_error
+import xml.etree.ElementTree as ET
+import errno
+
 from selenium import webdriver
 #from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
@@ -30,6 +36,7 @@ from selenium.webdriver.common.keys import Keys
 
 global conf_file
 global driver
+global webSocket
 interval_threads = []
 timeout_threads = []
 noob_interval = 30
@@ -47,12 +54,57 @@ max_oob_tries = 0
 oob_try_keyword = 'OobRetries'
 noob_interval_keyword = 'NoobInterval'
 noob_timeout_keyword = 'NoobTimeout'
+web_socket_keyword = 'EnableWebSocket'
+
+class Client(WebSocketClient):
+
+	def __init__(self, url, peer_id, protocols=None, extensions=None, heartbeat_freq=None,
+		ssl_options=None, headers=None):
+		super(Client, self).__init__(url, protocols, extensions, heartbeat_freq, ssl_options, headers)
+		self.peer_id = peer_id
+
+	def opened(self):
+		print("Client is up")
+		conf = ET.parse('conf.xml')
+		root = conf.getroot()
+
+		device_info = {child.tag: child.text for child in root}
+		device_str = json.dumps(device_info)
+		self.send(device_str)
+		print ("Client is up")
+
+	def closed(self, code, reason=None):
+		print ("Closed down", code, reason)
+
+	def received_message(self, m):
+		try:
+			recv_str = m.data.decode('utf-8')
+			msg = json.loads(recv_str)
+
+			if self.validate_msg(msg):
+				print (msg)
+
+			if msg['type'] == 'softwareUpdate':
+				print("Software Update Received!!")
+				resp = {}
+				resp['type'] = 'softwareUpdated'
+				resp['peerId'] = self.peer_id
+				self.send(json.dumps(resp))
+			else:
+				pass
+		except BaseException as e:
+			print(e)
+
+	def validate_msg(self, msg):
+		return True
+
 
 def set_max_oob_tries():
 
 	global max_oob_tries
 	global noob_interval
 	global noob_timeout
+	global webSocket
 	noob_conf = open(noob_conf_file, 'r')
 
 	for line in noob_conf:
@@ -74,6 +126,12 @@ def set_max_oob_tries():
 				parts = parts.split("#",1)[0]
 				parts = parts.split("=",1)[1]
 				noob_timeout = int (parts) if int(parts) > 59 else 3600
+
+			elif web_socket_keyword in line:
+				parts = re.sub('[\s+]', '', line)
+				parts = parts.split("#",1)[0]
+				parts = parts.split("=",1)[1]
+				webSocket = int (parts) if int(parts) == 0 else 1
 
 
 def change_config(peerID,realm):
@@ -610,12 +668,48 @@ def test_internet(interface):
 	p = subprocess.Popen(cmd,shell=True)
 	status = p.wait()
 
+def web_socket():
+	
+	query = 'select PeerID, servInfo from connections where state = 4'
+	out = exe_db_query(query)
+	peer_id = out[0]
+	info = json.loads(out[1])
+	parts = info ['Url']
+	parts = parts.split("://",1)[1]
+	ip_addr = parts.split(":",1)[0]
+
+	print(ip_addr)
+
+
+	print("Web Socket Called")
+	#ip_addr = '130.233.193.133'
+	url = 'wss://' + ip_addr + ':9000/' + peer_id
+
+	try:
+		ws = Client(url, peer_id, protocols=['http-only', 'chat'])
+		ws.connect()
+		print("logged in")
+		ws.run_forever()
+
+	except KeyboardInterrupt:
+		print("User exits the program.")
+
+	except socket_error as serr:
+		if serr.errno != errno.ECONNREFUSED:
+			raise serr
+		print (serr)
+
+	except BaseException as e:
+		ws.close()
+
+
 def main():
 
 	
 	#cmd = 'sudo systemctl stop NetworkManager.service'   
 	#runbash(cmd)
 	global driver
+	global webSocket
 
 
 	interface=None
@@ -635,6 +729,9 @@ def main():
 		return
 
 	interface=args.interface
+
+	cmd = 'sudo ifconfig '+interface+' 0.0.0.0 up'   
+	runbash(cmd)
 
 	test_internet(interface)
 
@@ -701,17 +798,21 @@ def main():
 	#time.sleep(5)
 	#webbrowser.open_new_tab('https://www.youtube.com/watch?v=YlHHTmIkdis')
 	driver.close()
-	url = "https://www.youtube.com/watch?v=YlHHTmIkdis"
 
-	driver = webdriver.Firefox()
-	driver.get(url)
-	fullscreen = driver.find_elements_by_class_name('ytp-fullscreen-button')[0]
-	fullscreen.click()
-	while True:
-		key = input()
-		if key == "r" or key == "R":
-			driver.close()
-			main()
+	if webSocket == 0:
+		url = "https://www.youtube.com/watch?v=YlHHTmIkdis"
+
+		driver = webdriver.Firefox()
+		driver.get(url)
+		fullscreen = driver.find_elements_by_class_name('ytp-fullscreen-button')[0]
+		fullscreen.click()
+		while True:
+			key = input()
+			if key == "r" or key == "R":
+				driver.close()
+				main()
+	else:
+		web_socket()
 
 
 if __name__=='__main__':

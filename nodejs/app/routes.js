@@ -4,6 +4,9 @@ var crypto = require('crypto');
 var sqlite3 = require('sqlite3').verbose();
 var db;
 
+var common = require('../common');
+var connMap = common.connMap;
+
 var configDB = require('../config/database.js');
 var conn_str = configDB.dbPath;
 
@@ -15,7 +18,6 @@ var OobRetries =  parseInt(configDB.OobRetries,10);
 var noob_timeout = parseInt(configDB.NoobTimeout,10) * 1000; //converting to milliseconds
 
 var PythonShell = require('python-shell');
-
 
 var fs = require('fs');
 var lineReader = require('line-reader');
@@ -143,6 +145,50 @@ module.exports = function(app, passport) {
         res.redirect('/profile');
     });
 
+    app.post('/control', isLoggedIn, function(req, res) {
+
+    	var query = req._parsedUrl.query;
+    	var parts = query.split('&');
+    	var userID;
+    	var deviceID;
+    	var contentType;
+   	var action;
+    	var tmpParts;
+    
+    	tmpParts = parts[0].split('=');
+    	peerID = tmpParts[1];
+	db = new sqlite3.Database(conn_str);
+	db.get('select deviceId from devicesSocket where peerId = ? AND userName = ?', peerID, req.user.username, function (err,row){
+		if(err || row == undefined || row.deviceId == undefined){
+			res.json({'status': 'fail'});
+		}else{
+			 tmpParts = parts[1].split('=');
+        		 contentType = tmpParts[1];
+        		 tmpParts = parts[2].split('=');
+        		 action = tmpParts[1];
+
+        		 var softwareName = 'Text File';
+        		 var softwareList = [];
+
+        		 // var content = base64_encode('file.txt');
+        		 // var content;
+
+        		 var jsonData = {
+                		'peerID': peerID,
+                		'type': contentType,
+                		'action': action,
+                		'software_list': softwareList,
+                		'software_name': softwareName
+        		 };
+
+        		console.log('Ready to send control json' + peerID);
+        		console.log(jsonData);
+
+        		connMap[row.deviceId].send(JSON.stringify(jsonData));
+        		res.json({'status': 'success'});	
+		}
+	});	
+    });
 
     app.get('/insertDevice',isLoggedIn,function(req, res) {
     	//console.log(req);
@@ -301,7 +347,7 @@ module.exports = function(app, passport) {
 	var d = new Date();
 	var seconds = Math.ceil(d.getTime() / 1000);
 	var val = 0;
-	var dev_status = ['Up to date','Update required','Obsolete, update now!']
+	var dev_status = ['Up to date','Update required','Obsolete', 'Update available!']
 	i = 0;
 	j = 0;
 	db = new sqlite3.Database(conn_str);
