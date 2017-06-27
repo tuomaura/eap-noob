@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<configuration>
+    <Type>Metadata</Type>>
+    <DeviceName>Samsung Display</DeviceName>
+    <DeviceType>Video</DeviceType>
+    <UpdateSource>update.bin</UpdateSource>
+    <DeviceDescription>Connection established</DeviceDescription>
+</configuration>
