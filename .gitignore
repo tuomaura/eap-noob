@@ -9,8 +9,9 @@ wpa_supplicant-2.6/wpa_supplicant/wpa_passphrase
 wpa_supplicant-2.6/wpa_supplicant/wpa_supplicant
 
 # hostapd
-hostapd
-hostapd_cli
+hostapd-2.6/hostapd/hostapd
+hostapd-2.6/hostapd/hostapd_cli
+
 
 # ctags
 tags
