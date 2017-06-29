@@ -1842,9 +1842,7 @@ static int eap_noob_get_key(struct eap_noob_serv_context * data)
     size_t pub_key_len;
 
     /*Initialize context to generate keys - Curve25519*/
-    //if(NULL == (pctx = EVP_PKEY_CTX_new_id(NID_X25519, NULL))){
-    if(NULL == (pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL))){
-
+    if(NULL == (pctx = EVP_PKEY_CTX_new_id(NID_X25519, NULL))){
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Fail to create context for parameter generation.");
         return 0;
     }
