@@ -15,3 +15,11 @@ hostapd-2.6/hostapd/hostapd_cli
 
 # ctags
 tags
+
+# Generated files
+log.txt
+logfile
+node_modules/
+file.txt
+geckodriver.log
+core
