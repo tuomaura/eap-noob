@@ -22,12 +22,16 @@ typedef json_error_t            noob_json_error_t;
  * All the pre-processors of EAP-NOOB
  **/
 
+#if 0
+/*  Unused macros */
 #define NUM_OF_VERSIONS         1
 #define PEER_ID_DEFAULT_REALM   "noob@eap-noob.net"
 #define PEER_ID_DEFAULT         "noob"
-#define DOMAIN                  "eap-noob.net"
 #define SERVER_INFO             "Believe_me_i_am_an_authenticated_server"
 #define PUBLIC_KEY              "A Very secret public key"
+#endif
+
+#define DOMAIN                  "eap-noob.net"
 #define VERSION_ONE             1
 #define SUITE_ONE               1
 #define EAP_NOOB_NOOB_LEN       16
@@ -52,7 +56,7 @@ typedef json_error_t            noob_json_error_t;
 #define KMS_LEN                 32
 #define KMP_LEN                 32
 #define MAC_LEN                 16
-#define FIXED_LENGTH            6
+//#define FIXED_LENGTH            6
 #define MAX_X25519_LEN          48
 #define HASH_LEN                16
 
@@ -73,11 +77,10 @@ typedef json_error_t            noob_json_error_t;
 #define DONE                    1
 #define NOT_DONE                0
 
-/*Maximum allowed waiting exchages */
+/* Maximum allowed waiting exchages */
 #define MAX_WAIT_EXCHNG_TRIES   5
 
-/*keywords for json encoding and decoding */
-
+/* keywords for json encoding and decoding */
 #define TYPE                    "Type"
 #define ERR_INFO                "ErrorInfo"
 #define ERR_CODE                "ErrorCode"
@@ -239,8 +242,8 @@ struct eap_noob_serv_config_params {
 };
 
 struct eap_noob_serv_context{
-    struct eap_noob_peer_data *peer_attr;
-    struct eap_noob_server_data *server_attr;
+    struct eap_noob_peer_data * peer_attr;
+    struct eap_noob_server_data * server_attr;
     char * db_name;
     char * db_table_name;
     sqlite3 * servDB;
@@ -272,7 +275,7 @@ struct eap_noob_ecdh_kdf_out{
 
 struct eap_noob_ecdh_key_exchange{
 
-    EVP_PKEY *dh_key;
+    EVP_PKEY * dh_key;
 
     char * x_peer_b64;
     char * y_peer_b64;
@@ -327,9 +330,9 @@ struct eap_noob_peer_data{
     char * peerID_gen;
     char * peer_info;
     char * peer_snum;
-    char * NAI;
+    /*char * NAI;
     char * user_name_peer;
-    char * realm;
+    char * realm; */
     char * mac;
     char * user_info;
     Boolean record_present;

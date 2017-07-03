@@ -224,6 +224,30 @@ static u32 eap_noob_json_typeof(const noob_json_t * value)
 }
 
 /**
+ * eap_noob_strsep: Returns a char array of the input string
+ * until the delimiter and null terminated. The calling
+ * function has to dealloc the returned array using os_free.
+ * Input str and delimiter are unchanged
+ * @str    : input string
+ * @delim  : delimitor
+ * @return  : NULL or delimited char array
+ **/
+static char * eap_noob_strsep(const char *str, const char delim)
+{
+    char * ret = NULL;
+    if (NULL == str)
+        return NULL;
+
+    char * str_copy = os_strdup(str);
+    char * token = strsep(&str_copy, &delim);
+    if (str_copy != NULL) {
+        ret = os_strdup(token);
+    }
+    os_free(token);
+    return ret;
+}
+
+/**
  * eap_noob_set_error : Set error code
  * @data    : server context
  * @err_code: error code
@@ -422,8 +446,10 @@ int eap_noob_Base64Encode(const unsigned char * buffer, size_t length, char ** b
     temp = (char *) os_zalloc((bufferPtr->length + 1) * sizeof(char));
     os_memcpy(temp, bufferPtr->data, bufferPtr->length);
     temp[bufferPtr->length] = '\0';
-    temp1 = strsep(&temp,"=");
-    len = strlen(temp1);
+
+    //temp1 = strsep(&temp, " = ");
+    temp1 = eap_noob_strsep(temp, '=');
+    len = os_strlen(temp1);
 
     for (i = 0; i <= len; i++) {
         if (temp1[i] == '+') {
@@ -436,11 +462,11 @@ int eap_noob_Base64Encode(const unsigned char * buffer, size_t length, char ** b
     *b64text = (char *) os_zalloc((len + 1) * sizeof(char));
     strcpy (*b64text, temp1);
     (*b64text)[len] = '\0';
-    os_free(temp);
+
+    os_free(temp); os_free(temp1);
     BIO_free_all(bio);
     return SUCCESS;
 }
-
 
 /**
  * eap_noob_decode_vers_array : assigns the values of Vers JSON array to version array
@@ -1003,73 +1029,57 @@ static int eap_noob_change_state(struct eap_noob_serv_context *data, int state)
     return SUCCESS;
 }
 
-/** TODO: check again
+/**
  * eap_noob_parse_NAI:
  * @data : server context
  * @len  :
  * Returns : FAILURE/SUCCESS
  **/
-static int eap_noob_parse_NAI(struct eap_noob_serv_context * data, int len)
+static int eap_noob_parse_NAI(struct eap_noob_serv_context * data,
+                              char * NAI)
 {
-    char * token = NULL;
+    char * user_name_peer = NULL;
+    char * realm = NULL;
 
-    if (!data) return FAILURE;
+    if (NULL == NAI || NULL == data) {
+        eap_noob_set_error(data->peer_attr, E1001);
+        return FAILURE;
+    }
 
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s",__func__);
-    printf("============REalm is %s\n",server_conf.realm);
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s, parsing NAI (%s)",__func__, NAI);
 
-    /* TODO its all pointing to the same string */
-    if(os_strstr(data->peer_attr->NAI, DOMAIN) ||
-       os_strstr(data->peer_attr->NAI, server_conf.realm)) {
-        token = strsep(&data->peer_attr->NAI, "@"); /*TODO : check for leak*/
-        data->peer_attr->user_name_peer = token;
-        data->peer_attr->realm = strsep(&data->peer_attr->NAI, "@");
+    if(os_strstr(NAI, DOMAIN) ||
+       os_strstr(NAI, server_conf.realm)) {
+        user_name_peer = strsep(&NAI, "@");
+        realm = strsep(&NAI, "@");
 
-        if(strlen(data->peer_attr->user_name_peer) > (MAX_PEER_ID_LEN + 3)) {
+        if(strlen(user_name_peer) > (MAX_PEER_ID_LEN + 3)) {
             /* plus 3 for '+','s' and state number */
             eap_noob_set_error(data->peer_attr,E1001);
             return FAILURE;
         }
 
-        /*Peer State*/
-        if (os_strstr(data->peer_attr->user_name_peer, "+") &&
-           (0 == strcmp(data->peer_attr->realm,server_conf.realm))) {
+        /* Peer State */
+        if (os_strstr(user_name_peer, "+") &&
+           (0 == strcmp(realm, server_conf.realm))) {
+            data->peer_attr->peerID_rcvd = os_strdup(strsep(&user_name_peer, "+"));
 
-            token = strsep(&data->peer_attr->user_name_peer, "+");
-            data->peer_attr->peerID_rcvd = token;
-            token = strsep(&data->peer_attr->user_name_peer, "+");
-
-            if(*token != 's'){
-                eap_noob_set_error(data->peer_attr,E1001);
+            if(*user_name_peer != 's'){
+                eap_noob_set_error(data->peer_attr, E1001);
                 return FAILURE;
             }
-            data->peer_attr->peer_state = (int) strtol(token+1, NULL, 10);
+            data->peer_attr->peer_state = (int) strtol(user_name_peer+1, NULL, 10);
             return SUCCESS;
         }
-        else if(0 == strcmp("noob",data->peer_attr->user_name_peer) &&
-                0 == strcmp(data->peer_attr->realm,DOMAIN)) {
+        else if(0 == strcmp("noob", user_name_peer) &&
+                0 == strcmp(realm, DOMAIN)) {
             data->peer_attr->peer_state = UNREG;
             return SUCCESS;
-
         }
-        else {
-            eap_noob_set_error(data->peer_attr,E1001);
-            return FAILURE;
-        }
-        /* REALM */
-        /*
-           token = strsep(&data->peer_attr->NAI, "@");
-           data->peer_attr->realm = token;
-
-           if(0 != strcmp(data->peer_attr->realm,DOMAIN)){
-           eap_noob_set_error(data->peer_attr,E1001);
-           return FAILURE;
-           }
-           */
     }
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s",__func__);
+    eap_noob_set_error(data->peer_attr, E1001);
 
-    eap_noob_set_error(data->peer_attr,E1001);
     return FAILURE;
 }
 
@@ -1472,7 +1482,8 @@ int eap_noob_get_id_peer(char * str, size_t size)
 {
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Generating PeerID");
 
-    const u8 charset[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";//!#$%&'*+-/=?^_`{|}~";
+    const u8 charset[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    //!#$%&'*+-/=?^_`{|}~";
     time_t t = 0;
     srand((unsigned)time(&t));
     //To-Do: Check whether the generated Peer ID is already in db
@@ -1828,20 +1839,19 @@ static int eap_noob_derive_session_secret(struct eap_noob_serv_context *data, si
 
 static int eap_noob_get_key(struct eap_noob_serv_context * data)
 {
-
-    /*char * priv_key = "MC4CAQAwBQYDK2VuBCIEIHcHbQpzGKV9PBbBclGyZkXfTC+H68CZKrF3+6UduSwq";
-
-      BIO* b641 = BIO_new(BIO_f_base64());
-
-      BIO* mem1 = BIO_new(BIO_s_mem());*/
-
-
-    EVP_PKEY_CTX *pctx;
+#if 0
+    char * priv_key = "MC4CAQAwBQYDK2VuBCIEIHcHbQpzGKV9PBbBclGyZkXfTC+H68CZKrF3+6UduSwq";
+    BIO* b641 = BIO_new(BIO_f_base64());
+    BIO* mem1 = BIO_new(BIO_s_mem());
+#endif
+    EVP_PKEY_CTX * pctx = NULL;
     BIO * mem_pub = BIO_new(BIO_s_mem());
-    unsigned char * pub_key_char;
-    size_t pub_key_len;
+    unsigned char * pub_key_char = NULL;
+    size_t pub_key_len = 0;
 
-    /*Initialize context to generate keys - Curve25519*/
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: entering %s", __func__);
+
+    /* Initialize context to generate keys - Curve25519 */
     if(NULL == (pctx = EVP_PKEY_CTX_new_id(NID_X25519, NULL))){
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Fail to create context for parameter generation.");
         return 0;
@@ -1853,16 +1863,15 @@ static int eap_noob_get_key(struct eap_noob_serv_context * data)
     EVP_PKEY_keygen(pctx, &data->peer_attr->ecdh_exchange_data->dh_key);
 
     /*
-       d2i_PrivateKey_bio(mem1,&data->peer_attr->ecdh_exchange_data->dh_key);
+    d2i_PrivateKey_bio(mem1,&data->peer_attr->ecdh_exchange_data->dh_key);
+    BIO_set_flags(b641,BIO_FLAGS_BASE64_NO_NL);
+    BIO_puts(mem1,priv_key);
+    mem1 = BIO_push(b641,mem1);
+    d2i_PrivateKey_bio(mem1,&data->peer_attr->ecdh_exchange_data->dh_key);
+    */
 
-
-       BIO_set_flags(b641,BIO_FLAGS_BASE64_NO_NL);
-       BIO_puts(mem1,priv_key);
-
-       mem1 = BIO_push(b641,mem1);
-       d2i_PrivateKey_bio(mem1,&data->peer_attr->ecdh_exchange_data->dh_key);
-       */
-    PEM_write_PrivateKey(stdout, data->peer_attr->ecdh_exchange_data->dh_key, NULL, NULL, 0, NULL, NULL);
+    PEM_write_PrivateKey(stdout, data->peer_attr->ecdh_exchange_data->dh_key,
+            NULL, NULL, 0, NULL, NULL);
     PEM_write_PUBKEY(stdout, data->peer_attr->ecdh_exchange_data->dh_key);
 
     /*Get public key*/
@@ -1872,9 +1881,9 @@ static int eap_noob_get_key(struct eap_noob_serv_context * data)
         return 0;
     }
     /*
-       pub_key_char = os_zalloc(MAX_X25519_LEN);
-       pub_key_len = BIO_read(mem_pub, pub_key_char, MAX_X25519_LEN);
-       */
+    pub_key_char = os_zalloc(MAX_X25519_LEN);
+    pub_key_len = BIO_read(mem_pub, pub_key_char, MAX_X25519_LEN);
+    */
     pub_key_char = os_zalloc(MAX_X25519_LEN);
     pub_key_len = BIO_read(mem_pub, pub_key_char, MAX_X25519_LEN);
 
@@ -2792,6 +2801,7 @@ EXIT:
 **/
 int eap_noob_build_JWK(noob_json_t ** jwk, const char * x_b64)
 {
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
 
     if(NULL != ((*jwk) = eap_noob_json_object())){
         eap_noob_json_object_set_new((*jwk), KEY_TYPE, eap_noob_json_string("EC"));
@@ -2857,7 +2867,7 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_noob_serv_context *data,
     }
 
     if (FAILURE == eap_noob_build_JWK(&data->peer_attr->ecdh_exchange_data->jwk_serv,
-                  data->peer_attr->ecdh_exchange_data->x_b64)) {
+                   data->peer_attr->ecdh_exchange_data->x_b64)) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to generate JWK");
         goto EXIT;
     }
@@ -2936,7 +2946,7 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context * data
         return NULL;
     }
 
-    EAP_NOOB_FREE(data->peer_attr);
+    EAP_NOOB_FREE(data->peer_attr->peerID_gen);
     data->peer_attr->peerID_gen = os_strdup(id_peer);
 
     if(NULL == (req_obj = eap_noob_json_object()))
@@ -3049,6 +3059,7 @@ static struct wpabuf * eap_noob_buildReq(struct eap_sm * sm, void * priv, u8 id)
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
         return NULL;
     }
+    data = priv;
 
     printf("next req = %d\n", data->peer_attr->next_req);
     //TODO : replce switch case with function pointers.
@@ -3142,8 +3153,12 @@ static Boolean eap_noob_check(struct eap_sm * sm, void * priv,
                                                  data->peer_attr->peer_state);
 
     if((NONE != data->peer_attr->recv_msg) && ((state >= NUM_OF_STATES) ||
-                (data->peer_attr->recv_msg > MAX_MSG_TYPES) ||
-                (VALID != state_message_check[state][data->peer_attr->recv_msg]))){
+       (data->peer_attr->recv_msg > MAX_MSG_TYPES) ||
+       (VALID != state_message_check[state][data->peer_attr->recv_msg]))) {
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Setting error in received message."
+                "state (%d), message type (%d), state received (%d)",
+                state, data->peer_attr->recv_msg,
+                state_message_check[state][data->peer_attr->recv_msg]);
         eap_noob_set_error(data->peer_attr,E1004);
         ret = TRUE; goto EXIT;
     }
@@ -3153,7 +3168,9 @@ EXIT:
         eap_noob_json_decref(resp_obj);
     if (resp_type)
         eap_noob_json_decref(resp_type);
-    return ret;
+
+    /* TODO check */
+    return FALSE; //return ret;
 }
 
 
@@ -3771,7 +3788,7 @@ static void eap_noob_rsp_hint(struct eap_sm * sm, struct eap_noob_serv_context *
  * @priv: Pointer to private EAP-NOOB data
  * @respData: EAP response to be processed (eapRespData)
  **/
-static void eap_noob_process(struct eap_sm *sm, void *priv, struct wpabuf *respData)
+static void eap_noob_process(struct eap_sm * sm, void * priv, struct wpabuf * respData)
 {
     wpa_printf(MSG_DEBUG, "EAP-NOOB: PROCESS SERVER");
 
@@ -3782,20 +3799,27 @@ static void eap_noob_process(struct eap_sm *sm, void *priv, struct wpabuf *respD
     size_t len = 0;
     noob_json_error_t error;
 
-    if (!sm || !priv || respData)
+    if (NULL == sm || NULL == priv || NULL == respData) {
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
         return;
+    }
 
     data = priv;
-
     pos = eap_hdr_validate(EAP_VENDOR_IETF, EAP_TYPE_NOOB, respData, &len);
-    if (pos == NULL || len < 1)
-        return;
 
-    if (data->peer_attr->err_code != NO_ERROR)
+    if (NULL == pos || len < 1) {
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Error in eap header validation, %s",__func__);
         return;
+    }
+
+    if (data->peer_attr->err_code != NO_ERROR) {
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Error not none, exiting, %s", __func__);
+        return;
+    }
 
     if (NULL == (resp_obj = eap_noob_json_loads((char *)pos,
                 JSON_COMPACT|JSON_PRESERVE_ORDER, &error))) {
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Error allocating json obj, %s", __func__);
         return;
     }
 
@@ -4018,11 +4042,10 @@ static int eap_noob_serv_ctxt_alloc(struct eap_sm * sm, struct eap_noob_serv_con
  **/
 static int eap_noob_serv_ctxt_init(struct eap_noob_serv_context * data, struct eap_sm * sm)
 {
+    char * NAI = NULL;
     int retval = FAILURE;
-    size_t len = 0;
 
-    if (FAILURE != eap_noob_serv_ctxt_alloc(sm, data)){
-
+    if (FAILURE != eap_noob_serv_ctxt_alloc(sm, data)) {
         data->peer_attr->serv_state = UNREG;
         data->peer_attr->peer_state = UNREG;
         data->peer_attr->err_code = NO_ERROR;
@@ -4035,44 +4058,34 @@ static int eap_noob_serv_ctxt_init(struct eap_noob_serv_context * data, struct e
         /* DB Table name */
         data->db_table_name = (char *) os_strdup(PEER_TABLE);
 
-        if (sm->identity) {
-            data->peer_attr->NAI = os_zalloc(sm->identity_len);
-            if (data->peer_attr->NAI == NULL) {
-                eap_noob_set_error(data->peer_attr,E1001);
-                return FAILURE;
-            }
-            os_memcpy(data->peer_attr->NAI, sm->identity, sm->identity_len);
-            len = sm->identity_len;
-        }
-
         if (server_conf.read_conf == 0 &&
-                FAILURE == eap_noob_read_config(data)) {
+            FAILURE == eap_noob_read_config(data)) {
             wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to initialize context");
             return FAILURE;
         }
 
-        if(SUCCESS == (retval = eap_noob_parse_NAI(data, len))) {
+        if (sm->identity) {
+            NAI = os_zalloc(sm->identity_len);
+            if (NULL == NAI) {
+                eap_noob_set_error(data->peer_attr, E1001);
+                return FAILURE;
+            }
+            os_memcpy(NAI, sm->identity, sm->identity_len);
+        }
 
+        if(SUCCESS == (retval = eap_noob_parse_NAI(data, NAI))) {
+            EAP_NOOB_FREE(NAI);
             if(!(retval = eap_noob_create_db(data)))
                 return retval;
 
-            /* if(data->peer_attr->peerID_gen){
-               if(eap_noob_verify_peerID(data) &&
-               eap_noob_verify_state(data));
-
-               if((data->peer_attr->serv_state == WAITING ||
-               data->peer_attr->serv_state == OOB) &&
-               eap_noob_verify_oob_msg_len(data->peer_attr));
-               } */
-
-            if(data->peer_attr->err_code == NO_ERROR){
+            if(data->peer_attr->err_code == NO_ERROR) {
                 data->peer_attr->next_req = eap_noob_get_next_req(data);
             }
 
             if(data->peer_attr->serv_state == UNREG ||
-                    data->peer_attr->serv_state == RECONNECT){
+               data->peer_attr->serv_state == RECONNECT) {
 
-                if(FAILURE == eap_noob_read_config(data)){
+                if(FAILURE == eap_noob_read_config(data)) {
                     wpa_printf(MSG_DEBUG, \
                             "EAP-NOOB: Failed to initialize context");
                     return FAILURE;
@@ -4082,6 +4095,7 @@ static int eap_noob_serv_ctxt_init(struct eap_noob_serv_context * data, struct e
             printf("ID compare returned false\n");
         }
     }
+    EAP_NOOB_FREE(NAI);
     return retval;
 }
 
@@ -4123,20 +4137,9 @@ static void eap_noob_free_ctx(struct eap_noob_serv_context * data)
         if(peer->peer_info){
             os_free(peer->peer_info);
         }
-        if(peer->NAI){
-            os_free(peer->NAI);
-        }
         if(peer->peer_snum){
             os_free(peer->peer_snum);
             peer->peer_snum = NULL;
-        }
-        if(peer->user_name_peer){
-            os_free(peer->user_name_peer);
-            peer->user_name_peer = NULL;
-        }
-        if(peer->realm) {
-            os_free(peer->realm);
-            peer->realm = NULL;
         }
         if(peer->mac) {
             os_free(peer->mac);
@@ -4211,7 +4214,6 @@ static void eap_noob_free_ctx(struct eap_noob_serv_context * data)
             os_free(peer->ecdh_exchange_data);
             peer->ecdh_exchange_data = NULL;
         }
-        /* TODO why char * for strings and not static strings; easier to maintain */
         if(peer->oob_data){
             if(peer->oob_data->noob_b64){
                 os_free(peer->oob_data->noob_b64);
@@ -4222,7 +4224,7 @@ static void eap_noob_free_ctx(struct eap_noob_serv_context * data)
             peer->oob_data = NULL;
         }
         /* TODO */
-        if(peer->kdf_out){
+        if(peer->kdf_out) {
             if(peer->kdf_out->msk){
                 os_free(peer->kdf_out->msk);
                 peer->kdf_out->msk = NULL;
@@ -4236,7 +4238,6 @@ static void eap_noob_free_ctx(struct eap_noob_serv_context * data)
     }
 
     /* TODO  db_name, db_table_name, servDB */
-
     os_free(data);
     data = NULL;
 }
@@ -4286,7 +4287,8 @@ static void * eap_noob_init(struct eap_sm *sm)
  * Returns: 0 on success, -1 on invalid method, or -2 if a matching EAP
  * method has already been registered
  **/
-int eap_server_noob_register(void) {
+int eap_server_noob_register(void)
+{
     struct eap_method *eap = NULL;
 
     eap = eap_server_method_alloc(EAP_SERVER_METHOD_INTERFACE_VERSION,
