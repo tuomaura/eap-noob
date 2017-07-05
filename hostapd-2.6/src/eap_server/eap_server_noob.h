@@ -236,28 +236,7 @@ struct eap_noob_global_conf {
     int oob_encode;
 };
 
-struct eap_noob_serv_config_params {
-    char * Serv_name;
-    char * Serv_URL;
-};
-
-struct eap_noob_serv_context{
-    struct eap_noob_peer_data * peer_attr;
-    struct eap_noob_server_data * server_attr;
-    char * db_name;
-    char * db_table_name;
-    sqlite3 * servDB;
-};
-
-struct eap_noob_ecdh_kdf_nonce{
-    u8 * nonce_serv;
-    char * nonce_serv_b64;
-    u8 * nonce_peer;
-    char * nonce_peer_b64;
-
-};
-
-struct eap_noob_ecdh_kdf_out{
+struct eap_noob_ecdh_kdf_out {
 
     u8 * msk;
     char * msk_b64;
@@ -273,8 +252,29 @@ struct eap_noob_ecdh_kdf_out{
     char * kz_b64;
 };
 
-struct eap_noob_ecdh_key_exchange{
+struct eap_noob_ecdh_kdf_nonce {
+    u8 * nonce_serv;
+    char * nonce_serv_b64;
+    u8 * nonce_peer;
+    char * nonce_peer_b64;
+};
 
+struct eap_noob_oob_data {
+
+    char * noob_b64;
+    size_t noob_len;
+    u8 * noob;
+
+    char * hoob_b64;
+    size_t hoob_len;
+    u8 * hoob;
+
+    char * hint_b64;
+    size_t hint_len;
+    u8 * hint;
+};
+
+struct eap_noob_ecdh_key_exchange {
     EVP_PKEY * dh_key;
 
     char * x_peer_b64;
@@ -291,25 +291,9 @@ struct eap_noob_ecdh_key_exchange{
     u8 * shared_key;
     char * shared_key_b64;
     size_t shared_key_b64_len;
-
 };
 
-struct eap_noob_oob_data{
-
-    char * noob_b64;
-    size_t noob_len;
-    u8 * noob;
-
-    char * hoob_b64;
-    size_t hoob_len;
-    u8 * hoob;
-
-    char * hint_b64;
-    size_t hint_len;
-    u8 * hint;
-};
-
-struct eap_noob_peer_data{
+struct eap_noob_peer_data {
 
     u32 version;
     u32 cryptosuite;
@@ -329,10 +313,7 @@ struct eap_noob_peer_data{
     char * peerID_rcvd;
     char * peerID_gen;
     char * peer_info;
-    char * peer_snum;
-    /*char * NAI;
-    char * user_name_peer;
-    char * realm; */
+    char * peer_snum;  /* Only set, not used */
     char * mac;
     char * user_info;
     Boolean record_present;
@@ -348,8 +329,12 @@ struct eap_noob_peer_data{
     struct eap_noob_ecdh_kdf_out * kdf_out;
 };
 
+struct eap_noob_serv_config_params {
+    char * Serv_name;
+    char * Serv_URL;
+};
 
-struct eap_noob_server_data{
+struct eap_noob_server_data {
     u32 version[MAX_SUP_VER];
     u32 cryptosuite[MAX_SUP_CSUITES];
     u32 dir;
@@ -358,6 +343,15 @@ struct eap_noob_server_data{
     struct eap_noob_serv_config_params * serv_config_params;
 
 };
+
+struct eap_noob_serv_context {
+    struct eap_noob_peer_data * peer_attr;
+    struct eap_noob_server_data * server_attr;
+    char * db_name;
+    char * db_table_name;
+    sqlite3 * servDB;
+};
+
 
 const int error_code[] = {0, 1001, 1002, 1003, 1004, 1005, 1006, 1007,
                           2001, 2002, 3001, 3002, 3003, 4001};
@@ -376,7 +370,7 @@ const char *error_info[] = {
     "No mutually supported protocol version",
     "No mutually supported cryptosuite",
     "No mutually supported OOB direction",
-    "MAC verification failure"};
+    "MAC verification failure" };
 
 
 /* This 2-D arry is used for state validation.
