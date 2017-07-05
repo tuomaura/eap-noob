@@ -865,16 +865,16 @@ function isLoggedIn(req, res, next) {
 
     var str = req.path;
 
-    var peer_id = req.query.PeerId;
+    var peer_id = req.query.P;
 
-    var noob = req.query.Noob;
+    var noob = req.query.N;
 
-    var hoob = req.query.Hoob;
+    var hoob = req.query.H;
 
-    if(str == "/sendOOB/") req.flash('loginMessage','Login to register device now or click \"Deliver OOB\" to register later');
+    if(str == "/sendOOB/") req.flash('loginMessage','Login to register device');
 
     if(peer_id != undefined)  str = str + '?P=' + peer_id;
-    if(noob != undefined)  str = str + '&=' + noob;
+    if(noob != undefined)  str = str + '&N=' + noob;
     if(hoob != undefined)  str = str + '&H=' + hoob;
     req.session.returnTo = str;
     res.redirect('/login');
