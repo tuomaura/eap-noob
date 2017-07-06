@@ -797,7 +797,8 @@ def main():
 	#subprocess.Popen("sudo pkill -9 firefox",shell=True)
 	#time.sleep(5)
 	#webbrowser.open_new_tab('https://www.youtube.com/watch?v=YlHHTmIkdis')
-	driver.close()
+	if direction is '1':
+		driver.close()
 
 	if webSocket == 0:
 		url = "https://www.youtube.com/watch?v=YlHHTmIkdis"
@@ -813,7 +814,6 @@ def main():
 				main()
 	else:
 		web_socket()
-
 
 if __name__=='__main__':
     main()
