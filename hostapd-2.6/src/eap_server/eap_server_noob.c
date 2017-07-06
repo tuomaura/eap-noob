@@ -3660,7 +3660,7 @@ static int eap_noob_exec_hint_queries(struct eap_noob_serv_context * data)
 	//To-Do: send error if NoodID not found
 
 	if(query){
-		snprintf(query,MAX_LINE_SIZE,"SELECT Noob, Hoob from %s where PeerID='%s' and  Hint='%s'",DEVICE_TABLE,
+		snprintf(query,MAX_LINE_SIZE,"SELECT Noob, Hoob, UserName from %s where PeerID='%s' and  Hint='%s'",DEVICE_TABLE,
 			data->peer_attr->peerID_gen,data->peer_attr->oob_data->hint_b64);
 		printf("Query = %s\n",query);
 		if(eap_noob_exec_query(query, eap_noob_callback,data,data) && data->peer_attr->oob_data->noob != NULL){

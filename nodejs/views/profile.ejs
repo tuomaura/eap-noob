@@ -277,7 +277,8 @@ function clickSoftwareUpdate(btn) {
 
 function sendNFC(btn) {
         var url_str = "<%=url%>";
-        var val = url_str + "/?PeerID=" + btn.getAttribute("value3")+"&Noob=" + btn.getAttribute("value1") + "&Hoob=" + btn.getAttribute("value2");
+        var val = url_str + "/?P=" + btn.getAttribute("value3")+"&N=" + btn.getAttribute("value1") + "&H=" + btn.getAttribute("value2");
+	
         Android.sendOOB(val);
 }
 
