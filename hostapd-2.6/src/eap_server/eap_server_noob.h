@@ -29,6 +29,7 @@ typedef json_error_t            noob_json_error_t;
 #define PEER_ID_DEFAULT         "noob"
 #define SERVER_INFO             "Believe_me_i_am_an_authenticated_server"
 #define PUBLIC_KEY              "A Very secret public key"
+#define FIXED_LENGTH            6
 #endif
 
 #define DOMAIN                  "eap-noob.net"
@@ -56,7 +57,6 @@ typedef json_error_t            noob_json_error_t;
 #define KMS_LEN                 32
 #define KMP_LEN                 32
 #define MAC_LEN                 16
-//#define FIXED_LENGTH            6
 #define MAX_X25519_LEN          48
 #define HASH_LEN                16
 
@@ -209,6 +209,12 @@ typedef json_error_t            noob_json_error_t;
     _D64 = os_malloc(os_strlen(argv[count]));       \
     strcpy(_D64, argv[count]);                      \
     _l = eap_noob_Base64Decode(_D64,&_D)
+
+#define EAP_NOOB_SET_DONE(_data,_v)                 \
+    (_data)->peer_attr->is_done = (_v)
+
+#define EAP_NOOB_SET_SUCCESS(_data,_v)              \
+    (_data)->peer_attr->is_success = (_v)
 
  /* Flag used during KDF and MAC generation */
 enum {COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW};
@@ -410,6 +416,4 @@ const int state_message_check[NUM_OF_STATES][MAX_MSG_TYPES] = {
 /*Function prototypes*/
 static noob_json_t * eap_noob_prepare_vers_arr(const struct eap_noob_serv_context * data);
 static noob_json_t * eap_noob_prepare_csuites_arr(const struct eap_noob_serv_context * data);
-static void eap_noob_set_done(struct eap_noob_serv_context *,u8 );
-static void eap_noob_set_success(struct eap_noob_serv_context *, u8);
 #endif
