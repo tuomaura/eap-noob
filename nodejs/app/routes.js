@@ -373,7 +373,7 @@ module.exports = function(app, passport) {
 							deviceDetails[j].state = state_array[parseInt(row1.serv_state,10)];
 							deviceDetails[j].state_num = row1.serv_state;
 						}
-						deviceDetails[j].sTime = '0';	
+						deviceDetails[j].sTime = 150;	
 						j++;
 					});	
 					rows.forEach(function(row) {
@@ -393,8 +393,9 @@ module.exports = function(app, passport) {
 						}
 						if(row.sleepTime)
 							val = parseInt(row.sleepTime) - seconds; 
-						if(row.sleepTime && parseInt(row.serv_state) != 4 && parseInt(val) > 0){
-							val = parseInt(val) + 60;
+						//if(row.sleepTime && parseInt(row.serv_state) != 4 && parseInt(val) > 0){
+						if(parseInt(row.serv_state) != 4){
+							val = 150;
 							userDetails[i].sTime = val;
 						}else{
 							userDetails[i].sTime = '0';
@@ -698,6 +699,7 @@ module.exports = function(app, passport) {
 
 
         }else{
+		//console.log(peer_id +' '+ noob +' ' + hoob);
   	   	
 		hash = crypto.createHash('sha256');
         	hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
@@ -733,7 +735,7 @@ module.exports = function(app, passport) {
 					var err_p;
                 			var hoob_cmp_res;
         				PythonShell.run('oobmessage.py', options, function (err_pr,results) {
-                				if (err_pr){console.log("Error in python:" + err); res.json({"status": "Internal error !!"});}
+                				if (err_pr){console.log("Error in python:" + err_pr); res.json({"status": "Internal error !!"});}
 						else{
 							parseJ = JSON.parse(results);
 							err_p = parseJ['err'];
@@ -757,7 +759,7 @@ module.exports = function(app, passport) {
     	    							});
 
 								db.close();
-								req.flash('profileMessage','Received Successfully');
+								req.flash('profileMessage','Message Received Successfully');
      								res.redirect('/profile');
 							}	
 

@@ -2,7 +2,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>Your IoT Command and Control Center</title>
+    <title>MySeureHub</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
@@ -13,6 +13,22 @@
           padding-top:80px; 
           word-wrap:break-word; 
         }
+
+	.checkbox {
+    	     display: none;
+	}
+	.checkbox + label:before {
+	    content: "(+)";
+	}
+	.checkbox:checked + label:before {
+	    content: "(-)";
+	}
+	.checkbox + label + div {
+	    display: none;
+	}
+	.checkbox:checked + div {
+	    display: block;
+	}
     </style>
     <style>
 	/* The Overlay (background) */
@@ -142,7 +158,7 @@
 <div class="container" id = "container">
 
     <div class="page-header text-center">
-        <h1><span class="fa fa-anchor"></span> IoT Command and Control Center</h1>
+        <h1><span class="fa fa-anchor"></span> MySecureHub</h1>
 	<% if (user && user.isAdmin == "TRUE") { %>
 		<a href="/configRadClients" class="btn btn-default btn-sm">Radius Clients</a>
 		<a href="/accessControl" class="btn btn-default btn-sm">Access Control</a>
@@ -171,21 +187,37 @@
             <div class="well">
                 <h3><span class="fa fa-user"></span> User Information</h3>
                     <p>
-                        <strong>Id</strong>: <%= user.id %><br>
+                        <!--<strong>Id</strong>: <%= user.id %><br>-->
                         <strong>User Name</strong>: <%= user.username %><br>
                     </p>
 
             </div>
+    
+                        <h1><span class="fa"></span> Your Devices</h1>
+
+    
+    <% if ((!deviceInfo || deviceInfo.length <= 0) && (!userInfo || userInfo.length <= 0)) { %>
+          <div class="well">
+                    <p>
+                        
+                        <strong>No devices added yet.</strong><br>
+                    </p>
+
+            </div>     
+     <% } %>
+    <%var j = 0 %>
     <% if (deviceInfo && deviceInfo.length > 0) { %>
-	    <% for(var j=0; j < deviceInfo.length; j++) { %>
+	    <% for(; j < deviceInfo.length; j++) { %>
             <div class="well" id = <%=deviceInfo[j].peer_id%>>
-                <h4> Device <%= j+1 %></h4>
+                <h4> <%= deviceInfo[j].peer_name %></h4>
                     <p>
   			 <strong>Device Make</strong>: <%= deviceInfo[j].peer_name %><br>
 			 <strong>Device Mac </strong>: <%= deviceInfo[j].peer_num %><br>
 			 <%var id_val = 'Dcountdown' + j %>
 			 <strong id = <%=id_val%> value1 = <%=deviceInfo[j].peer_id%> value2 = <%=deviceInfo[j].state_num%> >Device Status: <%= deviceInfo[j].state %></strong><br>
-			 <div> </div>
+			 <%var id_val = 'countdown' + j %>
+          		 <div id= <%=id_val%> value = <%=deviceInfo[j].sTime%> ></div>
+
 			 <button onclick="openNav(this)" value1 = <%=deviceInfo[j].noob%> value2 = <%=deviceInfo[j].hoob%> value3 = <%=deviceInfo[j].peer_id%>>QR Code</button>
 			 <button onclick="sendNFC(this)" value1 = <%=deviceInfo[j].noob%> value2 = <%=deviceInfo[j].hoob%> value3 = <%=deviceInfo[j].peer_id%>>NFC Send</button>
 			 <button onclick="deleteDeviceTemp(this)" value = <%=deviceInfo[j].peer_id%>>Remove</button>
@@ -198,19 +230,29 @@
     <% if (userInfo && userInfo.length > 0) { %>
 	    <% for(var i=0; i < userInfo.length; i++) { %>
             <div class="well" id = <%=userInfo[i].peer_id%>>
-                <h4> Device <%= i+1 %></h4>
+                <h4> <%= userInfo[i].peer_name %></h4>
                     <p>
   			 <strong>Device Make</strong>: <%= userInfo[i].peer_name %><br>
 			 <strong>Device Mac </strong>: <%= userInfo[i].peer_num %><br>
 			 <% if (userInfo[i].dev_update != 'Up to date') { %>
-			 	<strong>Software Status </strong>: <font color="blue"><%= userInfo[i].dev_update %></font><br>
+			 	<strong>Software Status </strong>: <font color="blue"><%= userInfo[i].dev_update %></font>
+				<%var id_checkbox = 'togglelist' + (i + j) %>
+				<input id="togglelist" class="checkbox" type="checkbox" value = <%=id_checkbox%> onclick="update_checked(this);"/> 
+				<label for="togglelist"> Details</label>
+				<div id = <%=id_checkbox%> style = "display:none">
+					<strong>1. Bug Fix</strong><br>
+					<strong>2. Performance Improvement</strong><br>
+					<button onclick="clickSoftwareUpdate(this)" value = <%=userInfo[i].peer_id%>>Update</button>
+					<br><br>
+				</div>
 			 <% } else {%>
-				<strong>Software Status </strong>: <%= userInfo[i].dev_update %><br>
+				
+				<strong>Software Status </strong>: <%= userInfo[i].dev_update %><br>			
 			 <% }%>
 			 
-			 <%var id_val = 'Dcountdown' + i + j %>
+			 <%var id_val = 'Dcountdown' + (i + j) %>
 			 <strong id = <%=id_val%> value1 = <%=userInfo[i].peer_id%> value2 = <%=userInfo[i].state_num%> >Device Status: <%= userInfo[i].state %></strong><br>
-			 <%var id_val = 'countdown' + i + j %>
+			 <%var id_val = 'countdown' + (i + j) %>
           		 <div id= <%=id_val%> value = <%=userInfo[i].sTime%> ></div>
 			 <button onclick="deleteDevice(this)" value = <%=userInfo[i].peer_id%>>Delete</button> 
 			  
@@ -228,6 +270,18 @@
 </div>
 
 <script>
+
+function update_checked(checkBox)
+{
+  div_id = checkBox.getAttribute("value");
+
+  if (checkBox.checked) 
+  {
+      document.getElementById(div_id).style.display='block';
+  } else {
+      document.getElementById(div_id).style.display='none';
+  }
+}
 
 function startLoading(){
 	document.getElementById("loader").style.display = "block";
