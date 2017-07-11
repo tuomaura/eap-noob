@@ -419,6 +419,8 @@ def create_oob(peer_id):
 
         #First, get noob
 	noob = get_noob()
+	print("################Noob#####################")
+	print(noob);
 
 	#get noob_id
 	noob_id =  get_noob_id(noob) 
@@ -800,19 +802,21 @@ def main():
 	if direction is '1':
 		driver.close()
 
-	if webSocket == 0:
-		url = "https://www.youtube.com/watch?v=YlHHTmIkdis"
+	
+	url = "https://www.youtube.com/watch?v=YlHHTmIkdis"
 
-		driver = webdriver.Firefox()
-		driver.get(url)
-		fullscreen = driver.find_elements_by_class_name('ytp-fullscreen-button')[0]
-		fullscreen.click()
-		while True:
-			key = input()
-			if key == "r" or key == "R":
-				driver.close()
-				main()
-	else:
+	driver = webdriver.Firefox()
+	driver.get(url)
+	fullscreen = driver.find_elements_by_class_name('ytp-fullscreen-button')[0]
+	fullscreen.click()
+	'''
+	while True:
+		key = input()
+		if key == "r" or key == "R":
+			driver.close()
+			main()
+	'''
+	if webSocket == 1:
 		web_socket()
 
 if __name__=='__main__':
