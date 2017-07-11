@@ -198,6 +198,12 @@ typedef json_error_t            noob_json_error_t;
         (_D) = NULL;                                \
     }                                               \
 
+#define EAP_NOOB_JSON_FREE(_J)                      \
+    if (_J) {                                       \
+        eap_noob_json_decref(_J);                   \
+        _J = NULL;                                  \
+    }
+
 #define EAP_NOOB_FREE_MALLOC(_D,_l)                 \
     EAP_NOOB_FREE(_D)                               \
     (_D)=os_malloc(_l)
@@ -215,6 +221,17 @@ typedef json_error_t            noob_json_error_t;
 
 #define EAP_NOOB_SET_SUCCESS(_data,_v)              \
     (_data)->peer_attr->is_success = (_v)
+
+#define EAP_NOOB_SET_ERROR(_pdata,_v)               \
+    if (_pdata) {                                   \
+        (_pdata)->next_req = NONE;                  \
+        (_pdata)->err_code = _v;                    \
+    }
+
+#define EAP_NOOB_CHANGE_STATE(_data,_s)             \
+    if ((_data) && ((_data)->peer_attr)) {          \
+        (_data)->peer_attr->serv_state = (_s);      \
+    }
 
  /* Flag used during KDF and MAC generation */
 enum {COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW};
