@@ -216,11 +216,14 @@ typedef json_error_t            noob_json_error_t;
     strcpy(_D64, argv[count]);                      \
     _l = eap_noob_Base64Decode(_D64,&_D)
 
+
 #define EAP_NOOB_SET_DONE(_data,_v)                 \
     (_data)->peer_attr->is_done = (_v)
 
+
 #define EAP_NOOB_SET_SUCCESS(_data,_v)              \
     (_data)->peer_attr->is_success = (_v)
+
 
 #define EAP_NOOB_SET_ERROR(_pdata,_v)               \
     if (_pdata) {                                   \
@@ -232,6 +235,7 @@ typedef json_error_t            noob_json_error_t;
     if ((_data) && ((_data)->peer_attr)) {          \
         (_data)->peer_attr->serv_state = (_s);      \
     }
+
 
  /* Flag used during KDF and MAC generation */
 enum {COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW};
