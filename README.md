@@ -16,7 +16,7 @@ Webserver:  It Is for maintaining the account information of all the users under
 
 Licensing
 ------------       
- Copyright (c) 2016, Aalto University 
+ Copyright (c) 2017, Aalto University 
  All rights reserved. 
  
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: 
@@ -34,16 +34,16 @@ Neither the name of the Aalto University nor the names of its contributors may b
 Setup
 -------
 
-	 -------                                --------------				                   ---------
+	 -------                                --------------				       ---------
 	| WPA_S | ---------------------------- | Access Point | ----------------------------- | Hostapd |
 	 -------                                --------------                                 ---------
-	   |                                                                                      |		           
+	   |                                                                                      |
 	   |                                                                                      | 
-	   |                                                                                      |		        
-	   |                                                                                      |   
-	   |			                           ----------                                 ------------
+	   |                                                                                      |
+	   |                                                                                      |
+	   |			                   ----------                                 ------------
 	   |----–---------------------------------|OOB device| ------------------------------| Web server |
-		                                       ----------                                 ------------
+		                                   ----------                                 ------------
 
 
 	1) Access point is a wifi access point configured in WAP2-enterprise mode and OOB device is a device used by the user for delivering out of band message. An example OOB device is user's mobile phone.
