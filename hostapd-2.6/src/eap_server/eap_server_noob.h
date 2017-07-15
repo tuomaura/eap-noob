@@ -200,7 +200,7 @@ typedef json_error_t            noob_json_error_t;
 
 #define EAP_NOOB_JSON_FREE(_J)                      \
     if (_J) {                                       \
-        json_decref(_J);                            \
+        json_decref(_J);                   \
         _J = NULL;                                  \
     }
 
