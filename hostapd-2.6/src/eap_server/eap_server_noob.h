@@ -42,8 +42,8 @@ typedef json_error_t            noob_json_error_t;
 #define ALGORITHM_ID_LEN        8
 
 /* MAX values for fields */
-#define MAX_SUP_VER             1
-#define MAX_SUP_CSUITES         1
+#define MAX_SUP_VER             3
+#define MAX_SUP_CSUITES         10
 #define MAX_CONF_LEN            500
 #define MAX_INFO_LEN            500
 #define MAX_PEER_ID_LEN         22
