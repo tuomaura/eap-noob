@@ -119,7 +119,7 @@ static int eap_noob_Base64Decode(const char * b64message, unsigned char ** buffe
     len = os_strlen(b64message);
 
     /* Convert base64url to base64 encoding. */
-    b64pad = 4*((len+3)/4)-len; 
+    int b64pad = 4*((len+3)/4)-len; 
     temp = os_zalloc(len + b64pad);
     strcpy(temp, b64message);
     if (b64pad == 3) {
@@ -169,7 +169,7 @@ int eap_noob_Base64Encode(const unsigned char * buffer, size_t length, char ** b
 {
     BIO * bio = NULL, * b64 = NULL;
     BUF_MEM * bufferPtr = NULL;
-    int len = 0, i = 0;
+    int i = 0;
 
     if (NULL == buffer || NULL == b64text) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
