@@ -2878,8 +2878,9 @@ static Boolean eap_noob_check(struct eap_sm * sm, void * priv,
 EXIT:
     EAP_NOOB_FREE(resp_obj);
     EAP_NOOB_FREE(resp_type);
-    /* TODO check */
-    return FALSE; //return ret;
+    /* TODO check -- Rohan, why did you remove the security checks? */
+    /* return FALSE; */
+    return ret;
 }
 
 
