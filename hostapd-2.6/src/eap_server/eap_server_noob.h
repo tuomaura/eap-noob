@@ -212,8 +212,8 @@ typedef json_error_t            noob_json_error_t;
 #define EAP_NOOB_CB_GET_B64(_D64,_D,_l)             \
     EAP_NOOB_FREE(_D64)                             \
     EAP_NOOB_FREE(_D)                               \
-    _D64 = os_malloc(os_strlen(argv[count]));       \
-    strcpy(_D64, argv[count]);                      \
+    _D64 = os_malloc(os_strlen(fieldValue[i]));       \
+    strcpy(_D64, fieldValue[i]);                      \
     _l = eap_noob_Base64Decode(_D64,&_D)
 
 
