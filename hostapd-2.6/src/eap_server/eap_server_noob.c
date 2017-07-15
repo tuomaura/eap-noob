@@ -55,23 +55,23 @@ static struct eap_noob_global_conf server_conf;
 
 /*
 Imported from jansson.h:
-static noob_json_t * json_array();
-static u32  json_array_append(noob_json_t * arr, noob_json_t * value);
-static u32  json_array_append_new(noob_json_t * arr, noob_json_t * value):
-static noob_json_t * json_integer(noob_json_int_t value);
-static noob_json_int_t json_integer_value(noob_json_t * value):
-static u32 json_is_integer(const noob_json_t * value);
-static noob_json_t * json_string(const noob_json_str_t * value);
-static noob_json_str_t * json_string_value(noob_json_t * value);
-static noob_json_t * json_object();
-static u32 json_object_set(noob_json_t * obj, const char* key, noob_json_t * value);
-static u32 json_object_set_new (noob_json_t * obj, const char* key, noob_json_t * value);
-static char * json_dumps(noob_json_t * root, size_t flags);
-static noob_json_t * json_loads(const char * input, size_t flags, noob_json_error_t * error);
-static void json_decref(noob_json_t * obj);
-static u32 json_is_object(noob_json_t * obj);
-static noob_json_t * json_object_get(noob_json_t * obj, const char * key);
-static u32 json_typeof(const noob_json_t * value);
+static json_t * json_array();
+static u32  json_array_append(json_t * arr, json_t * value);
+static u32  json_array_append_new(json_t * arr, json_t * value):
+static json_t * json_integer(json_int_t value);
+static json_int_t json_integer_value(json_t * value):
+static u32 json_is_integer(const json_t * value);
+static json_t * json_string(const char * value);
+static char * json_string_value(json_t * value);
+static json_t * json_object();
+static u32 json_object_set(json_t * obj, const char* key, json_t * value);
+static u32 json_object_set_new (json_t * obj, const char* key, json_t * value);
+static char * json_dumps(json_t * root, size_t flags);
+static json_t * json_loads(const char * input, size_t flags, json_error_t * error);
+static void json_decref(json_t * obj);
+static u32 json_is_object(json_t * obj);
+static json_t * json_object_get(json_t * obj, const char * key);
+static u32 json_typeof(const json_t * value);
 */
 
 
@@ -216,7 +216,7 @@ int eap_noob_Base64Encode(const unsigned char * buffer, size_t length, char ** b
  **/
 static int eap_noob_decode_vers_array(char * array, struct eap_noob_server_data * data)
 {
-    noob_json_t * ver_arr = NULL, * value = NULL;
+    json_t * ver_arr = NULL, * value = NULL;
     size_t index = 0;
 
     if (NULL == array || NULL == data ||
@@ -243,8 +243,8 @@ static int eap_noob_decode_vers_array(char * array, struct eap_noob_server_data 
  **/
 static int eap_noob_decode_csuites_array(char * array, struct eap_noob_server_data *data)
 {
-    noob_json_t * csuites_arr = NULL;
-    noob_json_t * value = NULL;
+    json_t * csuites_arr = NULL;
+    json_t * value = NULL;
     size_t index = 0;
 
     if (NULL == array || NULL == data ||
@@ -277,7 +277,7 @@ int eap_noob_callback(void * priv , int fieldCount, char ** fieldValue, char ** 
     char * dump_str = NULL;
     int i  = 0;
     size_t len = 0;
-    noob_json_error_t error;
+    json_error_t error;
 
     if (NULL == priv || NULL == fieldValue || NULL == fieldName) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
@@ -721,8 +721,8 @@ static int eap_noob_db_entry(struct eap_noob_serv_context *data)
     char query[MAX_LINE_SIZE] = {0};
     char * dump_str1 = NULL, * dump_str2 = NULL;
     char * dump_str3 = NULL, * dump_str4 = NULL;
-    noob_json_t * ver_arr = NULL;
-    noob_json_t * csuite_arr = NULL;
+    json_t * ver_arr = NULL;
+    json_t * csuite_arr = NULL;
 
     if (NULL == data) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
@@ -1085,9 +1085,9 @@ static int eap_noob_handle_incomplete_conf(struct eap_noob_serv_context * data)
  * @data : server config
  * Returs : json object. Has to be freed using json_decref at the caller.
  **/
-static noob_json_t * eap_noob_prepare_serv_json_obj(struct eap_noob_serv_config_params * data)
+static json_t * eap_noob_prepare_serv_json_obj(struct eap_noob_serv_config_params * data)
 {
-    noob_json_t * info_obj = NULL;
+    json_t * info_obj = NULL;
 
     if (NULL == data) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
@@ -1108,7 +1108,7 @@ static noob_json_t * eap_noob_prepare_serv_json_obj(struct eap_noob_serv_config_
 **/
 static int eap_noob_prepare_serv_info_obj(struct eap_noob_server_data * data)
 {
-    noob_json_t * info_obj = NULL;
+    json_t * info_obj = NULL;
     int ret = SUCCESS;
 
     if (NULL == data) {
@@ -1801,7 +1801,7 @@ static int eap_noob_get_minsleep(struct eap_noob_serv_context *data)
  **/
 static struct wpabuf * eap_noob_err_msg(struct eap_noob_serv_context * data, u8 id)
 {
-    noob_json_t * req_obj = NULL;
+    json_t * req_obj = NULL;
     struct wpabuf *req = NULL;
     char * req_json = NULL;
     size_t len = 0 ;
@@ -1933,11 +1933,11 @@ static void eap_noob_gen_KDF(struct eap_noob_serv_context * data, int state)
 #if 0
 static char * eap_noob_prepare_hoob_arr(struct eap_noob_serv_context * data)
 {
-    noob_json_t * hoob_arr = NULL;
-    noob_json_t * ver_arr = NULL;
-    noob_json_t * csuite_arr = NULL;
+    json_t * hoob_arr = NULL;
+    json_t * ver_arr = NULL;
+    json_t * csuite_arr = NULL;
     char * hoob_str = NULL;
-    noob_json_error_t error;
+    json_error_t error;
     int dir = (data->server_attr->dir & data->peer_attr->dir);
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: %s",__func__);
@@ -2040,9 +2040,9 @@ err:
  * @data: peer context
  * return : Json array/NULL
  **/
-static noob_json_t * eap_noob_prepare_vers_arr(const struct eap_noob_serv_context * data)
+static json_t * eap_noob_prepare_vers_arr(const struct eap_noob_serv_context * data)
 {
-    noob_json_t * ver_arr = NULL;
+    json_t * ver_arr = NULL;
     u32 i  = 0;
 
     if (NULL == data || NULL == (ver_arr = json_array())) {
@@ -2062,9 +2062,9 @@ static noob_json_t * eap_noob_prepare_vers_arr(const struct eap_noob_serv_contex
  * @data: peer context
  * return : Json array/NULL
  **/
-static noob_json_t * eap_noob_prepare_csuites_arr(const struct eap_noob_serv_context * data)
+static json_t * eap_noob_prepare_csuites_arr(const struct eap_noob_serv_context * data)
 {
-    noob_json_t * csuite_arr = NULL;
+    json_t * csuite_arr = NULL;
     u32 i = 0;
 
     if (NULL == data || NULL == (csuite_arr = json_array())) {
@@ -2088,11 +2088,11 @@ static noob_json_t * eap_noob_prepare_csuites_arr(const struct eap_noob_serv_con
  **/
 static char * eap_noob_prepare_mac_arr(struct eap_noob_serv_context * data, int type, int state)
 {
-    noob_json_t * mac_arr = NULL;
-    noob_json_t * ver_arr = NULL;
-    noob_json_t * csuite_arr = NULL;
+    json_t * mac_arr = NULL;
+    json_t * ver_arr = NULL;
+    json_t * csuite_arr = NULL;
     char * mac_str = NULL, * dump_str = NULL;
-    noob_json_error_t error;
+    json_error_t error;
 
     if (NULL == data) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
@@ -2228,7 +2228,7 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_noob_serv_context * da
     struct wpabuf * req = NULL;
     char * req_json = NULL, * mac_b64 = NULL;
     u8 * mac = NULL;
-    noob_json_t * req_obj = NULL;
+    json_t * req_obj = NULL;
     size_t len = 0 ;
 
     /* generate KDF */
@@ -2280,7 +2280,7 @@ EXIT:
  **/
 static struct wpabuf * eap_noob_req_type_six(struct eap_noob_serv_context * data, u8 id)
 {
-    noob_json_t * req_obj = NULL;
+    json_t * req_obj = NULL;
     struct wpabuf *req = NULL;
     char * req_json = NULL, * base64_nonce = NULL;
     size_t len = 0 ;
@@ -2357,7 +2357,7 @@ static struct wpabuf * eap_noob_req_type_five(struct eap_noob_serv_context * dat
 {
     struct wpabuf * req = NULL;
     char * req_json = NULL;
-    noob_json_t * req_obj = NULL, * csuite_arr = NULL;
+    json_t * req_obj = NULL, * csuite_arr = NULL;
     size_t len = 0;
 
     if (NULL == data) {
@@ -2407,7 +2407,7 @@ EXIT:
  **/
 static struct wpabuf * eap_noob_req_type_four(struct eap_noob_serv_context * data, u8 id)
 {
-    noob_json_t * req_obj = NULL;
+    json_t * req_obj = NULL;
     struct wpabuf * req = NULL;
     char * mac_b64 = NULL, * req_json = NULL;
     u8 * mac = NULL;
@@ -2473,7 +2473,7 @@ EXIT:
  **/
 static struct wpabuf * eap_noob_req_type_three(struct eap_noob_serv_context * data, u8 id)
 {
-    noob_json_t * req_obj = NULL;
+    json_t * req_obj = NULL;
     struct wpabuf *req = NULL;
     char * req_json = NULL;
     size_t len = 0;
@@ -2522,7 +2522,7 @@ EXIT:
  *  @y_64 : y co-ordinate in base64url format
  *  Returns : FAILURE/SUCCESS
 **/
-int eap_noob_build_JWK(noob_json_t ** jwk, const char * x_b64)
+int eap_noob_build_JWK(json_t ** jwk, const char * x_b64)
 {
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
 
@@ -2559,7 +2559,7 @@ int eap_noob_build_JWK(noob_json_t ** jwk, const char * x_b64)
  **/
 static struct wpabuf * eap_noob_req_type_two(struct eap_noob_serv_context *data, u8 id)
 {
-    noob_json_t * req_obj = NULL;
+    json_t * req_obj = NULL;
     struct wpabuf * req = NULL;
     char * req_json = NULL, * base64_nonce = NULL;
     size_t len = 0;
@@ -2642,7 +2642,7 @@ EXIT:
  **/
 static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context * data, u8 id)
 {
-    noob_json_t * req_obj = NULL, * ver_arr = NULL, * csuite_arr = NULL;
+    json_t * req_obj = NULL, * ver_arr = NULL, * csuite_arr = NULL;
     struct wpabuf * req = NULL;
     char * req_json = NULL;
     char id_peer[MAX_PEER_ID_LEN + 1] = {0};
@@ -2721,7 +2721,7 @@ EXIT:
 static struct wpabuf * eap_noob_req_hint(struct eap_noob_serv_context * data, u8 id)
 {
     struct wpabuf * req = NULL;
-    noob_json_t * req_obj = NULL;
+    json_t * req_obj = NULL;
     char * req_json = NULL;
     size_t len = 0;
 
@@ -2824,9 +2824,9 @@ static Boolean eap_noob_check(struct eap_sm * sm, void * priv,
                               struct wpabuf * respData)
 {
     struct eap_noob_serv_context * data = NULL;
-    noob_json_t * resp_obj = NULL, * resp_type = NULL;
+    json_t * resp_obj = NULL, * resp_type = NULL;
     const u8 * pos = NULL;
-    noob_json_error_t error;
+    json_error_t error;
     u32 state = 0;
     size_t len = 0;
     Boolean ret = FALSE;
@@ -2977,13 +2977,13 @@ int eap_noob_FindIndex( int value )
  * @req_obj : incoming json object with message parameters
  **/
 
-static void  eap_noob_decode_obj(struct eap_noob_peer_data * data, noob_json_t * resp_obj)
+static void  eap_noob_decode_obj(struct eap_noob_peer_data * data, json_t * resp_obj)
 {
     const char * key = NULL;
     const char * retval_char = NULL;
     char * dump_str = NULL;
-    noob_json_t * value = NULL;
-    noob_json_error_t error;
+    json_t * value = NULL;
+    json_error_t error;
     size_t decode_length = 0;
     int retval_int = 0;
 
@@ -3103,7 +3103,7 @@ static void  eap_noob_decode_obj(struct eap_noob_peer_data * data, noob_json_t *
  * @resp_obj: json object of the response received
  **/
 static void eap_noob_rsp_type_seven(struct eap_noob_serv_context * data,
-                                    noob_json_t * resp_obj)
+                                    json_t * resp_obj)
 {
     u8 * mac = NULL; char * mac_b64 = NULL;
 
@@ -3160,7 +3160,7 @@ EXIT:
  * @resp_obj: json object of the response received
  **/
 static void eap_noob_rsp_type_six(struct eap_noob_serv_context * data,
-                                  noob_json_t * resp_obj)
+                                  json_t * resp_obj)
 {
     if (NULL == resp_obj || NULL == data) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
@@ -3194,7 +3194,7 @@ static void eap_noob_rsp_type_six(struct eap_noob_serv_context * data,
  * @resp_obj: json object of the response received
  **/
 static void eap_noob_rsp_type_five(struct eap_noob_serv_context * data,
-                                   noob_json_t * resp_obj)
+                                   json_t * resp_obj)
 {
     /* check for the supporting cryptosuites, peerID_gen, version, direction */
     if (NULL == resp_obj || NULL == data) {
@@ -3230,7 +3230,7 @@ static void eap_noob_rsp_type_five(struct eap_noob_serv_context * data,
  * @resp_obj: json object of the response received
  **/
 static void eap_noob_rsp_type_four(struct eap_noob_serv_context * data,
-                                   noob_json_t * resp_obj)
+                                   json_t * resp_obj)
 {
     u8 * mac = NULL; char * mac_b64 = NULL;
     int dir = 0;
@@ -3289,7 +3289,7 @@ EXIT:
  * @resp_obj: json object of the response received
  **/
 static void eap_noob_rsp_type_three(struct eap_noob_serv_context * data,
-                                    noob_json_t * resp_obj)
+                                    json_t * resp_obj)
 {
     if (NULL == resp_obj || NULL == data) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
@@ -3322,7 +3322,7 @@ static void eap_noob_rsp_type_three(struct eap_noob_serv_context * data,
  * @resp_obj: json object of the response received
  **/
 static void eap_noob_rsp_type_two(struct eap_noob_serv_context * data,
-                                  noob_json_t * resp_obj)
+                                  json_t * resp_obj)
 {
     size_t secret_len = EAP_SHARED_SECRET_LEN;
 
@@ -3380,7 +3380,7 @@ static void eap_noob_rsp_type_two(struct eap_noob_serv_context * data,
  * @payloadlen: Length of the payload
  **/
 static void eap_noob_rsp_type_one(struct eap_sm * sm, struct eap_noob_serv_context * data,
-                                  noob_json_t * resp_obj)
+                                  json_t * resp_obj)
 {
     /* Check for the supporting cryptosuites, peerID_gen, version, direction*/
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Response Processed/NOOB-IE-1");
@@ -3431,7 +3431,7 @@ static int eap_noob_exec_hint_queries(struct eap_noob_serv_context * data)
 }
 
 static void eap_noob_rsp_hint(struct eap_noob_serv_context * data,
-                              noob_json_t * resp_obj)
+                              json_t * resp_obj)
 {
     eap_noob_decode_obj(data->peer_attr,resp_obj);
     //check error code after decoding
@@ -3474,11 +3474,11 @@ static void eap_noob_rsp_hint(struct eap_noob_serv_context * data,
 static void eap_noob_process(struct eap_sm * sm, void * priv, struct wpabuf * respData)
 {
     struct eap_noob_serv_context * data = NULL;
-    noob_json_t * resp_obj = NULL;
+    json_t * resp_obj = NULL;
     const u8 * pos = NULL;
     char * dump_str = NULL;
     size_t len = 0;
-    noob_json_error_t error;
+    json_error_t error;
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: PROCESS SERVER");
 
