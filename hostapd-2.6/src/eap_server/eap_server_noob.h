@@ -148,6 +148,8 @@
 #define CREATE_CONNECTION_TABLE                     \
     "CREATE TABLE IF NOT EXISTS peers_connected(    \
     PeerID TEXT PRIMARY KEY,                        \
+    MAC1Input TEXT,                                 \
+    MAC2Input TEXT,                                 \
     Verp INTEGER,                                   \
     Vers INTEGER,                                   \
     peer_state INTEGER,                             \
