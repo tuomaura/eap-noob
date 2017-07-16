@@ -226,7 +226,7 @@ static int eap_noob_decode_vers_array(char * array, struct eap_noob_server_data 
         return FAILURE;
     }
 
-    JSON_ARRAY_FOREACH(ver_arr, index, value) {
+    json_array_foreach(ver_arr, index, value) {
         if (index > MAX_SUP_VER) break; /* reject the rest */
         data->version[index] = json_integer_value(value);
     }
@@ -254,7 +254,7 @@ static int eap_noob_decode_csuites_array(char * array, struct eap_noob_server_da
         return FAILURE;
     }
 
-    JSON_ARRAY_FOREACH(csuites_arr, index, value) {
+    json_array_foreach(csuites_arr, index, value) {
         if (index > MAX_SUP_CSUITES) break; /* reject the rest */
         data->cryptosuite[index] = json_integer_value(value);
     }
