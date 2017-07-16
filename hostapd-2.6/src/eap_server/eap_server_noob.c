@@ -1122,9 +1122,9 @@ static json_t * eap_noob_serverinfo(struct eap_noob_serv_config_params * data)
     err += json_object_set_new(info_obj, SERV_NAME, namejson);
     err += json_object_set_new(info_obj, SERV_URL, urljson);
 
-    err -= (NULL == (serverinfo = json_dumps(info_obj, JSON_COMPACT|JSON_PRESERVE_ORDER))):
+    err -= (NULL == (serverinfo = json_dumps(info_obj, JSON_COMPACT|JSON_PRESERVE_ORDER)));
     if (strlen(serverinfo) > MAX_INFO_LEN) {
-        wpa_printf(MSG_ERROR, "EAP-NOOB: ServerInfo too long.")
+        wpa_printf(MSG_ERROR, "EAP-NOOB: ServerInfo too long.");
         err--;
     }
 
@@ -2631,7 +2631,10 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context * data
     size_t len = 0;
     json_t * emptystr = json_string("");
     int err = 0;
-    json_t * Vers;
+    json_t * Vers, *macinput;
+    json_t * Cryptosuites, *Dirs,*ServerInfo, *Realm;
+    json_t * PeerId;
+    char * req_json;
 
     /* (Type=1, PeerId, CryptoSuites, Dirs ,ServerInfo) */
 
@@ -2648,21 +2651,21 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context * data
         return NULL;
     }
 
-    err -= (NULL == (Vers= json_array()));
+    err -= (NULL == (Vers = json_array()));
     for (int i = 0; i < MAX_SUP_VER ; i++) {
         if (data->server_attr->version[i] > 0)
             err += json_array_append_new(Vers, json_integer(data->server_attr->version[i]));
 
-    json_t * PeerId = json_string(data->peer_attr->PeerId);
+    PeerId = json_string(data->peer_attr->PeerId);
 
-    err -= (NULL == (json_t * Cryptosuites = json_array());
+    err -= (NULL == (Cryptosuites = json_array()));
     for (i = 0; i < MAX_SUP_VER ; i++) {
         if (data->server_attr->cryptosuite[i] > 0)
             err += json_array_append_new(Cryptosuites,
                json_integer(data->server_attr->cryptosuite[i]));
 
-    err -= (NULL == (json_t * Dirs = json_integer(data->server_attr->dir)));
-    err -= (NULL == (json_t * ServerInfo = eap_noob_serverinfo(data->server_attr->serv_config_params)));
+    err -= (NULL == (Dirs = json_integer(data->server_attr->dir)));
+    err -= (NULL == (ServerInfo = eap_noob_serverinfo(data->server_attr->serv_config_params)));
 
     /* Create request */
     err -= (NULL == (req_obj = json_object()));
@@ -2679,7 +2682,7 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context * data
     else 
         Realm = emptystr;
 
-    err -= (NULL == (char * req_json = json_dumps(req_obj, JSON_COMPACT|JSON_PRESERVE_ORDER)));
+    err -= (NULL == (req_json = json_dumps(req_obj, JSON_COMPACT|JSON_PRESERVE_ORDER)));
     if (err < 0) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: Unexpected JSON processing error when creating request type 1.");
         goto EXIT;
@@ -2696,7 +2699,7 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context * data
 
     /* Create MAC imput template */
     /* 1/2,Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,Cryptosuitep,Dirp,[Realm],PeerInfo,PKs,Ns,PKp,Np,Noob */
-    err -= (NULL == (json_t * macinput = json_array()));
+    err -= (NULL == (macinput = json_array()));
     err += json_array_append(macinput, emptystr);
     err += json_array_append(macinput, Vers);
     err += json_array_append(macinput, emptystr);

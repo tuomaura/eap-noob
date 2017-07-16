@@ -191,7 +191,7 @@
     if (_D) {                                       \
         os_free(_D);                                \
         (_D) = NULL;                                \
-    }                                               \
+    }                                               
 
 /* TA: canot do this for the reference count */
 /*
