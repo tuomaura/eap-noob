@@ -76,7 +76,7 @@ static u32 json_typeof(const json_t * value);
 
 
 /**
- * eap_noob_verify_peerID : Compares recived PeerID with the assigned one
+ * eap_noob_verify_peerID : Compares recived PeerId with the assigned one
  * @data : server context
  * @return : SUCCESS or FAILURE
  **/
@@ -88,9 +88,9 @@ static int eap_noob_verify_peerID(struct eap_noob_serv_context * data)
     }
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
 
-    if (0 != strcmp(data->peer_attr->peerID_gen,
+    if (0 != strcmp(data->peer_attr->PeerId,
              data->peer_attr->peerID_rcvd)) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Verification of PeerID failed, "
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Verification of PeerId failed, "
                 "setting error E1005");
         EAP_NOOB_SET_ERROR(data->peer_attr, E1005);
         return FAILURE;
@@ -236,9 +236,9 @@ static int eap_noob_decode_vers_array(char * array, struct eap_noob_server_data 
 }
 
 /**
- * eap_noob_decode_csuites_array : assigns the values of Csuites JSON array to csuite array
+ * eap_noob_decode_csuites_array : assigns the values of Cryptosuites JSON array to csuite array
  * @data: Server context
- * @array: Csuites JSON array
+ * @array: Cryptosuites JSON array
  * Returns: SUCCESS/FAILURE
  **/
 static int eap_noob_decode_csuites_array(char * array, struct eap_noob_server_data *data)
@@ -290,10 +290,10 @@ int eap_noob_callback(void * priv , int fieldCount, char ** fieldValue, char ** 
 
     for (i = 0; i < fieldCount; i++) {
         if (fieldValue[i]) {
-            if (os_strcmp(fieldName[i], "PeerID") == 0) {
-                EAP_NOOB_FREE_MALLOC(peer_attr->peerID_gen,
+            if (os_strcmp(fieldName[i], "PeerId") == 0) {
+                EAP_NOOB_FREE_MALLOC(peer_attr->PeerId,
                         (os_strlen(fieldValue[i]) + 1));
-                strcpy(peer_attr->peerID_gen, fieldValue[i]);
+                strcpy(peer_attr->PeerId, fieldValue[i]);
             }
             else if (os_strcmp(fieldName[i], "Verp") == 0) {
                 peer_attr->version = (int) strtol(fieldValue[i], NULL, 10);
@@ -306,10 +306,10 @@ int eap_noob_callback(void * priv , int fieldCount, char ** fieldValue, char ** 
                 wpa_printf(MSG_DEBUG, "EAP-NOOB: Server state in DB = %d",
                         peer_attr->serv_state);
             }
-            else if (os_strcmp(fieldName[i], "Csuitep") == 0) {
+            else if (os_strcmp(fieldName[i], "Cryptosuitep") == 0) {
                 peer_attr->cryptosuite = (int) strtol(fieldValue[i], NULL, 10);
             }
-            else if (os_strcmp(fieldName[i], "Csuites") == 0) {
+            else if (os_strcmp(fieldName[i], "Cryptosuites") == 0) {
                 eap_noob_decode_csuites_array(fieldValue[i], serv_attr);
             }
             else if (os_strcmp(fieldName[i], "Dirp") == 0) {
@@ -353,8 +353,8 @@ int eap_noob_callback(void * priv , int fieldCount, char ** fieldValue, char ** 
                         (os_strlen(fieldValue[i]) + 1));
                 strcpy(peer_attr->peer_info, fieldValue[i]);
             }
-            else if (os_strcmp(fieldName[i], "ServInfo") == 0) {
-                wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB ServInfo");
+            else if (os_strcmp(fieldName[i], "ServerInfo") == 0) {
+                wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB ServerInfo");
                 EAP_NOOB_FREE_MALLOC(serv_attr->serv_info,
                         (os_strlen(fieldValue[i]) + 1));
                 strcpy(serv_attr->serv_info, fieldValue[i]);
@@ -519,42 +519,42 @@ static int eap_noob_db_update(struct eap_noob_serv_context * data, u8 type)
     switch(type) {
         case UPDATE_ALL:
             snprintf(query, len, "UPDATE '%s' SET Verp=%d , serv_state=%d, Csuite=%d,"
-                    "Dirp=%d, nonce='%s', PeerInfo='%s' WHERE PeerID='%s'",
+                    "Dirp=%d, nonce='%s', PeerInfo='%s' WHERE PeerId='%s'",
                     data->db_table_name, data->peer_attr->version,
                     data->peer_attr->serv_state, data->peer_attr->cryptosuite,
                     data->peer_attr->dir,data->peer_attr->kdf_nonce_data->nonce_peer,
-                    data->peer_attr->peer_info, data->peer_attr->peerID_gen);
+                    data->peer_attr->peer_info, data->peer_attr->PeerId);
             break;
         case UPDATE_STATE:
-            snprintf(query,len,"UPDATE '%s' SET serv_state=%d WHERE PeerID='%s'",
+            snprintf(query,len,"UPDATE '%s' SET serv_state=%d WHERE PeerId='%s'",
                     data->db_table_name, data->peer_attr->serv_state,
-                    data->peer_attr->peerID_gen);
+                    data->peer_attr->PeerId);
             break;
         case UPDATE_STATE_ERROR:
             snprintf(query,len,"UPDATE '%s' SET serv_state=%d, errorCode=%d  "
-                    "WHERE PeerID='%s'", data->db_table_name,data->peer_attr->serv_state,
-                    data->peer_attr->err_code,data->peer_attr->peerID_gen);
+                    "WHERE PeerId='%s'", data->db_table_name,data->peer_attr->serv_state,
+                    data->peer_attr->err_code,data->peer_attr->PeerId);
             break;
         case UPDATE_STATE_MINSLP:
             snprintf(query,len,"UPDATE '%s' SET serv_state=%d, MINSLP_count =%d, "
-                    "sleepTime = %ld  WHERE PeerID='%s'",
+                    "sleepTime = %ld  WHERE PeerId='%s'",
                     data->db_table_name,data->peer_attr->serv_state,
                     data->peer_attr->minslp_count,
-                    data->peer_attr->sleep_time.tv_sec, data->peer_attr->peerID_gen);
+                    data->peer_attr->sleep_time.tv_sec, data->peer_attr->PeerId);
             break;
         case UPDATE_PERSISTENT_KEYS_SECRET:
             snprintf(query,len,"UPDATE '%s' SET kms='%s', kmp='%s', kz='%s', "
-                    "serv_state=%d  WHERE PeerID='%s'",
+                    "serv_state=%d  WHERE PeerId='%s'",
                     data->db_table_name,data->peer_attr->kdf_out->kms_b64,
                     data->peer_attr->kdf_out->kmp_b64, data->peer_attr->kdf_out->kz_b64,
-                    data->peer_attr->serv_state, data->peer_attr->peerID_gen);
+                    data->peer_attr->serv_state, data->peer_attr->PeerId);
             break;
         case UPDATE_OOB:
             snprintf(query, MAX_LINE_SIZE, "UPDATE '%s' SET noob='%s',hoob='%s',"
-                    "username='%s' WHERE PeerID='%s'",
+                    "username='%s' WHERE PeerId='%s'",
                     data->db_table_name,data->peer_attr->oob_data->noob_b64,
                     data->peer_attr->oob_data->hoob_b64, data->peer_attr->user_info,
-                    data->peer_attr->peerID_gen);
+                    data->peer_attr->PeerId);
             break;
         default:
             wpa_printf(MSG_ERROR, "EAP-NOOB: Wrong DB update type");
@@ -583,8 +583,8 @@ static int eap_noob_exec_no_hint_queries(struct eap_noob_serv_context * data)
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Server context is NULL");
         return FAILURE;
     }
-    snprintf(query, MAX_LINE_SIZE, "SELECT * from %s where PeerID='%s'",
-             DEVICE_TABLE, data->peer_attr->peerID_gen);
+    snprintf(query, MAX_LINE_SIZE, "SELECT * from %s where PeerId='%s'",
+             DEVICE_TABLE, data->peer_attr->PeerId);
     wpa_printf(MSG_DEBUG, "Query = %s\n", query);
     if (eap_noob_exec_query(query, eap_noob_callback, data)) {
         return eap_noob_db_update(data, UPDATE_OOB);
@@ -610,7 +610,7 @@ int eap_noob_hint_request_check(void * priv , int fieldCount, char **fieldValue,
 int eap_noob_is_hint_required(struct eap_noob_serv_context * data)
 {
     char buff[200] = {0}; //TODO : replace this with dynamic allocation
-    os_snprintf(buff,200,"SELECT COUNT(*) from %s WHERE  PeerID = '%s'",
+    os_snprintf(buff,200,"SELECT COUNT(*) from %s WHERE  PeerId = '%s'",
             DEVICE_TABLE,data->peer_attr->peerID_rcvd);
     return (eap_noob_exec_query(buff, eap_noob_hint_request_check,
                 data));
@@ -758,7 +758,6 @@ static int eap_noob_db_entry(struct eap_noob_serv_context *data)
            json_integer(data->server_attr->version[i]));
     }
 
-
     dump_str1 = json_dumps(ver_arr, JSON_COMPACT);
     dump_str2 = json_dumps(csuite_arr, JSON_COMPACT);
     dump_str3 = json_dumps(peer_attr->ecdh_exchange_data->jwk_serv,
@@ -767,13 +766,13 @@ static int eap_noob_db_entry(struct eap_noob_serv_context *data)
             JSON_COMPACT|JSON_PRESERVE_ORDER);
 
     snprintf(query, MAX_LINE_SIZE ,
-       "INSERT INTO %s ( PeerID, Mac1Input, Mac2Input, Verp,Vers, serv_state, "
-       "Csuitep, Csuites, Dirp, Dirs, nonce_serv, nonce_peer, PeerInfo,ServInfo,"
+       "INSERT INTO %s ( PeerId, Mac1Input, Mac2Input, Verp,Vers, serv_state, "
+       "Cryptosuitep, Cryptosuites, Dirp, Dirs, nonce_serv, nonce_peer, PeerInfo,ServerInfo,"
        "SharedSecret, Noob, Hoob, OOB_RECEIVED_FLAG,MINSLP_count, pub_key_serv, "
        "pub_key_peer, kms, kmp, kz,DevUpdate) VALUES ( '%s','%s','%s',%d ,'%s', %d, %d, "
        "'%s', %d, %d, '%s','%s', '%s','%s','%s','%s','%s', %d, %d, '%s', '%s', "
        "'%s', '%s', '%s',%d)",
-       data->db_table_name, peer_attr->peerID_gen,mac_input,NULL, peer_attr->version,
+       data->db_table_name, peer_attr->PeerId,mac_input,NULL, peer_attr->version,
        dump_str1, peer_attr->serv_state, peer_attr->cryptosuite, dump_str2,
        peer_attr->dir,data->server_attr->dir, peer_attr->kdf_nonce_data->nonce_serv_b64,
        peer_attr->kdf_nonce_data->nonce_peer_b64, peer_attr->peer_info,
@@ -815,7 +814,7 @@ static int eap_noob_parse_NAI(struct eap_noob_serv_context * data,
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s, parsing NAI (%s)",__func__, NAI);
     _NAI = (char *)NAI;
 
-    if (os_strstr(_NAI, DOMAIN) ||
+    if (os_strstr(_NAI, RESERVED_DOMAIN) ||
         os_strstr(_NAI, server_conf.realm)) {
         user_name_peer = strsep(&_NAI, "@");
         realm = strsep(&_NAI, "@");
@@ -839,7 +838,7 @@ static int eap_noob_parse_NAI(struct eap_noob_serv_context * data,
             return SUCCESS;
         }
         else if (0 == strcmp("noob", user_name_peer) &&
-                0 == strcmp(realm, DOMAIN)) {
+                0 == strcmp(realm, RESERVED_DOMAIN)) {
             data->peer_attr->peer_state = UNREG;
             return SUCCESS;
         }
@@ -913,13 +912,13 @@ static int eap_noob_create_db(struct eap_noob_serv_context * data)
     }
 
     if (data->peer_attr->peerID_rcvd) {
-        os_snprintf(buff, TMP_BUF_LEN, "SELECT COUNT(*) from %s WHERE  PeerID = '%s'",
+        os_snprintf(buff, TMP_BUF_LEN, "SELECT COUNT(*) from %s WHERE  PeerId = '%s'",
                 data->db_table_name, data->peer_attr->peerID_rcvd);
 
         if (FAILURE != eap_noob_exec_query(buff, eap_noob_db_entry_check,
                     data) && (data->peer_attr->record_present)) {
             memset(buff, 0, sizeof(buff));
-            os_snprintf(buff, TMP_BUF_LEN, "SELECT * from %s WHERE  PeerID = '%s'",
+            os_snprintf(buff, TMP_BUF_LEN, "SELECT * from %s WHERE  PeerId = '%s'",
                     data->db_table_name, data->peer_attr->peerID_rcvd);
 
             if (eap_noob_exec_query(buff, eap_noob_callback, data)) {
@@ -1095,38 +1094,57 @@ static int eap_noob_handle_incomplete_conf(struct eap_noob_serv_context * data)
         server_conf.max_we_count = MAX_WAIT_EXCHNG_TRIES;
 
     if (0 == (data->server_attr->config_params & REALM_RCVD))
-        server_conf.realm = os_strdup(DOMAIN);
+        server_conf.realm = os_strdup(RESERVED_DOMAIN);
 
     return SUCCESS;
 }
 
 /**
- * eap_noob_prepare_serv_json_obj:
+ * eap_noob_serverinfo:
  * @data : server config
  * Returs : json object. Has to be freed using json_decref at the caller.
  **/
-static json_t * eap_noob_prepare_serv_json_obj(struct eap_noob_serv_config_params * data)
+static json_t * eap_noob_serverinfo(struct eap_noob_serv_config_params * data)
 {
     json_t * info_obj = NULL;
+    int err = 0;
 
     if (NULL == data) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
         return NULL;
     }
 
-    if (NULL != (info_obj = json_object())) {
-        json_object_set_new(info_obj, SERV_NAME, json_string(data->Serv_name));
-        json_object_set_new(info_obj, SERV_URL, json_string(data->Serv_URL));
+    err -= (NULL == (info_obj = json_object()));
+    err -= (NULL == json_t namejson = json_string(data->Serv_name));
+    err -= (NULL == json_t urljson = json_string(data->Serv_URL));
+    err += json_object_set_new(info_obj, SERV_NAME, namejson);
+    err += json_object_set_new(info_obj, SERV_URL, urljson);
+
+    err -= (NULL == (char * serverinfo = json_dumps(info_obj, JSON_COMPACT|JSON_PRESERVE_ORDER))):
+    if (strlen(serverinfo) > MAX_INFO_LEN) {
+        wpa_printf(MSG_ERROR, "EAP-NOOB: ServerInfo too long.")
+        err--;
     }
+
+    if (err < 0) {
+        wpa_printf(MSG_ERROR, "EAP-NOOB: Creation of ServerInfo failed.");
+        json_decref(namejson);
+        json_decref(urljson);
+        json_decref(info_obj);
+        return NULL;
+    }
+
     return info_obj;
 }
 
+
 /**
- * eap_noob_prepare_serv_info_obj : Create a Json object for peer information.
+ * eap_noob_serverinfo : Create a Json object for peer information.
  * @data : server context.
  * returns : SUCCESS or FAILURE.
 **/
-static int eap_noob_prepare_serv_info_obj(struct eap_noob_server_data * data)
+/*
+static int eap_noob_serverinfo(struct eap_noob_server_data * data)
 {
     json_t * info_obj = NULL;
     int ret = SUCCESS;
@@ -1154,6 +1172,7 @@ static int eap_noob_prepare_serv_info_obj(struct eap_noob_server_data * data)
     json_decref(info_obj);
     return ret;
 }
+*/
 
 /**
  * eap_noob_read_config : read configuraions from config file
@@ -1207,7 +1226,7 @@ static int eap_noob_read_config(struct eap_noob_serv_context * data)
         ret = FAILURE; goto ERROR_EXIT;
     }
 
-    ret  = eap_noob_prepare_serv_info_obj(data->server_attr);
+    ret  = eap_noob_serverinfo(data->server_attr);
 
 ERROR_EXIT:
     if (ret != SUCCESS)
@@ -1227,7 +1246,7 @@ int eap_noob_get_id_peer(char * str, size_t size)
     const u8 charset[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     time_t t = 0;
 
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: Generating PeerID");
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Generating PeerId");
     srand((unsigned)time(&t));
 
     int charset_size = (int)(sizeof(charset) - 1);
@@ -1360,7 +1379,7 @@ static void eap_noob_get_sid(struct eap_sm * sm, struct eap_noob_serv_context * 
 
     snprintf(query, 500, "INSERT INTO radius (user_name, called_st_id, "
             "calling_st_id, NAS_id) VALUES ('%s','%s','%s','%s')",
-            data->peer_attr->peerID_gen, sm->rad_attr->calledSID,
+            data->peer_attr->PeerId, sm->rad_attr->calledSID,
             sm->rad_attr->callingSID, sm->rad_attr->nasId);
 
     if (FAILURE == eap_noob_exec_query(query, NULL, data)) {
@@ -1836,9 +1855,9 @@ static struct wpabuf * eap_noob_err_msg(struct eap_noob_serv_context * data, u8 
 
     if (NULL == (req_obj = json_object()))
         goto EXIT;
-    if (data->peer_attr->peerID_gen && code != E1001) {
+    if (data->peer_attr->PeerId && code != E1001) {
         json_object_set_new(req_obj, PEERID,
-                json_string(data->peer_attr->peerID_gen));
+                json_string(data->peer_attr->PeerId));
     } else {
         json_object_set_new(req_obj, PEERID,
                 json_string(data->peer_attr->peerID_rcvd));
@@ -1973,7 +1992,7 @@ static char * eap_noob_prepare_hoob_arr(struct eap_noob_serv_context * data)
 
         json_array_append(hoob_arr,json_integer(data->peer_attr->version));
 
-        json_array_append(hoob_arr,json_string(data->peer_attr->peerID_gen));
+        json_array_append(hoob_arr,json_string(data->peer_attr->PeerId));
 
         if ((csuite_arr = eap_noob_prepare_csuites_arr(data)) == NULL)
             return NULL;
@@ -2078,7 +2097,7 @@ static json_t * eap_noob_prepare_vers_arr(const struct eap_noob_serv_context * d
 
 
 /**
- * eap_noob_prepare_csuites_arr : prepares a JSON array for Csuites
+ * eap_noob_prepare_csuites_arr : prepares a JSON array for Cryptosuites
  * @data: peer context
  * return : Json array/NULL
  **/
@@ -2125,8 +2144,8 @@ static char * eap_noob_prepare_mac_input(struct eap_noob_serv_context * data, in
     }
 
     query = os_zalloc(MAX_LINE_SIZE);
-    snprintf(query, MAX_LINE_SIZE, "SELECT %s from %s where PeerID='%s' ", 
-        (state < RECONNECT) ? "Mac1Input" : "Mac2Input", PEER_TABLE, data->peer_attr->peerID_gen); 
+    snprintf(query, MAX_LINE_SIZE, "SELECT %s from %s where PeerId='%s' ", 
+        (state < RECONNECT) ? "Mac1Input" : "Mac2Input", PEER_TABLE, data->peer_attr->PeerId); 
     if (eap_noob_exec_query(query, eap_noob_callback, data))
         goto EXIT;
     
@@ -2209,7 +2228,7 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_noob_serv_context * da
     json_object_set_new(req_obj,TYPE,
             json_integer(EAP_NOOB_TYPE_7));
     json_object_set_new(req_obj, PEERID,
-            json_string(data->peer_attr->peerID_gen));
+            json_string(data->peer_attr->PeerId));
     json_object_set_new(req_obj, MACs,
             json_string(mac_b64));
 
@@ -2284,7 +2303,7 @@ static struct wpabuf * eap_noob_req_type_six(struct eap_noob_serv_context * data
     json_object_set_new(req_obj, TYPE,
             json_integer(EAP_NOOB_TYPE_6));
     json_object_set_new(req_obj, PEERID,
-            json_string(data->peer_attr->peerID_gen));
+            json_string(data->peer_attr->PeerId));
     json_object_set_new(req_obj, NONCE_SERV,
             json_string(base64_nonce));
 
@@ -2337,11 +2356,11 @@ static struct wpabuf * eap_noob_req_type_five(struct eap_noob_serv_context * dat
         goto EXIT;
 
     json_object_set_new(req_obj, TYPE, json_integer(EAP_NOOB_TYPE_5));
-    json_object_set_new(req_obj, PEERID, json_string(data->peer_attr->peerID_gen));
-    json_object_set_new(req_obj, CSUITES_SERV, csuite_arr);
+    json_object_set_new(req_obj, PEERID, json_string(data->peer_attr->PeerId));
+    json_object_set_new(req_obj, CRYPTOSUITES, csuite_arr);
     /* TODO send this only if changed (check even at peer side) */
-    json_object_set_new(req_obj, SERV_INFO,
-            eap_noob_prepare_serv_json_obj(data->server_attr->serv_config_params));
+    json_object_set_new(req_obj, SERVERINFO,
+            eap_noob_serverinfo(data->server_attr->serv_config_params));
 
     req_json = json_dumps(req_obj, JSON_COMPACT);
     if (!req_json) goto EXIT;
@@ -2401,7 +2420,7 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_noob_serv_context * dat
     json_object_set_new(req_obj, TYPE,
             json_integer(EAP_NOOB_TYPE_4));
     json_object_set_new(req_obj, PEERID,
-            json_string(data->peer_attr->peerID_gen));
+            json_string(data->peer_attr->PeerId));
     json_object_set_new(req_obj, HINT_SERV,
             json_string(data->peer_attr->oob_data->hint_b64));
     json_object_set_new(req_obj, MACs, json_string(mac_b64));
@@ -2454,7 +2473,7 @@ static struct wpabuf * eap_noob_req_type_three(struct eap_noob_serv_context * da
     json_object_set_new(req_obj, TYPE,
         json_integer(EAP_NOOB_TYPE_3));
     json_object_set_new(req_obj, PEERID,
-        json_string(data->peer_attr->peerID_gen));
+        json_string(data->peer_attr->PeerId));
     json_object_set_new(req_obj, MINSLEEP,
         json_integer(data->peer_attr->minsleep));
     clock_gettime(CLOCK_REALTIME, &data->peer_attr->sleep_time);
@@ -2571,7 +2590,7 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_noob_serv_context *data,
         goto EXIT;
 
     json_object_set_new(req_obj, TYPE, json_integer(EAP_NOOB_TYPE_2));
-    json_object_set_new(req_obj, PEERID, json_string(data->peer_attr->peerID_gen));
+    json_object_set_new(req_obj, PEERID, json_string(data->peer_attr->PeerId));
     json_object_set_new(req_obj, NONCE_SERV, json_string(base64_nonce));
     json_object_set(req_obj, JSON_WEB_KEY, data->peer_attr->ecdh_exchange_data->jwk_serv);
     json_object_set_new(req_obj, MINSLEEP, json_integer(data->peer_attr->minsleep));
@@ -2605,73 +2624,106 @@ EXIT:
  **/
 static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context * data, u8 id)
 {
-    json_t * req_obj = NULL, * ver_arr = NULL, * csuite_arr = NULL;
+    json_t * req_obj = NULL;
     struct wpabuf * req = NULL;
-    char * req_json = NULL;
-    char id_peer[MAX_PEER_ID_LEN + 1] = {0};
     size_t len = 0;
+    json_t emptystr = json_string("");
+    int err = 0;
 
     /* (Type=1, PeerId, CryptoSuites, Dirs ,ServerInfo) */
 
-    if (NULL == data || NULL == data->server_attr ||
-        NULL == data->peer_attr) {
+    if (NULL == data || NULL == data->server_attr || NULL == data->peer_attr) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
         return NULL;
     }
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Request 1/Initial Exchange");
-
-    /* build PeerID */
-    if (eap_noob_get_id_peer(id_peer, MAX_PEER_ID_LEN)) {
-        wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to generate PeerID");
+     
+    EAP_NOOB_FREE(data->peer_attr->PeerId);
+    if (eap_noob_get_id_peer(data->peer_attr->PeerId, MAX_PEER_ID_LEN)) {
+        wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to generate PeerId");
         return NULL;
     }
 
-    EAP_NOOB_FREE(data->peer_attr->peerID_gen);
-    data->peer_attr->peerID_gen = os_strdup(id_peer);
+    err -= (NULL == (json_t Vers = json_array()));
+    for (i = 0; i < MAX_SUP_VER ; i++) {
+        if (data->server_attr->version[i] > 0)
+            err += json_array_append_new(Vers, json_integer(data->server_attr->version[i]));
 
-    if (NULL == (req_obj = json_object()))
+    json_t PeerId = json_string(data->peer_attr->PeerId)
+
+    err -= (NULL == (json_t Cryptosuites = json_array());
+    for (i = 0; i < MAX_SUP_VER ; i++) {
+        if (data->server_attr->cryptosuite[i] > 0)
+            err += json_array_append_new(Cryptosuites,
+               json_integer(data->server_attr->cryptosuite[i]));
+
+    err -= (NULL == (json_t Dirs = json_integer(data->server_attr->dir)));
+    err -= (NULL == (json_t ServerInfo = eap_noob_serverinfo(data->server_attr->serv_config_params)));
+
+    /* Create request */
+    err -= (NULL == (req_obj = json_object()));
+    err += json_object_set_new(req_obj, TYPE, json_integer(EAP_NOOB_TYPE_1));
+    err += json_object_set_new(req_obj, VERSION_SERV, Vers);
+    err += json_object_set_new(req_obj, PEERID, PeerId);
+    err += json_object_set_new(req_obj, CRYPTOSUITES, Cryptosuites);
+    err += json_object_set_new(req_obj, DIRECTION_SERV, Dirs);
+    err += json_object_set_new(req_obj, SERVERINFO, ServerInfo);
+    if (0 != strcmp(server_conf.realm, RESERVED_DOMAIN)) {
+        err -= (NULL == (Realm = json_string(server_conf.realm)));
+        err += json_object_set_new(req_obj, REALM, Realm);
+    }
+    else 
+        Realm = emptystr;
+
+    err -= (NULL == (char * req_json = json_dumps(req_obj, JSON_COMPACT|JSON_PRESERVE_ORDER)));
+    ïf (err < 0) {
+        wpa_printf(MSG_ERROR, "EAP-NOOB: Unexpected JSON processing error when creating request type 1.");
         goto EXIT;
+    }
 
-    if (NULL == (ver_arr = eap_noob_prepare_vers_arr(data)))
-        goto EXIT;
-
-    if (NULL == (csuite_arr = eap_noob_prepare_csuites_arr(data)))
-        goto EXIT;
-
-    json_object_set_new(req_obj, TYPE,
-            json_integer(EAP_NOOB_TYPE_1));
-    json_object_set(req_obj, VERSION_SERV, ver_arr);
-    json_object_set_new(req_obj, PEERID,
-            json_string(data->peer_attr->peerID_gen));
-    json_object_set(req_obj, CSUITES_SERV, csuite_arr);
-    json_object_set_new(req_obj, DIRECTION_SERV,
-            json_integer(data->server_attr->dir));
-    json_object_set_new(req_obj, SERV_INFO,
-            eap_noob_prepare_serv_json_obj(data->server_attr->serv_config_params));
-
-    if (0 != strcmp(server_conf.realm,DOMAIN))
-        json_object_set_new(req_obj, REALM, json_string(server_conf.realm));
-
-    req_json = json_dumps(req_obj, JSON_COMPACT|JSON_PRESERVE_ORDER);
-    if (!req_json) goto EXIT;
-
-    printf("Request Sending = %s = %d\n", req_json,(int)strlen(req_json));
+    printf("Request Sending = %s = %d\n", req_json, (int)strlen(req_json));
     len = strlen(req_json);
 
-    req = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB, len+1, EAP_CODE_REQUEST, id);
-    if (req == NULL) {
-        wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to allocate memory "
-                "for Request/NOOB-IE");
+    if (NULL == (req = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB, len+1, EAP_CODE_REQUEST, id))) {
+        wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to allocate memory for Request/NOOB-IE");
         goto EXIT;
     }
     wpabuf_put_data(req, req_json, len+1);
 
+    /* Create MAC imput template */
+    /* 1/2,Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,Cryptosuitep,Dirp,[Realm],PeerInfo,PKs,Ns,PKp,Np,Noob */
+    err -= (NULL == (json_t macinput = json_array()));
+    err += json_array_append(macinput, emptystr);
+    err += json_array_append(macinput, Vers);
+    err += json_array_append(macinput, emptystr);
+    err += json_array_append(macinput, PeerId);
+    err += json_array_append(macinput, Cryptosuites);
+    err += json_array_append(macinput, Dirs);               
+    err += json_array_append(macinput, ServerInfo);
+    err += json_array_append(macinput, emptystr);
+    err += json_array_append(macinput, emptystr);
+    err += json_array_append(macinput, Realm);                          
+    err += json_array_append(macinput, emptystr);
+    err += json_array_append(macinput, emptystr);
+    err += json_array_append(macinput, emptystr);
+    err += json_array_append(macinput, emptystr);
+    err += json_array_append(macinput, emptystr);
+    data->peer_attr->Mac1Input = macinput;
+    ïf (err < 0) {
+        wpa_printf(MSG_ERROR, "EAP-NOOB: Unexpected JSON processing error when creating mac input template.");
+        goto EXIT;
+    }
+
 EXIT:
     EAP_NOOB_FREE(req_json);
-    EAP_NOOB_JSON_FREE(req_obj);
-    EAP_NOOB_JSON_FREE(ver_arr);
-    EAP_NOOB_JSON_FREE(csuite_arr);
+    json_decref(req_obj);
+    if (err < 0) {
+        json_decref(macinput);
+        data->peer_attr->Mac1Input = NULL;
+        wpabuf_free(req);
+        return NULL;
+    }
     return req;
 }
 
@@ -2697,7 +2749,7 @@ static struct wpabuf * eap_noob_req_hint(struct eap_noob_serv_context * data, u8
         json_object_set_new(req_obj, TYPE,
                 json_integer(EAP_NOOB_TYPE_HINT));
         json_object_set_new(req_obj, PEERID,
-                json_string(data->peer_attr->peerID_gen));
+                json_string(data->peer_attr->PeerId));
 
         req_json = json_dumps(req_obj, JSON_COMPACT|JSON_PRESERVE_ORDER);
         if (!req_json) goto EXIT;
@@ -2983,7 +3035,7 @@ static void  eap_noob_decode_obj(struct eap_noob_peer_data * data, json_t * resp
                     data->version = retval_int;
                     data->rcvd_params |= VERSION_RCVD;
                 }
-                else if (0 == strcmp(key, CSUITES_PEER)) {
+                else if (0 == strcmp(key, CRYPTOSUITEP)) {
                     data->cryptosuite = retval_int;
                     data->rcvd_params |= CSUITE_RCVD;
                 }
@@ -3159,7 +3211,7 @@ static void eap_noob_rsp_type_six(struct eap_noob_serv_context * data,
 static void eap_noob_rsp_type_five(struct eap_noob_serv_context * data,
                                    json_t * resp_obj)
 {
-    /* check for the supporting cryptosuites, peerID_gen, version, direction */
+    /* check for the supporting cryptosuites, PeerId, version, direction */
     if (NULL == resp_obj || NULL == data) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
         return ;
@@ -3345,7 +3397,7 @@ static void eap_noob_rsp_type_two(struct eap_noob_serv_context * data,
 static void eap_noob_rsp_type_one(struct eap_sm * sm, struct eap_noob_serv_context * data,
                                   json_t * resp_obj)
 {
-    /* Check for the supporting cryptosuites, peerID_gen, version, direction*/
+    /* Check for the supporting cryptosuites, PeerId, version, direction*/
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Response Processed/NOOB-IE-1");
 
     if (NULL == resp_obj || NULL == data || NULL == sm) {
@@ -3354,6 +3406,9 @@ static void eap_noob_rsp_type_one(struct eap_sm * sm, struct eap_noob_serv_conte
     }
 
     eap_noob_decode_obj(data->peer_attr, resp_obj);
+    
+
+
     if ((data->peer_attr->err_code != NO_ERROR)) {
         EAP_NOOB_SET_DONE(data, NOT_DONE);
         return;
@@ -3381,8 +3436,8 @@ static int eap_noob_exec_hint_queries(struct eap_noob_serv_context * data)
     //To-Do: send error if NoodID not found
 
     if (query) {
-        snprintf(query, MAX_LINE_SIZE, "SELECT Noob, Hoob from %s where PeerID='%s' and  Hint='%s'", DEVICE_TABLE,
-                data->peer_attr->peerID_gen,data->peer_attr->oob_data->hint_b64);
+        snprintf(query, MAX_LINE_SIZE, "SELECT Noob, Hoob from %s where PeerId='%s' and  Hint='%s'", DEVICE_TABLE,
+                data->peer_attr->PeerId,data->peer_attr->oob_data->hint_b64);
         printf("Query = %s\n",query);
         if (eap_noob_exec_query(query, eap_noob_callback, data) && data->peer_attr->oob_data->noob != NULL) {
             return eap_noob_db_update(data, UPDATE_OOB);
@@ -3765,7 +3820,7 @@ static void eap_noob_free_ctx(struct eap_noob_serv_context * data)
         os_free(serv); serv = NULL;
     }
     if (peer) {
-        EAP_NOOB_FREE(peer->peerID_gen);
+        EAP_NOOB_FREE(peer->PeerId);
         EAP_NOOB_FREE(peer->peerID_rcvd);
         EAP_NOOB_FREE(peer->peer_info);
         EAP_NOOB_FREE(peer->peer_snum);

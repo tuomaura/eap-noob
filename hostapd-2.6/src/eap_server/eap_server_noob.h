@@ -25,7 +25,7 @@
 #define FIXED_LENGTH            6
 #endif
 
-#define DOMAIN                  "eap-noob.net"
+#define RESERVED_DOMAIN         "eap-noob.net"
 #define VERSION_ONE             1
 #define SUITE_ONE               1
 #define EAP_NOOB_NOOB_LEN       16
@@ -79,13 +79,13 @@
 #define ERR_CODE                "ErrorCode"
 
 #define VERSION_SERV            "Vers"
-#define CSUITES_SERV            "Cryptosuites"
+#define CRYPTOSUITES            "Cryptosuites"
 #define DIRECTION_SERV          "Dirs"
 #define NONCE_SERV              "Ns"
 #define MINSLEEP                "SleepTime"
 #define PEERID                  "PeerId"
 #define PUBLICKEY_SERV          "PKs"
-#define SERV_INFO               "ServerInfo"
+#define SERVERINFO               "ServerInfo"
 #define MACs                    "MACs"
 
 #define PEER_SERIAL_NUM         "Serial"
@@ -93,7 +93,7 @@
 #define PEER_MAKE               "Make"
 
 #define VERSION_PEER            "Verp"
-#define CSUITES_PEER            "Cryptosuitep"
+#define CRYPTOSUITEP            "Cryptosuitep"
 #define DIRECTION_PEER          "Dirp"
 #define NONCE_PEER              "Np"
 #define PUBLICKEY_PEER          "PKp"
@@ -147,21 +147,21 @@
 /*SQL query to create peer connection database*/
 #define CREATE_CONNECTION_TABLE                     \
     "CREATE TABLE IF NOT EXISTS peers_connected(    \
-    PeerID TEXT PRIMARY KEY,                        \
+    PeerId TEXT PRIMARY KEY,                        \
     Mac1Input TEXT,                                 \
     Mac2Input TEXT,                                 \
     Verp INTEGER,                                   \
     Vers INTEGER,                                   \
     peer_state INTEGER,                             \
     serv_state INTEGER,                             \
-    Csuites INTEGER,                                \
-    Csuitep INTEGER,                                \
+    Cryptosuites INTEGER,                           \
+    Cryptosuitep INTEGER,                           \
     Dirp INTEGER,                                   \
     Dirs INTEGER,                                   \
     nonce_serv TEXT,                                \
     nonce_peer TEXT,                                \
     PeerInfo TEXT,                                  \
-    ServInfo TEXT,                                  \
+    ServerInfo TEXT,                                \
     SharedSecret TEXT,                              \
     Noob TEXT,                                      \
     Hoob TEXT,                                      \
@@ -193,11 +193,14 @@
         (_D) = NULL;                                \
     }                                               \
 
+/* TA: canot do this for the reference count */
+/*
 #define EAP_NOOB_JSON_FREE(_J)                      \
     if (_J) {                                       \
         json_decref(_J);                   \
         _J = NULL;                                  \
     }
+*/
 
 #define EAP_NOOB_FREE_MALLOC(_D,_l)                 \
     EAP_NOOB_FREE(_D)                               \
@@ -333,7 +336,7 @@ struct eap_noob_peer_data {
     u8 is_success;
 
     char * peerID_rcvd;
-    char * peerID_gen;
+    char * PeerId;
     char * peer_info;
     char * peer_snum;  /* Only set, not used */
     char * mac;
@@ -349,8 +352,10 @@ struct eap_noob_peer_data {
     struct eap_noob_oob_data * oob_data;
     struct eap_noob_ecdh_kdf_nonce * kdf_nonce_data;
     struct eap_noob_ecdh_kdf_out * kdf_out;
-    char * Mac1Input;
-    char * Mac2Input;
+    json_t * Mac1Input;
+    json_t * Mac2Input;
+    char * Mac1InputStr;
+    char * Mac2InputStr;
 };
 
 struct eap_noob_serv_config_params {
