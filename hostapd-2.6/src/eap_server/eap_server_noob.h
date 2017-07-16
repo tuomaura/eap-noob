@@ -305,8 +305,8 @@ struct eap_noob_ecdh_key_exchange {
     char * y_b64;
     size_t y_len;
 
-    noob_json_t * jwk_serv;
-    noob_json_t * jwk_peer;
+    json_t * jwk_serv;
+    json_t * jwk_peer;
 
     u8 * shared_key;
     char * shared_key_b64;
@@ -428,6 +428,6 @@ const int state_message_check[NUM_OF_STATES][MAX_MSG_TYPES] = {
     (state_machine[data->peer_attr->serv_state][data->peer_attr->peer_state]  == VALID)   \
 
 /*Function prototypes*/
-static noob_json_t * eap_noob_prepare_vers_arr(const struct eap_noob_serv_context * data);
-static noob_json_t * eap_noob_prepare_csuites_arr(const struct eap_noob_serv_context * data);
+static json_t * eap_noob_prepare_vers_arr(const struct eap_noob_serv_context * data);
+static json_t * eap_noob_prepare_csuites_arr(const struct eap_noob_serv_context * data);
 #endif
