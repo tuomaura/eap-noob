@@ -148,8 +148,8 @@
 #define CREATE_CONNECTION_TABLE                     \
     "CREATE TABLE IF NOT EXISTS peers_connected(    \
     PeerID TEXT PRIMARY KEY,                        \
-    MAC1Input TEXT,                                 \
-    MAC2Input TEXT,                                 \
+    Mac1Input TEXT,                                 \
+    Mac2Input TEXT,                                 \
     Verp INTEGER,                                   \
     Vers INTEGER,                                   \
     peer_state INTEGER,                             \
@@ -349,6 +349,8 @@ struct eap_noob_peer_data {
     struct eap_noob_oob_data * oob_data;
     struct eap_noob_ecdh_kdf_nonce * kdf_nonce_data;
     struct eap_noob_ecdh_kdf_out * kdf_out;
+    char * Mac1Input;
+    char * Mac2Input;
 };
 
 struct eap_noob_serv_config_params {
