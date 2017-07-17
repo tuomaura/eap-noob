@@ -319,12 +319,14 @@ int eap_noob_callback(void * priv , int fieldCount, char ** fieldValue, char ** 
                 serv_attr->dir = (int) strtol(fieldValue[i], NULL, 10);
             }
             else if (os_strcmp(fieldName[i], "Mac1Input") == 0) {
-                EAP_NOOB_FREE_MALLOC(peer_attr->Mac1Input, (os_strlen(fieldValue[i]) + 1));
-                strcpy(peer_attr->Mac1Input, fieldValue[i]);
+                if (!peer_attr->Mac1Input) json_decref(peer_attr->Mac1Input);
+                peer_attr->Mac1Input = json_loads(fieldValue[i],
+                    JSON_COMPACT|JSON_PRESERVE_ORDER, &error);
             }
             else if (os_strcmp(fieldName[i], "Mac2Input") == 0) {
-                 EAP_NOOB_FREE_MALLOC(peer_attr->Mac2Input, (os_strlen(fieldValue[i]) + 1));
-                 strcpy(peer_attr->Mac2Input, fieldValue[i]);
+                 if(!peer_attr->Mac2Input) json_decref(peer_attr->Mac2Input);
+                peer_attr->Mac2Input = json_loads(fieldValue[i],
+                    JSON_COMPACT|JSON_PRESERVE_ORDER, &error);
             }
             else if (os_strcmp(fieldName[i], "nonce_peer") == 0  &&
                      os_strlen(fieldValue[i]) > 0) {
@@ -410,7 +412,7 @@ int eap_noob_callback(void * priv , int fieldCount, char ** fieldValue, char ** 
                 peer_attr->minslp_count = (int )strtol(fieldValue[i],NULL,10);
             }
             else if (os_strcmp(fieldName[i], "pub_key_serv") == 0) {
-                EAP_NOOB_JSON_FREE(peer_attr->ecdh_exchange_data->jwk_serv);
+                json_decref(peer_attr->ecdh_exchange_data->jwk_serv);
                 peer_attr->ecdh_exchange_data->jwk_serv = \
                      json_loads(fieldValue[i], JSON_COMPACT, &error);
                 dump_str = json_dumps(peer_attr->ecdh_exchange_data->jwk_serv,
@@ -419,7 +421,7 @@ int eap_noob_callback(void * priv , int fieldCount, char ** fieldValue, char ** 
                 os_free(dump_str);
             }
             else if (os_strcmp(fieldName[i], "pub_key_peer") == 0) {
-                EAP_NOOB_JSON_FREE(peer_attr->ecdh_exchange_data->jwk_peer);
+                json_decref(peer_attr->ecdh_exchange_data->jwk_peer);
                 peer_attr->ecdh_exchange_data->jwk_peer = \
                     json_loads(fieldValue[i],
                     JSON_COMPACT|JSON_PRESERVE_ORDER, &error);
@@ -750,7 +752,7 @@ static int eap_noob_db_entry(struct eap_noob_serv_context *data)
 
     if (NULL == (mac_input = json_array())) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null",  __func__);
-        return NULL;
+        return FAILURE;
     }
     /*prepare the json array*/
     for (int i = 0; i < MAX_SUP_VER ; i++) {
@@ -772,7 +774,7 @@ static int eap_noob_db_entry(struct eap_noob_serv_context *data)
        "pub_key_peer, kms, kmp, kz,DevUpdate) VALUES ( '%s','%s','%s',%d ,'%s', %d, %d, "
        "'%s', %d, %d, '%s','%s', '%s','%s','%s','%s','%s', %d, %d, '%s', '%s', "
        "'%s', '%s', '%s',%d)",
-       data->db_table_name, peer_attr->PeerId,mac_input,NULL, peer_attr->version,
+       data->db_table_name, peer_attr->PeerId,json_dumps(mac_input, JSON_COMPACT|JSON_PRESERVE_ORDER),"", peer_attr->version,
        dump_str1, peer_attr->serv_state, peer_attr->cryptosuite, dump_str2,
        peer_attr->dir,data->server_attr->dir, peer_attr->kdf_nonce_data->nonce_serv_b64,
        peer_attr->kdf_nonce_data->nonce_peer_b64, peer_attr->peer_info,
@@ -1186,6 +1188,7 @@ static int eap_noob_read_config(struct eap_noob_serv_context * data)
     FILE * conf_file = NULL;
     char * buff = NULL;
     int ret = SUCCESS;
+    json_t * serv_info = NULL;
 
     if (NULL == data || NULL == data->server_attr) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
@@ -1228,7 +1231,13 @@ static int eap_noob_read_config(struct eap_noob_serv_context * data)
         ret = FAILURE; goto ERROR_EXIT;
     }
 
-    ret  = eap_noob_serverinfo(data->server_attr);
+    serv_info =  eap_noob_serverinfo(data->server_attr->serv_config_params);
+    if(serv_info == NULL){
+        ret = FAILURE;
+        goto ERROR_EXIT;
+    }
+    data->server_attr->serv_info = json_dumps(serv_info, JSON_COMPACT|JSON_PRESERVE_ORDER);
+    json_decref(serv_info);
 
 ERROR_EXIT:
     if (ret != SUCCESS)
@@ -1894,7 +1903,7 @@ static struct wpabuf * eap_noob_err_msg(struct eap_noob_serv_context * data, u8 
     EAP_NOOB_SET_SUCCESS(data, FAILURE);
     data->peer_attr->err_code = NO_ERROR;
 EXIT:
-    EAP_NOOB_JSON_FREE(req_obj);
+    json_decref(req_obj);
     EAP_NOOB_FREE(req_json);
 
     return req;
@@ -2132,7 +2141,6 @@ static char * eap_noob_prepare_mac_input(struct eap_noob_serv_context * data, in
     json_t * mac_input = NULL;
     char * mac_input_str = NULL;
     char * query = NULL;
-    json_error_t error;
 
     if (NULL == data) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
@@ -2151,7 +2159,7 @@ static char * eap_noob_prepare_mac_input(struct eap_noob_serv_context * data, in
     if (eap_noob_exec_query(query, eap_noob_callback, data))
         goto EXIT;
     
-    mac_input = json_loads(data->peer_attr->Mac1Input, JSON_COMPACT|JSON_PRESERVE_ORDER, &error);
+    mac_input = data->peer_attr->Mac1Input;
 
     if (type == MACP)
         json_array_insert_new(mac_input,0,json_integer(1));
@@ -2161,7 +2169,7 @@ static char * eap_noob_prepare_mac_input(struct eap_noob_serv_context * data, in
 
 EXIT:
     os_free(query);
-    EAP_NOOB_JSON_FREE(mac_input);
+    json_decref(mac_input);
     return mac_input_str;
 }
 
@@ -2249,7 +2257,7 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_noob_serv_context * da
     wpabuf_put_data(req, req_json, len);
 
 EXIT:
-    EAP_NOOB_JSON_FREE(req_obj);
+    json_decref(req_obj);
     EAP_NOOB_FREE(req_json);
     EAP_NOOB_FREE(mac_b64);
     return req;
@@ -2326,7 +2334,7 @@ static struct wpabuf * eap_noob_req_type_six(struct eap_noob_serv_context * data
 EXIT:
     /* Do not free base64_nonce as its value is stored in
      * nonce_data->nonce_serv_b64 */
-    EAP_NOOB_JSON_FREE(req_obj);
+    json_decref(req_obj);
     EAP_NOOB_FREE(req_json);
     return req;
 }
@@ -2377,8 +2385,8 @@ static struct wpabuf * eap_noob_req_type_five(struct eap_noob_serv_context * dat
     wpabuf_put_data(req, req_json, len+1);
 
 EXIT:
-    EAP_NOOB_JSON_FREE(req_obj);
-    EAP_NOOB_JSON_FREE(csuite_arr);
+    json_decref(req_obj);
+    json_decref(csuite_arr);
     EAP_NOOB_FREE(req_json);
     return req;
 }
@@ -2443,7 +2451,7 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_noob_serv_context * dat
     }
     wpabuf_put_data(req, req_json, len);
 EXIT:
-    EAP_NOOB_JSON_FREE(req_obj);
+    json_decref(req_obj);
     EAP_NOOB_FREE(req_json);
     EAP_NOOB_FREE(mac_b64);
     return req;
@@ -2494,7 +2502,7 @@ static struct wpabuf * eap_noob_req_type_three(struct eap_noob_serv_context * da
     }
     wpabuf_put_data(req, req_json, len);
 EXIT:
-    EAP_NOOB_JSON_FREE(req_obj);
+    json_decref(req_obj);
     EAP_NOOB_FREE(req_json);
     return req;
 }
@@ -2612,7 +2620,7 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_noob_serv_context *data,
 
     wpabuf_put_data(req, req_json, len);
 EXIT:
-    EAP_NOOB_JSON_FREE(req_obj);
+    json_decref(req_obj);
     EAP_NOOB_FREE(req_json);
     return req;
 }
@@ -2631,7 +2639,7 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context * data
     size_t len = 0;
     json_t * emptystr = json_string("");
     int err = 0;
-    json_t * Vers, *macinput;
+    json_t * Vers = NULL, *macinput= NULL;
     json_t * Cryptosuites, *Dirs,*ServerInfo, *Realm;
     json_t * PeerId;
     char * req_json;
@@ -2774,7 +2782,7 @@ static struct wpabuf * eap_noob_req_hint(struct eap_noob_serv_context * data, u8
         wpabuf_put_data(req, req_json, len+1);
     }
 EXIT:
-    EAP_NOOB_JSON_FREE(req_obj);
+    json_decref(req_obj);
     EAP_NOOB_FREE(req_json);
     return req;
 }
@@ -3525,7 +3533,7 @@ static void eap_noob_process(struct eap_sm * sm, void * priv, struct wpabuf * re
         return;
     }
 
-    EAP_NOOB_JSON_FREE(resp_obj);
+    json_decref(resp_obj);
     resp_obj = json_loads((char *)pos, JSON_COMPACT|JSON_PRESERVE_ORDER, &error);
     if (NULL == resp_obj) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Error allocating json obj, %s", __func__);
@@ -3590,7 +3598,7 @@ static void eap_noob_process(struct eap_sm * sm, void * priv, struct wpabuf * re
             break;
     }
     data->peer_attr->recv_msg = 0;
-    EAP_NOOB_JSON_FREE(resp_obj);
+    json_decref(resp_obj);
 }
 
 
@@ -3849,8 +3857,8 @@ static void eap_noob_free_ctx(struct eap_noob_serv_context * data)
             EAP_NOOB_FREE(peer->ecdh_exchange_data->y_peer_b64);
             EAP_NOOB_FREE(peer->ecdh_exchange_data->x_b64);
             EAP_NOOB_FREE(peer->ecdh_exchange_data->y_b64);
-            EAP_NOOB_JSON_FREE(peer->ecdh_exchange_data->jwk_serv);
-            EAP_NOOB_JSON_FREE(peer->ecdh_exchange_data->jwk_peer);
+            json_decref(peer->ecdh_exchange_data->jwk_serv);
+            json_decref(peer->ecdh_exchange_data->jwk_peer);
             os_free(peer->ecdh_exchange_data);
             peer->ecdh_exchange_data = NULL;
         }
