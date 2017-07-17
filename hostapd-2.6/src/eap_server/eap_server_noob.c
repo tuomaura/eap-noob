@@ -2655,15 +2655,16 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context * data
     for (int i = 0; i < MAX_SUP_VER ; i++) {
         if (data->server_attr->version[i] > 0)
             err += json_array_append_new(Vers, json_integer(data->server_attr->version[i]));
+    }
 
     PeerId = json_string(data->peer_attr->PeerId);
 
     err -= (NULL == (Cryptosuites = json_array()));
-    for (i = 0; i < MAX_SUP_VER ; i++) {
+    for (int i = 0; i < MAX_SUP_CSUITES ; i++) {
         if (data->server_attr->cryptosuite[i] > 0)
             err += json_array_append_new(Cryptosuites,
                json_integer(data->server_attr->cryptosuite[i]));
-
+    }
     err -= (NULL == (Dirs = json_integer(data->server_attr->dir)));
     err -= (NULL == (ServerInfo = eap_noob_serverinfo(data->server_attr->serv_config_params)));
 
@@ -3948,5 +3949,8 @@ int eap_server_noob_register(void)
     eap->get_emsk = eap_noob_get_emsk;
     eap->isSuccess = eap_noob_isSuccess;
     eap->getTimeout = eap_noob_getTimeout;
+
     return eap_server_method_register(eap);
 }
+
+
