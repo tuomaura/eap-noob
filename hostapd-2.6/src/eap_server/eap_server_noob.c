@@ -109,6 +109,7 @@ static int eap_noob_Base64Decode(const char * b64message, unsigned char ** buffe
     BIO * bio = NULL, * b64 = NULL;
     int decodeLen = 0, len = 0;
     char * temp = NULL;
+    int i;
 
     if (NULL == b64message || NULL == buffer) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
@@ -126,13 +127,13 @@ static int eap_noob_Base64Decode(const char * b64message, unsigned char ** buffe
             wpa_printf(MSG_DEBUG, "EAP-NOOB Input to %s is incorrect", __func__);
             return 0;
     }
-    for (int i=0; i < len; i++) {
+    for (i=0; i < len; i++) {
         if (temp[i] == '-') 
             temp[i] = '+';
         else if (temp[i] == '_') 
             temp[i] = '/';
     }
-    for (int i=0; i<b64pad; i++) 
+    for (i=0; i<b64pad; i++) 
         temp[len+i] = '=';
 
     decodeLen = (len * 3)/4;
@@ -734,6 +735,7 @@ static int eap_noob_db_entry(struct eap_noob_serv_context *data)
     json_t * ver_arr = NULL;
     json_t * csuite_arr = NULL;
     json_t * mac_input;
+    int i;
 
     if (NULL == data) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
@@ -755,7 +757,7 @@ static int eap_noob_db_entry(struct eap_noob_serv_context *data)
         return FAILURE;
     }
     /*prepare the json array*/
-    for (int i = 0; i < MAX_SUP_VER ; i++) {
+    for (i = 0; i < MAX_SUP_VER ; i++) {
         json_array_append_new(ver_arr,
            json_integer(data->server_attr->version[i]));
     }
@@ -2643,6 +2645,7 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context * data
     json_t * Cryptosuites, *Dirs,*ServerInfo, *Realm;
     json_t * PeerId;
     char * req_json;
+    int i;
 
     /* (Type=1, PeerId, CryptoSuites, Dirs ,ServerInfo) */
 
@@ -2660,7 +2663,7 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context * data
     }
 
     err -= (NULL == (Vers = json_array()));
-    for (int i = 0; i < MAX_SUP_VER ; i++) {
+    for (i = 0; i < MAX_SUP_VER ; i++) {
         if (data->server_attr->version[i] > 0)
             err += json_array_append_new(Vers, json_integer(data->server_attr->version[i]));
     }
@@ -2668,7 +2671,7 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_noob_serv_context * data
     PeerId = json_string(data->peer_attr->PeerId);
 
     err -= (NULL == (Cryptosuites = json_array()));
-    for (int i = 0; i < MAX_SUP_CSUITES ; i++) {
+    for (i = 0; i < MAX_SUP_CSUITES ; i++) {
         if (data->server_attr->cryptosuite[i] > 0)
             err += json_array_append_new(Cryptosuites,
                json_integer(data->server_attr->cryptosuite[i]));
