@@ -39,7 +39,7 @@
 #define MAX_SUP_CSUITES         10
 #define MAX_CONF_LEN            500
 #define MAX_INFO_LEN            500
-#define MAX_PEER_ID_LEN         22
+#define MAX_PEERID_LEN          22
 #define MAX_LINE_SIZE           1000
 
 #define KDF_LEN                 288
@@ -60,9 +60,9 @@
 #define MAX_MSG_TYPES           8
 
 /* OOB DIRECTIONS */
-#define PEER_TO_SERV            1
-#define SERV_TO_PEER            2
-#define BOTH_DIR                3
+#define PEER_TO_SERVER          1
+#define SERVER_TO_PEER          2
+#define BOTH_DIRECTIONS         3
 
 #define SUCCESS                 1
 #define FAILURE                 0
@@ -75,29 +75,29 @@
 
 /* keywords for json encoding and decoding */
 #define TYPE                    "Type"
-#define ERR_INFO                "ErrorInfo"
-#define ERR_CODE                "ErrorCode"
+#define ERRORINFO               "ErrorInfo"
+#define ERRORCODE               "ErrorCode"
 
-#define VERSION_SERV            "Vers"
+#define VERS                    "Vers"
 #define CRYPTOSUITES            "Cryptosuites"
-#define DIRECTION_SERV          "Dirs"
+#define DIRS                    "Dirs"
 #define NONCE_SERV              "Ns"
-#define MINSLEEP                "SleepTime"
+#define SLEEPTIME               "SleepTime"
 #define PEERID                  "PeerId"
 #define PUBLICKEY_SERV          "PKs"
-#define SERVERINFO               "ServerInfo"
+#define SERVERINFO              "ServerInfo"
 #define MACs                    "MACs"
 
 #define PEER_SERIAL_NUM         "Serial"
 #define PEER_TYPE               "Type"
 #define PEER_MAKE               "Make"
 
-#define VERSION_PEER            "Verp"
+#define VERP                    "Verp"
 #define CRYPTOSUITEP            "Cryptosuitep"
-#define DIRECTION_PEER          "Dirp"
+#define DIRP                    "Dirp"
 #define NONCE_PEER              "Np"
 #define PUBLICKEY_PEER          "PKp"
-#define PEER_INFO               "PeerInfo"
+#define PEERINFO                "PeerInfo"
 #define PEERSTATE               "state"
 #define HINT_SERV               "NoobId"
 #define HINT_PEER               "NoobId"
@@ -238,11 +238,12 @@
  /* Flag used during KDF and MAC generation */
 enum {COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW};
 
-enum {UNREG, WAITING, OOB, RECONNECT, REGISTERED};
+enum {UNREGISTERED_STATE, WAITING_FOR_OOB_STATE, OOB_RECEIVED_STATE, 
+    RECONNECTING_STATE, REGISTERED_STATE};
 
 enum {NONE, EAP_NOOB_TYPE_1, EAP_NOOB_TYPE_2, EAP_NOOB_TYPE_3,
       EAP_NOOB_TYPE_4, EAP_NOOB_TYPE_5, EAP_NOOB_TYPE_6,
-      EAP_NOOB_TYPE_7, EAP_NOOB_TYPE_HINT};
+      EAP_NOOB_TYPE_7, EAP_NOOB_TYPE_8};
 
 enum {UPDATE_ALL, UPDATE_STATE, UPDATE_STATE_MINSLP,
       UPDATE_PERSISTENT_KEYS_SECRET, UPDATE_STATE_ERROR,
@@ -337,7 +338,7 @@ struct eap_noob_peer_data {
 
     char * peerID_rcvd;
     char * PeerId;
-    char * peer_info;
+    char * peerinfo;
     char * peer_snum;  /* Only set, not used */
     char * mac;
     char * user_info;
@@ -370,7 +371,6 @@ struct eap_noob_server_data {
     char * serv_info;
     u32 config_params;
     struct eap_noob_serv_config_params * serv_config_params;
-
 };
 
 struct eap_noob_serv_context {
@@ -405,7 +405,8 @@ const char *error_info[] = {
 /* This 2-D arry is used for state validation.
  * Cloumn number represents the state of Peer and the row number
  * represents the server state
- * The states are in squence as: {UNREG, WAITING, OOB, RECONNECT, REGISTERED}
+ * The states are in squence as: {UNREGISTERED_STATE, WAITING_FOR_OOB_STATE, 
+ *  OOB_RECEIVED_STATE, RECONNECTING_STATE, REGISTERED_STATE}
  * for both peer and server */
 const int state_machine[][5] = {
     {VALID, INVALID, INVALID, INVALID, INVALID},
@@ -426,11 +427,11 @@ const int next_request_type[] = {
 
 /*server state vs message type matrix*/
 const int state_message_check[NUM_OF_STATES][MAX_MSG_TYPES] = {
-    {VALID, VALID,   VALID,   INVALID,  INVALID,  INVALID,  INVALID,  INVALID}, //UNREG
-    {VALID, VALID,   VALID,   VALID,    VALID,    INVALID,  INVALID,  INVALID}, //WAITING
-    {VALID, VALID,   VALID,   INVALID,  VALID,    INVALID,  INVALID,  INVALID}, //OOB
+    {VALID, VALID,   VALID,   INVALID,  INVALID,  INVALID,  INVALID,  INVALID}, //UNREGISTERED_STATE
+    {VALID, VALID,   VALID,   VALID,    VALID,    INVALID,  INVALID,  INVALID}, //WAITING_FOR_OOB_STATE
+    {VALID, VALID,   VALID,   INVALID,  VALID,    INVALID,  INVALID,  INVALID}, //OOB_RECEIVED_STATE
     {VALID, INVALID, INVALID, INVALID,  INVALID,  VALID,    VALID,    VALID},   //RECONNECT
-    {VALID, INVALID, INVALID, INVALID,  VALID,    INVALID,  INVALID,  INVALID}, //REGISTERED
+    {VALID, INVALID, INVALID, INVALID,  VALID,    INVALID,  INVALID,  INVALID}, //REGISTERED_STATE
 };
 
 #define EAP_NOOB_STATE_VALID                                                              \
