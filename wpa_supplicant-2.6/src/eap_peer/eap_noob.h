@@ -95,7 +95,7 @@
 #define X_COORDINATE    		"x"
 #define Y_COORDINATE    		"y"
 #define JSON_WEB_KEY    		"jwk"
-#define REALM                           "realm"
+#define REALM                           "Realm"
 #define KEY_TYPE        		"kty"
 #define CURVE           		"crv"
 

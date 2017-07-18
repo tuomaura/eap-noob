@@ -1,12 +1,6 @@
 #ifndef EAPOOB_H
 #define EAPOOB_H
 
-/* #include <openssl/obj_mac.h>
-#include <openssl/evp.h>
-#include <openssl/ec.h>
-#include <time.h> */
-
-
 
 /* Configuration file */
 #define CONF_FILE               "eapoob.conf"
@@ -77,45 +71,40 @@
 #define TYPE                    "Type"
 #define ERRORINFO               "ErrorInfo"
 #define ERRORCODE               "ErrorCode"
-
 #define VERS                    "Vers"
 #define CRYPTOSUITES            "Cryptosuites"
 #define DIRS                    "Dirs"
-#define NONCE_SERV              "Ns"
+#define NS                      "Ns"
 #define SLEEPTIME               "SleepTime"
 #define PEERID                  "PeerId"
-#define PUBLICKEY_SERV          "PKs"
+#define PKS                     "PKs"
 #define SERVERINFO              "ServerInfo"
-#define MACs                    "MACs"
-
-#define PEER_SERIAL_NUM         "Serial"
-#define PEER_TYPE               "Type"
-#define PEER_MAKE               "Make"
-
+#define MACS                    "MACs"
+#define PEERINFO_SERIAL         "Serial"
+//#define PEERINFO_TYPE           "Type"
+//#define PEERINFO_MAKE           "Make"
 #define VERP                    "Verp"
 #define CRYPTOSUITEP            "Cryptosuitep"
 #define DIRP                    "Dirp"
-#define NONCE_PEER              "Np"
-#define PUBLICKEY_PEER          "PKp"
+#define NP                      "Np"
+#define PKP                     "PKp"
 #define PEERINFO                "PeerInfo"
 #define PEERSTATE               "state"
-#define HINT_SERV               "NoobId"
-#define HINT_PEER               "NoobId"
-#define MACp                    "MACp"
+#define NOOBID                  "NoobId"
+#define MACP                    "MACp"
 #define X_COORDINATE            "x"
 #define Y_COORDINATE            "y"
-#define JSON_WEB_KEY            "jwk"
 #define KEY_TYPE                "kty"
 #define CURVE                   "crv"
-#define REALM                   "realm"
+#define REALM                   "Realm"
+#define SERVERINFO_NAME         "Name"
+#define SERVERINFO_URL          "Url"
+
 #define ECDH_KDF_MAX            (1 << 30)
 
-#define SERV_NAME               "Name"
-#define SERV_URL                "Url"
-
 #define PEERID_RCVD             0x0001
-#define DIRECTION_RCVD          0x0002
-#define CSUITE_RCVD             0x0004
+#define DIRP_RCVD               0x0002
+#define CRYPTOSUITEP_RCVD       0x0004
 #define VERSION_RCVD            0x0008
 #define NONCE_RCVD              0x0010
 #define MAC_RCVD                0x0020
@@ -130,16 +119,16 @@
 #define REALM_RCVD              0x4000
 #define ENCODE_RCVD             0x8000
 
-#define TYPE_ONE_PARAMS         (PEERID_RCVD|VERSION_RCVD|CSUITE_RCVD|DIRECTION_RCVD|INFO_RCVD)
+#define TYPE_ONE_PARAMS         (PEERID_RCVD|VERSION_RCVD|CRYPTOSUITEP_RCVD|DIRP_RCVD|INFO_RCVD)
 #define TYPE_TWO_PARAMS         (PEERID_RCVD|NONCE_RCVD|PKEY_RCVD)
 #define TYPE_THREE_PARAMS       (PEERID_RCVD)
 #define TYPE_FOUR_PARAMS        (PEERID_RCVD|MAC_RCVD)
-#define TYPE_FIVE_PARAMS        (PEERID_RCVD|CSUITE_RCVD|INFO_RCVD)
+#define TYPE_FIVE_PARAMS        (PEERID_RCVD|CRYPTOSUITEP_RCVD|INFO_RCVD)
 #define TYPE_SIX_PARAMS         (PEERID_RCVD|NONCE_RCVD)
 #define TYPE_SEVEN_PARAMS       (PEERID_RCVD|MAC_RCVD)
 #define TYPE_HINT_PARAMS        (PEERID_RCVD|HINT_RCVD)
 
-#define CONF_PARAMS             (DIRECTION_RCVD|CSUITE_RCVD|VERSION_RCVD|SERV_NAME_RCVD|SERV_URL_RCVD|WE_COUNT_RCVD|REALM_RCVD|ENCODE_RCVD)
+#define CONF_PARAMS             (DIRP_RCVD|CRYPTOSUITEP_RCVD|VERSION_RCVD|SERV_NAME_RCVD|SERV_URL_RCVD|WE_COUNT_RCVD|REALM_RCVD|ENCODE_RCVD)
 #define DB_NAME                 "peer_connection_db"
 #define DEVICE_TABLE            "devices"
 #define PEER_TABLE              "peers_connected"
@@ -148,37 +137,39 @@
 #define CREATE_CONNECTION_TABLE                     \
     "CREATE TABLE IF NOT EXISTS peers_connected(    \
     PeerId TEXT PRIMARY KEY,                        \
-    Mac1Input TEXT,                                 \
-    Mac2Input TEXT,                                 \
-    Verp INTEGER,                                   \
     Vers INTEGER,                                   \
-    peer_state INTEGER,                             \
-    serv_state INTEGER,                             \
+    Verp INTEGER,                                   \
     Cryptosuites INTEGER,                           \
     Cryptosuitep INTEGER,                           \
-    Dirp INTEGER,                                   \
     Dirs INTEGER,                                   \
-    nonce_serv TEXT,                                \
-    nonce_peer TEXT,                                \
-    PeerInfo TEXT,                                  \
+    Dirp INTEGER,                                   \
+    Ns TEXT,                                        \
+    Np TEXT,                                        \
+    PKs TEXT,                                       \
+    PKp TEXT,                                       \
     ServerInfo TEXT,                                \
-    SharedSecret TEXT,                              \
+    PeerInfo TEXT,                                  \
+    NoobId TEXT,                                    \
     Noob TEXT,                                      \
     Hoob TEXT,                                      \
-    MINSLP_count INTEGER,                           \
-    OOB_RECEIVED_FLAG INTEGER,                      \
-    kms TEXt,                                       \
-    kmp TEXT,                                       \
-    kz TEXT,                                        \
-    pub_key_serv TEXT,                              \
-    pub_key_peer TEXT,                              \
-    UserName TEXT DEFAULT NULL,                     \
-    DevUpdate INTEGER ,                             \
-    sleepTime UNSIGNED BIG INT,                     \
-    errorCode INTEGER,                              \
-    hint_peer TEXT,                                 \
-    OobRetries INTEGER DEFAULT 0)"
+    ErrorCode INTEGER,                              \
+    Z TEXT,                                         \
+    Kz TEXT,                                        \
+    Kms TEXT,                                       \
+    Kmp TEXT,                                       \
+    server_state INTEGER,                           \
+    oob_received_flag INTEGER,                      \
+    last_time UNSIGNED BIG INT,                     \
+    sleep_count INTEGER,                            \
+    Mac1Input TEXT,                                 \
+    Mac2Input TEXT)                                 \
+    "
 
+/*
+      last_time UNSIGNED BIG INT,                   \ stored but never read!
+      peer_state INTEGER,                           \
+      OobRetries INTEGER DEFAULT 0,                 \
+*/
 
 #define CREATE_RADIUS_TABLE                         \
     "CREATE TABLE IF NOT EXISTS radius(             \
@@ -210,8 +201,7 @@
 #define EAP_NOOB_CB_GET_B64(_D64,_D,_l)             \
     EAP_NOOB_FREE(_D64)                             \
     EAP_NOOB_FREE(_D)                               \
-    _D64 = os_malloc(os_strlen(fieldValue[i]));       \
-    strcpy(_D64, fieldValue[i]);                      \
+    _D64 = os_strdup(fieldValue[i]);                \
     _l = eap_noob_Base64Decode(_D64,&_D)
 
 
@@ -231,7 +221,7 @@
 
 #define EAP_NOOB_CHANGE_STATE(_data,_s)             \
     if ((_data) && ((_data)->peer_attr)) {          \
-        (_data)->peer_attr->serv_state = (_s);      \
+        (_data)->peer_attr->server_state = (_s);      \
     }
 
 
@@ -252,7 +242,7 @@ enum {UPDATE_ALL, UPDATE_STATE, UPDATE_STATE_MINSLP,
 enum eap_noob_err_code{NO_ERROR, E1001, E1002, E1003, E1004, E1005,
      E1006, E1007, E2001, E2002, E3001, E3002, E3003, E4001};
 
-enum {HOOB,MACS,MACP};
+enum {HOOB_TYPE, MACS_TYPE, MACP_TYPE};
 
 struct eap_noob_global_conf {
     int read_conf;
@@ -270,18 +260,18 @@ struct eap_noob_ecdh_kdf_out {
     char * emsk_b64;
     u8 * amsk;
     char * amsk_b64;
-    u8 * kms;
+    u8 * Kms;
     char * kms_b64;
-    u8 * kmp;
+    u8 * Kmp;
     char * kmp_b64;
-    u8 * kz;
+    u8 * Kz;
     char * kz_b64;
 };
 
 struct eap_noob_ecdh_kdf_nonce {
-    u8 * nonce_serv;
-    char * nonce_serv_b64;
-    u8 * nonce_peer;
+    u8 * Ns;
+    char * nonce_server_b64;
+    u8 * Np;
     char * nonce_peer_b64;
 };
 
@@ -324,14 +314,14 @@ struct eap_noob_peer_data {
     u32 version;
     u32 cryptosuite;
     u32 dir;
-    u32 minsleep;
+    u32 sleeptime;
     u32 recv_msg;
     u32 rcvd_params;
-    u32 minslp_count;
+    u32 sleep_count;
     int oob_recv;
 
     u8 peer_state;
-    u8 serv_state;
+    u8 server_state;
     u8 next_req;
     u8 is_done;
     u8 is_success;
@@ -341,13 +331,12 @@ struct eap_noob_peer_data {
     char * peerinfo;
     char * peer_snum;  /* Only set, not used */
     char * mac;
-    char * user_info;
     Boolean record_present;
     Boolean hint_required;
 
     enum eap_noob_err_code err_code;
 
-    struct timespec sleep_time;
+    struct timespec last_time;
 
     struct eap_noob_ecdh_key_exchange * ecdh_exchange_data;
     struct eap_noob_oob_data * oob_data;
@@ -359,7 +348,7 @@ struct eap_noob_peer_data {
     char * Mac2InputStr;
 };
 
-struct eap_noob_serv_config_params {
+struct eap_noob_server_config_params {
     char * Serv_name;
     char * Serv_URL;
 };
@@ -368,12 +357,12 @@ struct eap_noob_server_data {
     u32 version[MAX_SUP_VER];
     u32 cryptosuite[MAX_SUP_CSUITES];
     u32 dir;
-    char * serv_info;
+    char * serverinfo;
     u32 config_params;
-    struct eap_noob_serv_config_params * serv_config_params;
+    struct eap_noob_server_config_params * server_config_params;
 };
 
-struct eap_noob_serv_context {
+struct eap_noob_server_context {
     struct eap_noob_peer_data * peer_attr;
     struct eap_noob_server_data * server_attr;
     char * db_name;
@@ -435,9 +424,9 @@ const int state_message_check[NUM_OF_STATES][MAX_MSG_TYPES] = {
 };
 
 #define EAP_NOOB_STATE_VALID                                                              \
-    (state_machine[data->peer_attr->serv_state][data->peer_attr->peer_state]  == VALID)   \
+    (state_machine[data->peer_attr->server_state][data->peer_attr->peer_state]  == VALID)   \
 
 /*Function prototypes*/
-static json_t * eap_noob_prepare_vers_arr(const struct eap_noob_serv_context * data);
-static json_t * eap_noob_prepare_csuites_arr(const struct eap_noob_serv_context * data);
+static json_t * eap_noob_prepare_vers_arr(const struct eap_noob_server_context * data);
+static json_t * eap_noob_prepare_csuites_arr(const struct eap_noob_server_context * data);
 #endif
