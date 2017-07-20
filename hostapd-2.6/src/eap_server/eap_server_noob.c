@@ -321,6 +321,7 @@ int eap_noob_callback(void * priv , int fieldCount, char ** fieldValue, char ** 
             peer_attr->dir = (int) strtol(fieldValue[i], NULL, 10);
             i++;
         }
+        /* TODO: add Realm */
         if (os_strcmp(fieldName[i], "Ns") == 0  &&
                  os_strlen(fieldValue[i]) > 0) {
             EAP_NOOB_CB_GET_B64(peer_attr->kdf_nonce_data->nonce_server_b64,
@@ -402,6 +403,7 @@ int eap_noob_callback(void * priv , int fieldCount, char ** fieldValue, char ** 
             i++;
         }
 
+/* ta: What is Z?
         if (os_strcmp(fieldName[i], "Z") == 0 &&
                  os_strlen(fieldValue[i]) > 0) {
             EAP_NOOB_CB_GET_B64(peer_attr->ecdh_exchange_data->shared_key_b64,
@@ -409,6 +411,7 @@ int eap_noob_callback(void * priv , int fieldCount, char ** fieldValue, char ** 
             wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB shared_key");
             i++;
         }
+*/
         if (os_strcmp(fieldName[i], "Kz") == 0 &&
                  os_strlen(fieldValue[i]) > 0) {
             EAP_NOOB_CB_GET_B64(peer_attr->kdf_out->kz_b64,
