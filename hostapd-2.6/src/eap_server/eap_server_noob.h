@@ -89,7 +89,7 @@
 #define NP                      "Np"
 #define PKP                     "PKp"
 #define PEERINFO                "PeerInfo"
-#define PEERSTATE               "state"
+//#define PEERSTATE               "state"
 #define NOOBID                  "NoobId"
 #define MACP                    "MACp"
 #define X_COORDINATE            "x"
@@ -143,6 +143,7 @@
     Cryptosuitep INTEGER,                           \
     Dirs INTEGER,                                   \
     Dirp INTEGER,                                   \
+    Realm TEXT,                                     \
     Ns TEXT,                                        \
     Np TEXT,                                        \
     PKs TEXT,                                       \
@@ -162,14 +163,40 @@
     last_time UNSIGNED BIG INT,                     \
     sleep_count INTEGER,                            \
     Mac1Input TEXT,                                 \
-    Mac2Input TEXT)                                 \
-    "
+    Mac2Input TEXT)"
 
-/*
-      last_time UNSIGNED BIG INT,                   \ stored but never read!
-      peer_state INTEGER,                           \
-      OobRetries INTEGER DEFAULT 0,                 \
-*/
+
+/* TA: draft for a new data model with 3 tables */
+#define CREATE_TABLE_EPHEMERALSTATE                 \
+    "CREATE TABLE IF NOT EXISTS EphemeralState(     \
+    PeerId TEXT PRIMARY KEY,                        \
+    Verp INTEGER NUT NULL,                          \
+    Cryptosuitep INTEGER NOT NULL,                  \
+    Dirp INTEGER,                                   \
+    PeerInfo TEXT,                                  \
+    kdf_output BLOB,                                \
+    Kz TEXT,                                        \
+    last_time UNSIGNED BIG INT,                     \
+    MacInput TEXT)"
+
+#define CREATE_TABLE_EPHEMERALNOOB                  \
+    "CREATE TABLE IF NOT EXISTS EphemeralNoob(      \
+    PeerId TEXT NOT NULL REFERENCES EphemeralState(PeerId), \
+    NoobId TEXT NOT NULL,                           \
+    Noob TEXT NOT NULL,                             \
+    sent_time UNSIGNED BIG INT NOT NULL             \
+    UNIQUE (Peerid,NoobId))"
+
+#define CREATE_TABLE_PERSISTENTSTATE                \
+    "CREATE TABLE IF NOT EXISTS PersistentState(    \
+    PeerId TEXT NOT NULL PRIMARY KEY,               \
+    Verp INTEGER NOT NULL CHECK (Verp=1),           \
+    Cryptosuitep INTEGER NOT NULL,                  \
+    Realm TEXT,                                     \
+    Kz TEXT NOT NULL)"
+
+
+
 
 #define CREATE_RADIUS_TABLE                         \
     "CREATE TABLE IF NOT EXISTS radius(             \
@@ -184,7 +211,7 @@
         (_D) = NULL;                                \
     }                                               
 
-/* TA: canot do this for the reference count */
+/* TA: cannot do this for the reference count */
 /*
 #define EAP_NOOB_JSON_FREE(_J)                      \
     if (_J) {                                       \
@@ -426,7 +453,3 @@ const int state_message_check[NUM_OF_STATES][MAX_MSG_TYPES] = {
 #define EAP_NOOB_STATE_VALID                                                              \
     (state_machine[data->peer_attr->server_state][data->peer_attr->peer_state]  == VALID)   \
 
-/*Function prototypes*/
-static json_t * eap_noob_prepare_vers_arr(const struct eap_noob_server_context * data);
-static json_t * eap_noob_prepare_csuites_arr(const struct eap_noob_server_context * data);
-#endif
