@@ -1,6 +1,11 @@
 #ifndef EAPOOB_H
 #define EAPOOB_H
 
+#include <stdint.h>
+#include <unistd.h>
+#include <sqlite3.h>
+#include <jansson.h>
+#include <time.h>
 
 /* Configuration file */
 #define CONF_FILE               "eapoob.conf"
@@ -167,7 +172,7 @@
 
 
 /* TA: draft for a new data model with 3 tables */
-#define CREATE_TABLE_EPHEMERALSTATE                 \
+#define CREATE_TABLES_EPHEMERALSTATE                \
     "CREATE TABLE IF NOT EXISTS EphemeralState(     \
     PeerId TEXT PRIMARY KEY,                        \
     Verp INTEGER NUT NULL,                          \
@@ -175,26 +180,41 @@
     Dirp INTEGER,                                   \
     PeerInfo TEXT,                                  \
     kdf_output BLOB,                                \
-    Kz TEXT,                                        \
-    last_time UNSIGNED BIG INT,                     \
-    MacInput TEXT)"
-
-#define CREATE_TABLE_EPHEMERALNOOB                  \
-    "CREATE TABLE IF NOT EXISTS EphemeralNoob(      \
+    Kz BLOB,                                        \
+    MacInput TEXT);                                 \
+                                                    \
+    CREATE TABLE IF NOT EXISTS EphemeralNoob(       \
     PeerId TEXT NOT NULL REFERENCES EphemeralState(PeerId), \
     NoobId TEXT NOT NULL,                           \
     Noob TEXT NOT NULL,                             \
     sent_time UNSIGNED BIG INT NOT NULL             \
-    UNIQUE (Peerid,NoobId))"
+    UNIQUE (Peerid,NoobId));"
 
-#define CREATE_TABLE_PERSISTENTSTATE                \
+#define CREATE_TABLES_PERSISTENTSTATE               \
     "CREATE TABLE IF NOT EXISTS PersistentState(    \
     PeerId TEXT NOT NULL PRIMARY KEY,               \
     Verp INTEGER NOT NULL CHECK (Verp=1),           \
     Cryptosuitep INTEGER NOT NULL,                  \
     Realm TEXT,                                     \
-    Kz TEXT NOT NULL)"
+    Kz BLOB NOT NULL);"
 
+#define QUERY_EPHEMERALSTATE                        \
+    "SELECT * FROM EphemeralState WHERE PeerId=?;"
+
+#define QUERY_EPHEMERALNOOB                         \
+    "SELECT * FROM EphemeralState                   \
+    WHERE PeerId=? AND NoobId=?;"
+
+#define QUERY_PERSISTENTSTATE                       \
+    "SELECT * FROM PersistentState WHERE PeerId=?;"
+
+#define DELETE_EPHEMERAL_FOR_PEERID                 \
+    "DELETE FROM EphemeralNoob WHERE PeerId=?;      \
+    DELETE FROM EphemeralState WHERE PeerId=?;"
+
+#define DELETE_EPHEMERAL_FOR_ALL                    \
+    "DELETE FROM EphemeralNoob;                     \
+    DELETE FROM EphemeralState;"
 
 
 
@@ -373,6 +393,8 @@ struct eap_noob_peer_data {
     json_t * Mac2Input;
     char * Mac1InputStr;
     char * Mac2InputStr;
+
+    char * Realm;
 };
 
 struct eap_noob_server_config_params {
@@ -394,7 +416,7 @@ struct eap_noob_server_context {
     struct eap_noob_server_data * server_attr;
     char * db_name;
     char * db_table_name;
-    sqlite3 * servDB;
+    sqlite3 * server_db;
 };
 
 
