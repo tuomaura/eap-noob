@@ -14,22 +14,12 @@
  * All the pre-processors of EAP-NOOB
  **/
 
-#if 0
-/*  Unused macros */
-#define NUM_OF_VERSIONS         1
-#define PEER_ID_DEFAULT_REALM   "noob@eap-noob.net"
-#define PEER_ID_DEFAULT         "noob"
-#define SERVER_INFO             "Believe_me_i_am_an_authenticated_server"
-#define PUBLIC_KEY              "A Very secret public key"
-#define FIXED_LENGTH            6
-#endif
-
 #define RESERVED_DOMAIN         "eap-noob.net"
 #define VERSION_ONE             1
 #define SUITE_ONE               1
-#define EAP_NOOB_NOOB_LEN       16
-#define EAP_NOOB_NONCE_LEN      32
-#define EAP_SHARED_SECRET_LEN   32
+#define NOOB_LEN                16
+#define NONCE_LEN               32
+#define ECDH_SHARED_SECRET_LEN  32
 #define ALGORITHM_ID            "EAP-NOOB"
 #define ALGORITHM_ID_LEN        8
 
@@ -167,7 +157,7 @@
     oob_received_flag INTEGER,                      \
     last_time UNSIGNED BIG INT,                     \
     sleep_count INTEGER,                            \
-    Mac1Input TEXT,                                 \
+    mac_input TEXT,                                 \
     Mac2Input TEXT)"
 
 
@@ -177,17 +167,20 @@
     PeerId TEXT PRIMARY KEY,                        \
     Verp INTEGER NUT NULL,                          \
     Cryptosuitep INTEGER NOT NULL,                  \
+    Realm TEXT,                                     \
     Dirp INTEGER,                                   \
     PeerInfo TEXT,                                  \
-    kdf_output BLOB,                                \
-    Kz BLOB,                                        \
-    MacInput TEXT);                                 \
+    Ns BLOB,                                        \
+    Np BLOB,                                        \
+    Z BLOB,                                         \
+    MacInput TEXT,                                  \
+    creation_time  BIGINT);                         \
                                                     \
     CREATE TABLE IF NOT EXISTS EphemeralNoob(       \
     PeerId TEXT NOT NULL REFERENCES EphemeralState(PeerId), \
     NoobId TEXT NOT NULL,                           \
     Noob TEXT NOT NULL,                             \
-    sent_time UNSIGNED BIG INT NOT NULL             \
+    sent_time BIGINT NOT NULL                       \
     UNIQUE (Peerid,NoobId));"
 
 #define CREATE_TABLES_PERSISTENTSTATE               \
@@ -196,7 +189,18 @@
     Verp INTEGER NOT NULL CHECK (Verp=1),           \
     Cryptosuitep INTEGER NOT NULL,                  \
     Realm TEXT,                                     \
-    Kz BLOB NOT NULL);"
+    Kz BLOB NOT NULL,                               \
+    creation_time BIGINT,                           \
+    last_used_time BIGINT                           \
+    );"
+
+#define DELETE_EPHEMERAL_FOR_PEERID                 \
+    "DELETE FROM EphemeralNoob WHERE PeerId=?;      \
+    DELETE FROM EphemeralState WHERE PeerId=?;"
+
+#define DELETE_EPHEMERAL_FOR_ALL                    \
+    "DELETE FROM EphemeralNoob;                     \
+    DELETE FROM EphemeralState;"
 
 #define QUERY_EPHEMERALSTATE                        \
     "SELECT * FROM EphemeralState WHERE PeerId=?;"
@@ -208,13 +212,6 @@
 #define QUERY_PERSISTENTSTATE                       \
     "SELECT * FROM PersistentState WHERE PeerId=?;"
 
-#define DELETE_EPHEMERAL_FOR_PEERID                 \
-    "DELETE FROM EphemeralNoob WHERE PeerId=?;      \
-    DELETE FROM EphemeralState WHERE PeerId=?;"
-
-#define DELETE_EPHEMERAL_FOR_ALL                    \
-    "DELETE FROM EphemeralNoob;                     \
-    DELETE FROM EphemeralState;"
 
 
 
@@ -389,12 +386,13 @@ struct eap_noob_peer_data {
     struct eap_noob_oob_data * oob_data;
     struct eap_noob_ecdh_kdf_nonce * kdf_nonce_data;
     struct eap_noob_ecdh_kdf_out * kdf_out;
-    json_t * Mac1Input;
+    json_t * mac_input;
     json_t * Mac2Input;
-    char * Mac1InputStr;
+    char * mac_inputStr;
     char * Mac2InputStr;
 
     char * Realm;
+    u8 * Kz;
 };
 
 struct eap_noob_server_config_params {
@@ -475,3 +473,4 @@ const int state_message_check[NUM_OF_STATES][MAX_MSG_TYPES] = {
 #define EAP_NOOB_STATE_VALID                                                              \
     (state_machine[data->peer_attr->server_state][data->peer_attr->peer_state]  == VALID)   \
 
+#endif
