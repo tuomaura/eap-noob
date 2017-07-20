@@ -105,9 +105,9 @@ def print_log(val):
 
 def get_hoob(peer_id, noob_b64,path):
       
-	query = 'select Vers,Verp,PeerID,Csuites,Dirs,ServInfo,Csuitep,\
-        Dirp,PeerInfo, pub_key_serv,nonce_serv, pub_key_peer, nonce_peer  \
-        from peers_connected where PeerID ='+'\''+str(peer_id)+'\''	
+	query = 'select Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,Cryptosuitep,\
+        Dirp, PeerInfo, pub_key_serv, nonce_serv, pub_key_peer, nonce_peer  \
+        from peers_connected where PeerId ='+'\''+str(peer_id)+'\''	
 	
 	out = exe_db_query(query, path)
 	set_realm()
@@ -149,7 +149,7 @@ def get_hoob(peer_id, noob_b64,path):
 
 def get_hoob_comp_res(peerId,noob,path,max_tries, recv_hoob):
 
-	query = 'select OobRetries from peers_connected where PeerID ='+'\''+str(peerId)+'\''
+	query = 'select OobRetries from peers_connected where PeerId ='+'\''+str(peerId)+'\''
 	out = exe_db_query(query,path)
 	num_tries = int(out[0])
 
