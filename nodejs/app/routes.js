@@ -351,7 +351,8 @@ module.exports = function(app, passport) {
 	i = 0;
 	j = 0;
 	db = new sqlite3.Database(conn_str);
-	db.all('SELECT PeerID, PeerInfo, serv_state,sleepTime,errorCode,DevUpdate FROM peers_connected where userName = ?', req.user.username , function(err,rows){
+	//db.all('SELECT PeerID, PeerInfo, serv_state,sleepTime,errorCode,DevUpdate FROM peers_connected where userName = ?', req.user.username , function(err,rows){
+	db.all('SELECT PeerID, PeerInfo, serv_state,sleepTime,errorCode FROM peers_connected where userName = ?', req.user.username , function(err,rows){
 		if(!err){
 			db.all('SELECT PeerID, PeerInfo, serv_state, errorCode, Noob, Hoob FROM devices where userName = ?', req.user.username , function(err1,rows1){
 				if(!err1){
@@ -382,7 +383,7 @@ module.exports = function(app, passport) {
 						parseJson= JSON.parse(row.PeerInfo);
 						userDetails[i].peer_num = parseJson['Serial'];
         					userDetails[i].peer_name = parseJson['Make'];
-						userDetails[i].dev_update = dev_status[parseInt(row.DevUpdate)];
+						//userDetails[i].dev_update = dev_status[parseInt(row.DevUpdate)];
 						if(row.errorCode){
 							userDetails[i].state_num = '0';
 							userDetails[i].state = error_info[parseInt(row.errorCode)];
@@ -724,11 +725,11 @@ module.exports = function(app, passport) {
 			
 		else if(enableAC == 0 || row1.al1 >= row1.al2){
 
-            		db.get('SELECT serv_state,errorCode FROM peers_connected WHERE PeerID = ?', peer_id, function(err, row2) {
+            		db.get('SELECT server_state,errorCode FROM peers_connected WHERE PeerId = ?', peer_id, function(err, row2) {
 
                 		if (!row2){req.flash('profileMessage','Some Error contact admin!');res.redirect('/profile');console.log("Internal Error");}
 				else if(row2.errorCode) {req.flash('profileMessage','Error: ' + error_info[parseInt(row2.errorCode)] +'!!');res.redirect('/profile');console.log("Error" + row2.errorCode);}
-                		else if(parseInt(row2.serv_state) != 1) {req.flash('profileMessage','Error: state mismatch. Reset device');res.redirect('/profile');console.log("state mismatch");}
+                		else if(parseInt(row2.server_state) != 1) {req.flash('profileMessage','Error: state mismatch. Reset device');res.redirect('/profile');console.log("state mismatch");}
 				else {
 					
 					var parseJ;

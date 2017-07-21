@@ -66,8 +66,8 @@ var server = ws.createServer(property, function (conn) {
 	if(msg['type'] == "softwareUpdated"){
 		console.log("Updated received");
     		var serverDB = new sqlite3.Database(conn_str);
-		query = 'UPDATE peers_connected set DevUpdate = 0 where PeerId = ?';
-                serverDB.run(query, msg['peerId']);
+		//query = 'UPDATE peers_connected set DevUpdate = 0 where PeerId = ?';
+        //        serverDB.run(query, msg['peerId']);
 	}
     });
 
@@ -86,8 +86,8 @@ var server = ws.createServer(property, function (conn) {
 			console.log("error" + err1);
 		}else{
 			serverDB.get('select deviceId from devicesSocket where peerId = ?', peer_id, function (err2,data1){
-				query = 'UPDATE peers_connected set DevUpdate = 3 where PeerId = "' + peer_id + '"';
-                		serverDB.run(query);
+				//query = 'UPDATE peers_connected set DevUpdate = 3 where PeerId = "' + peer_id + '"';
+               // 		serverDB.run(query);
                         	if (data1 != undefined) {
                         		console.log("inserted: " + data1.deviceId);
                         		connMap[data1.deviceId] = conn;
@@ -134,7 +134,7 @@ require('./app/routes.js')(app, passport); // load our routes and pass in our ap
         db.run('DROP TABLE IF EXISTS devicesSocket');
         //db.run('DROP TABLE IF EXISTS logs');
         //db.run('DROP TABLE IF EXISTS users');
-  	db.run('UPDATE OR IGNORE peers_connected set DevUpdate = 0');	
+  	//db.run('UPDATE OR IGNORE peers_connected set DevUpdate = 0');	
   	db.run('CREATE TABLE  IF NOT EXISTS devicesSocket ( deviceId INTEGER PRIMARY KEY AUTOINCREMENT, peerId TEXT, userName TEXT, UNIQUE(peerId));');	
 
 	

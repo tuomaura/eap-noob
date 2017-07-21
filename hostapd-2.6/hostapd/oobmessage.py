@@ -106,7 +106,7 @@ def print_log(val):
 def get_hoob(peer_id, noob_b64,path):
       
 	query = 'select Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,Cryptosuitep,\
-        Dirp, PeerInfo, pub_key_serv, nonce_serv, pub_key_peer, nonce_peer  \
+        Dirp, PeerInfo, PKs, Ns, PKp, Np  \
         from peers_connected where PeerId ='+'\''+str(peer_id)+'\''	
 	
 	out = exe_db_query(query, path)
@@ -149,12 +149,12 @@ def get_hoob(peer_id, noob_b64,path):
 
 def get_hoob_comp_res(peerId,noob,path,max_tries, recv_hoob):
 
-	query = 'select OobRetries from peers_connected where PeerId ='+'\''+str(peerId)+'\''
-	out = exe_db_query(query,path)
-	num_tries = int(out[0])
+	#query = 'select OobRetries from peers_connected where PeerId ='+'\''+str(peerId)+'\''
+	#out = exe_db_query(query,path)
+	#num_tries = int(out[0])
 
-	if(num_tries >= max_tries):
-		return ret_obj(None, None, None, '8000') # code for max_tries reached
+	#if(num_tries >= max_tries):
+	#	return ret_obj(None, None, None, '8000') # code for max_tries reached
 
 	obj = json.loads(get_hoob(peerId, noob, path))
 
@@ -162,17 +162,17 @@ def get_hoob_comp_res(peerId,noob,path,max_tries, recv_hoob):
 		if(obj['hoob'] == recv_hoob):
 			return ret_obj(None, None, None, '8001') # code for success
 		else:
-			num_tries += 1
-			db_conn = sqlite3.connect(path)
+			#num_tries += 1
+			#db_conn = sqlite3.connect(path)
 
 			# check if DB cannot be accessed
-        		if db_conn is None:
-				return ret_obj(None, None, None, '8003') # code for internal error
+        		#if db_conn is None:
+			#	return ret_obj(None, None, None, '8003') # code for internal error
 
-			db_cur = db_conn.cursor()
-			db_cur.execute('UPDATE peers_connected SET OobRetries = ? WHERE PeerID= ? ',(num_tries,peerId))
-        		db_conn.commit()
-        		db_conn.close()
+			#db_cur = db_conn.cursor()
+			#db_cur.execute('UPDATE peers_connected SET OobRetries = ? WHERE PeerID= ? ',(num_tries,peerId))
+        		#db_conn.commit()
+        		#db_conn.close()
                 		
 			return ret_obj(None, None, None, '8002') # code for failure
 
