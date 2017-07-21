@@ -17,6 +17,7 @@
 #define RESERVED_DOMAIN         "eap-noob.net"
 #define VERSION_ONE             1
 #define SUITE_ONE               1
+#define NOOBID_LEN              16
 #define NOOB_LEN                16
 #define NONCE_LEN               32
 #define ECDH_SHARED_SECRET_LEN  32
@@ -109,7 +110,7 @@
 #define MINSLP_RCVD             0x0200
 #define SERV_NAME_RCVD          0x0400
 #define SERV_URL_RCVD           0x0800
-#define HINT_RCVD               0x1000
+#define NOOBID_RCVD             0x1000
 #define WE_COUNT_RCVD           0x2000
 #define REALM_RCVD              0x4000
 #define ENCODE_RCVD             0x8000
@@ -121,7 +122,7 @@
 #define TYPE_FIVE_PARAMS        (PEERID_RCVD|CRYPTOSUITEP_RCVD|INFO_RCVD)
 #define TYPE_SIX_PARAMS         (PEERID_RCVD|NONCE_RCVD)
 #define TYPE_SEVEN_PARAMS       (PEERID_RCVD|MAC_RCVD)
-#define TYPE_HINT_PARAMS        (PEERID_RCVD|HINT_RCVD)
+#define TYPE_EIGHT_PARAMS       (PEERID_RCVD|NOOBID_RCVD)
 
 #define CONF_PARAMS             (DIRP_RCVD|CRYPTOSUITEP_RCVD|VERSION_RCVD|SERV_NAME_RCVD|SERV_URL_RCVD|WE_COUNT_RCVD|REALM_RCVD|ENCODE_RCVD)
 #define DB_NAME                 "peer_connection_db"
@@ -155,10 +156,9 @@
     Kmp TEXT,                                       \
     server_state INTEGER,                           \
     oob_received_flag INTEGER,                      \
-    last_time UNSIGNED BIG INT,                     \
+    last_used_time UNSIGNED BIG INT,                     \
     sleep_count INTEGER,                            \
-    mac_input TEXT,                                 \
-    Mac2Input TEXT)"
+    mac_input TEXT)"
 
 
 /* TA: draft for a new data model with 3 tables */
@@ -329,9 +329,11 @@ struct eap_noob_oob_data {
     size_t hoob_len;
     u8 * hoob;
 
-    char * hint_b64;
-    size_t hint_len;
-    u8 * hint;
+    char * NoobId_b64;
+    size_t NoobId_len;
+    u8 * NoobId;
+
+    time_t sent_time;
 };
 
 struct eap_noob_ecdh_key_exchange {
@@ -370,29 +372,31 @@ struct eap_noob_peer_data {
     u8 is_done;
     u8 is_success;
 
-    char * peerID_rcvd;
+    char * peerid_rcvd;
     char * PeerId;
     char * peerinfo;
     char * peer_snum;  /* Only set, not used */
     char * mac;
     Boolean record_present;
-    Boolean hint_required;
+    Boolean noobid_required;
 
     enum eap_noob_err_code err_code;
 
-    struct timespec last_time;
+    time_t last_used_time;
 
     struct eap_noob_ecdh_key_exchange * ecdh_exchange_data;
     struct eap_noob_oob_data * oob_data;
     struct eap_noob_ecdh_kdf_nonce * kdf_nonce_data;
     struct eap_noob_ecdh_kdf_out * kdf_out;
     json_t * mac_input;
-    json_t * Mac2Input;
-    char * mac_inputStr;
-    char * Mac2InputStr;
+    char * mac_input_str;
 
     char * Realm;
+    u8 * Z;
+    u8 * Ns;
+    u8 * Np;
     u8 * Kz;
+    time_t creation_time;
 };
 
 struct eap_noob_server_config_params {
