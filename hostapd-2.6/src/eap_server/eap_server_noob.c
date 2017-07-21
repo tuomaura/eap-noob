@@ -127,7 +127,8 @@ static int eap_noob_Base64Decode(const char * b64message, unsigned char ** buffe
     /* Convert base64url to base64 encoding. */
     int b64pad = 4*((len+3)/4)-len;
     temp = os_zalloc(len + b64pad);
-    temp = os_strdup(b64message);
+    /* temp = os_strdup(b64message); */
+    os_memcpy(temp, b64message, len);
     if (b64pad == 3) {
             wpa_printf(MSG_DEBUG, "EAP-NOOB Input to %s is incorrect", __func__);
             return 0;
@@ -144,7 +145,7 @@ static int eap_noob_Base64Decode(const char * b64message, unsigned char ** buffe
     decodeLen = (len * 3)/4;
     *buffer = (unsigned char*)os_zalloc(decodeLen);
 
-    bio = BIO_new_mem_buf(temp, -1);
+    bio = BIO_new_mem_buf(temp, len+b64pad);
     b64 = BIO_new(BIO_f_base64());
     bio = BIO_push(b64, bio);
 
@@ -479,7 +480,7 @@ int eap_noob_callback(void * priv , int fieldCount, char ** fieldValue, char ** 
 
 
 /**
- * eap_noob_db_statements : execute one or more sql statements that do not return rows 
+ * eap_noob_db_statements : execute one or more sql statements that do not return rows
  * @db : open sqlite3 database handle
  * @query : query to be executed
  * Returns  :  SUCCESS/FAILURE
@@ -498,25 +499,25 @@ static int eap_noob_db_statements(sqlite3 * db, const char * query)
     /* Loop through multiple SQL statements in sqlite3 */
     while (tail < query + nByte) {
         if (SQLITE_OK != sqlite3_prepare_v2(db, query, -1, &stmt, &tail)
-            || NULL == stmt) 
+            || NULL == stmt)
             ret = FAILURE; goto EXIT;
-        if (SQLITE_DONE != sqlite3_step(stmt)) 
+        if (SQLITE_DONE != sqlite3_step(stmt))
             ret = FAILURE; goto EXIT;
     }
 
 EXIT:
     if (ret == FAILURE) {
         sql_error = sqlite3_errmsg(db);
-        if (sql_error != NULL) 
+        if (sql_error != NULL)
             wpa_printf(MSG_DEBUG,"EAP-NOOB: SQL error : %s\n", sql_error);
     }
-    if (stmt) sqlite3_finalize(stmt); 
+    if (stmt) sqlite3_finalize(stmt);
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s, ret %d",__func__, ret);
     return ret;
 }
 
 
-static void columns_persistentstate(struct eap_noob_server_context * data, 
+static void columns_persistentstate(struct eap_noob_server_context * data,
     sqlite3_stmt * stmt) {
     data->peer_attr->version = sqlite3_column_int(stmt, 1);
     data->peer_attr->cryptosuite = sqlite3_column_int(stmt, 2);
@@ -526,7 +527,7 @@ static void columns_persistentstate(struct eap_noob_server_context * data,
     data->peer_attr->last_used_time = (uint64_t) sqlite3_column_int64(stmt, 6);
 }
 
-static void columns_ephemeralstate(struct eap_noob_server_context * data, 
+static void columns_ephemeralstate(struct eap_noob_server_context * data,
     sqlite3_stmt * stmt) {
     data->peer_attr->version = sqlite3_column_int(stmt, 1);
     data->peer_attr->cryptosuite = sqlite3_column_int(stmt, 2);
@@ -540,7 +541,7 @@ static void columns_ephemeralstate(struct eap_noob_server_context * data,
     data->peer_attr->creation_time = (uint64_t) sqlite3_column_int64(stmt, 10);
 }
 
-static void columns_ephemeralnoob(struct eap_noob_server_context * data, 
+static void columns_ephemeralnoob(struct eap_noob_server_context * data,
     sqlite3_stmt * stmt) {
     data->peer_attr->oob_data->NoobId = os_memdup(sqlite3_column_blob(stmt, 1), NOOBID_LEN);
     data->peer_attr->oob_data->noob = os_memdup(sqlite3_column_blob(stmt, 2), NOOB_LEN);
@@ -548,13 +549,13 @@ static void columns_ephemeralnoob(struct eap_noob_server_context * data,
 }
 
 /**
- * eap_noob_db_query : execute one sql query 
+ * eap_noob_db_query : execute one sql query
  * @db : open sqlite3 database handle
  * @query : query to be executed
  * Returns  :  SUCCESS/FAILURE
  **/
-static int eap_noob_db_query(sqlite3 * db, 
-        struct eap_noob_server_context * data, const char * query, 
+static int eap_noob_db_query(sqlite3 * db,
+        struct eap_noob_server_context * data, const char * query,
         int(*columns_fun)(struct eap_noob_server_context *, sqlite3_stmt *)) {
     sqlite3_stmt * stmt;
     const char * tail;
@@ -568,7 +569,7 @@ static int eap_noob_db_query(sqlite3 * db,
     if (SQLITE_OK != sqlite3_prepare_v2(db, query, -1, &stmt, &tail)
         || NULL == stmt) { ret = FAILURE; goto EXIT; }
 
-    if (SQLITE_ROW != (status = sqlite3_step(stmt))) 
+    if (SQLITE_ROW != (status = sqlite3_step(stmt)))
         { ret = FAILURE; goto EXIT; } /* TODO: different return value for NOTFOUND */
 
     /* expecting at most one row, extract columns data */
@@ -577,10 +578,10 @@ static int eap_noob_db_query(sqlite3 * db,
 EXIT:
     if (ret == FAILURE) {
         sql_error = sqlite3_errmsg(db);
-        if (sql_error != NULL) 
+        if (sql_error != NULL)
             wpa_printf(MSG_DEBUG,"EAP-NOOB: SQL error : %s\n", sql_error);
     }
-    if (stmt) sqlite3_finalize(stmt); 
+    if (stmt) sqlite3_finalize(stmt);
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s, ret %d",__func__, ret);
     return ret;
 }
@@ -619,7 +620,7 @@ static int eap_noob_exec_query(const char * query,
 
     if (SQLITE_OK != sqlite3_exec(data->server_db, query, callback,
                 data, &sql_error)) {
-        if (sql_error != NULL) 
+        if (sql_error != NULL)
             wpa_printf(MSG_DEBUG,"EAP-NOOB: SQL error : %s\n", sql_error);
         ret = FAILURE;
     }
@@ -902,15 +903,14 @@ static int eap_noob_db_entry(struct eap_noob_server_context *data)
        "INSERT INTO %s ( PeerId, mac_input, mac_input, Verp, Vers, server_state, "
        "Cryptosuitep, Cryptosuites, Dirp, Dirs, Ns, Np, PeerInfo, ServerInfo,"
        "Z, Noob, Hoob, oob_received_flag,sleep_count, PKs, "
-       "PKp, Kms, Kmp, Kz) VALUES ( '%s','%s','%s',%d ,'%s', %d, %d, "
-       "'%s', %d, %d, '%s','%s', '%s','%s','%s','%s','%s', %d, %d, '%s', '%s', "
-       "'%s', '%s', '%s',%d)",
+       "PKp, Kms, Kmp, Kz) VALUES ( '%s','%s','%s',%d ,'%s', %d, %d, '%s', %d, %d, "
+       "'%s', '%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s', '%s', '%s')",
        data->db_table_name, peer_attr->PeerId,json_dumps(mac_input, JSON_COMPACT|JSON_PRESERVE_ORDER),"", peer_attr->version,
        dump_str1, peer_attr->server_state, peer_attr->cryptosuite, dump_str2,
        peer_attr->dir,data->server_attr->dir, peer_attr->kdf_nonce_data->nonce_server_b64,
        peer_attr->kdf_nonce_data->nonce_peer_b64, peer_attr->peerinfo,
        data->server_attr->serverinfo, peer_attr->ecdh_exchange_data->shared_key_b64,
-       "", "", 0, peer_attr->sleep_count, dump_str3, dump_str4, "","","",0);
+       "", "", 0, peer_attr->sleep_count, dump_str3, dump_str4, "","","");
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: QUERY = %s", query);
 
@@ -1002,6 +1002,7 @@ static void eap_noob_check_for_oob(struct eap_noob_server_context * data)
     }
 }
 
+#if 0
 /**
  * eap_noob_exec_query_new :
  * @data    : server context
@@ -1050,10 +1051,10 @@ static int eap_noob_exec_query_new(struct eap_noob_server_context * data, const 
         if (NULL == callback) {
             if (ret == SQLITE_ROW)
                 continue;
-        }
-        else {
-            wpa_printf(MSG_DEBUG, "EAP-NOOB: Query executed. No more result rows.");
-            ret = SUCCESS; goto EXIT;
+            else {
+                wpa_printf(MSG_DEBUG, "EAP-NOOB: Query executed. No more result rows.");
+                ret = SUCCESS; goto EXIT;
+            }
         }
 
         char ** fieldNames = NULL;
@@ -1083,6 +1084,7 @@ EXIT:
     sqlite3_finalize(dbSTMT);
     return ret;
 }
+#endif
 
 /**
  * eap_noob_create_db : Creates a new DB or opens the existing DB and
@@ -1129,11 +1131,11 @@ static int eap_noob_create_db(struct eap_noob_server_context * data)
     }
 
     if (data->peer_attr->peerid_rcvd) {
-        /* os_snprintf(buff, TMP_BUF_LEN, "SELECT COUNT(*) from %s WHERE  PeerId = '%s'",
+        os_snprintf(buff, TMP_BUF_LEN, "SELECT COUNT(*) from %s WHERE  PeerId = '%s'",
                 data->db_table_name, data->peer_attr->peerid_rcvd);
-        */
-        os_snprintf(buff, TMP_BUF_LEN, "SELECT COUNT(*) from %s WHERE  PeerId = ?", data->db_table_name);
-        eap_noob_exec_query_new(data, buff, eap_noob_db_entry_check, 1, (void *)&data->peer_attr->peerid_rcvd);
+        /* os_snprintf(buff, TMP_BUF_LEN, "SELECT COUNT(*) from %s WHERE  PeerId = ?", data->db_table_name);
+         * eap_noob_exec_query_new(data, buff, eap_noob_db_entry_check, 1, (void *)&data->peer_attr->peerID_rcvd);
+         */
 
         if (FAILURE != eap_noob_exec_query(buff, eap_noob_db_entry_check,
                     data) && (data->peer_attr->record_present)) {
@@ -3217,7 +3219,6 @@ int eap_noob_FindIndex( int value )
  * @data : peer context
  * @req_obj : incoming json object with message parameters
  **/
-
 static void  eap_noob_decode_obj(struct eap_noob_peer_data * data, json_t * resp_obj)
 {
     const char * key = NULL;
