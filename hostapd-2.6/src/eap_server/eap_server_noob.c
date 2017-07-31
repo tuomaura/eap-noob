@@ -669,11 +669,11 @@ static int eap_noob_exec_query(struct eap_noob_server_context * data, const char
 
         char * fieldNames[MAX_FIELDS];
         char * fieldVals[MAX_FIELDS];
-        char * fieldTypes[MAX_FIELDS];
+        /* char * fieldTypes[MAX_FIELDS]; */
         for (i = 0; i < fieldCount; ++i) {
             fieldNames[i] = (char *)sqlite3_column_name(stmt, i);
             fieldVals[i] = (char *)sqlite3_column_text(stmt, i);
-            fieldTypes[i] = (char *)sqlite3_column_decltype(stmt, i);
+            /* fieldTypes[i] = (char *)sqlite3_column_decltype(stmt, i); */
         }
 
         if (SUCCESS != callback(data, fieldCount, fieldVals, fieldNames)) {/*, fieldTypes)) {*/
@@ -708,44 +708,41 @@ static int eap_noob_db_update(struct eap_noob_server_context * data, u8 type)
 
     switch(type) {
         case UPDATE_ALL:
-            snprintf(query, len, "UPDATE ? SET Verp=?, server_state=?, Csuite=?,"
-                    "Dirp=?, nonce=?, PeerInfo=? where PeerId=?");
-            ret = eap_noob_exec_query(data, query, NULL, 17, TEXT, data->db_table_name, INT,
-                    data->peer_attr->version, INT, data->peer_attr->server_state, INT,
-                    data->peer_attr->cryptosuite, INT, data->peer_attr->dir, BLOB, NONCE_LEN,
-                    data->peer_attr->kdf_nonce_data->Np, TEXT, data->peer_attr->peerinfo,
+            os_snprintf(query, len, "UPDATE %s SET Verp=?, server_state=?, Csuite=?,"
+                    "Dirp=?, nonce=?, PeerInfo=? where PeerId=?", data->db_table_name);
+            ret = eap_noob_exec_query(data, query, NULL, 15, INT, data->peer_attr->version, INT,
+                    data->peer_attr->server_state, INT, data->peer_attr->cryptosuite, INT, data->peer_attr->dir,
+                    BLOB, NONCE_LEN, data->peer_attr->kdf_nonce_data->Np, TEXT, data->peer_attr->peerinfo,
                     TEXT, data->peer_attr->PeerId);
 
             break;
         case UPDATE_STATE:
-            snprintf(query,len,"UPDATE ? SET server_state=? where PeerId=?");
-            ret = eap_noob_exec_query(data, query, NULL, 6, TEXT, data->db_table_name, INT,
-                    data->peer_attr->server_state, TEXT, data->peer_attr->PeerId);
+            os_snprintf(query,len,"UPDATE %s SET server_state=? where PeerId=?", data->db_table_name);
+            ret = eap_noob_exec_query(data, query, NULL, 4, INT, data->peer_attr->server_state,
+                  TEXT, data->peer_attr->PeerId);
             break;
         case UPDATE_STATE_ERROR:
-            snprintf(query,len,"UPDATE ? SET server_state=?, ErrorCode=? where PeerId=?");
-            eap_noob_exec_query(data, query, NULL, 8, TEXT, data->db_table_name, INT,
-                    data->peer_attr->server_state, INT, data->peer_attr->err_code,
-                    TEXT, data->peer_attr->PeerId);
+            os_snprintf(query,len,"UPDATE %s SET server_state=?, ErrorCode=? where PeerId=?", data->db_table_name);
+            eap_noob_exec_query(data, query, NULL, 6, INT, data->peer_attr->server_state, INT,
+                    data->peer_attr->err_code, TEXT, data->peer_attr->PeerId);
             break;
         case UPDATE_STATE_MINSLP:
-            snprintf(query,len,"UPDATE ? SET server_state=?, sleep_count =?, last_used_time = ? where PeerId=?");
-            ret = eap_noob_exec_query(data, query, NULL, 10, TEXT, data->db_table_name,
-                    INT, data->peer_attr->server_state, INT, data->peer_attr->sleep_count,
-                    UNSIGNED_BIG_INT, data->peer_attr->last_used_time, TEXT, data->peer_attr->PeerId);
+            os_snprintf(query,len,"UPDATE %s SET server_state=?, sleep_count =?, last_used_time = ? where PeerId=?",
+                    data->db_table_name);
+            ret = eap_noob_exec_query(data, query, NULL, 8, INT, data->peer_attr->server_state, INT,
+                    data->peer_attr->sleep_count, UNSIGNED_BIG_INT, data->peer_attr->last_used_time,
+                    TEXT, data->peer_attr->PeerId);
             break;
         case UPDATE_PERSISTENT_KEYS_SECRET:
-            snprintf(query,len,"UPDATE ? SET Kms=?, Kmp=?, Kz=?, server_state=?  where PeerId=?");
-            ret = eap_noob_exec_query(data, query, NULL, 12, TEXT, data->db_table_name, TEXT,
-                    data->peer_attr->kdf_out->kms_b64, TEXT, data->peer_attr->kdf_out->kmp_b64,
-                    TEXT, data->peer_attr->kdf_out->kz_b64, INT, data->peer_attr->server_state, TEXT,
-                    data->peer_attr->PeerId);
+            os_snprintf(query,len,"UPDATE %s SET Kms=?, Kmp=?, Kz=?, server_state=?  where PeerId=?", data->db_table_name);
+            ret = eap_noob_exec_query(data, query, NULL, 10, data->peer_attr->kdf_out->kms_b64, TEXT,
+                    data->peer_attr->kdf_out->kmp_b64, TEXT, data->peer_attr->kdf_out->kz_b64, INT,
+                    data->peer_attr->server_state, TEXT, data->peer_attr->PeerId);
             break;
         case UPDATE_OOB:
-            snprintf(query, MAX_LINE_SIZE, "UPDATE ? SET noob=?,hoob=?, where PeerId=?");
-            ret = eap_noob_exec_query(data, query, NULL, 10, TEXT, data->db_table_name, TEXT,
-                    data->peer_attr->oob_data->noob_b64, TEXT, data->peer_attr->oob_data->hoob_b64,
-                    TEXT, data->peer_attr->PeerId);
+            os_snprintf(query, MAX_LINE_SIZE, "UPDATE %s SET noob=?,hoob=?, where PeerId=?", data->db_table_name);
+            ret = eap_noob_exec_query(data, query, NULL, 8, data->peer_attr->oob_data->noob_b64, TEXT,
+                    data->peer_attr->oob_data->hoob_b64, TEXT, data->peer_attr->PeerId);
             break;
         default:
             wpa_printf(MSG_ERROR, "EAP-NOOB: Wrong DB update type");
@@ -773,7 +770,7 @@ static int eap_noob_exec_no_noobid_queries(struct eap_noob_server_context * data
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Server context is NULL");
         return FAILURE;
     }
-    snprintf(query, MAX_LINE_SIZE, "SELECT * from %s where PeerId=?", DEVICE_TABLE);
+    os_snprintf(query, MAX_LINE_SIZE, "SELECT * from %s where PeerId=?", DEVICE_TABLE);
     if (eap_noob_exec_query(data, query, eap_noob_callback, 2, TEXT, data->peer_attr->PeerId)) {
         return eap_noob_db_update(data, UPDATE_OOB);
     }
@@ -955,13 +952,13 @@ static int eap_noob_db_entry(struct eap_noob_server_context * data)
             JSON_COMPACT|JSON_PRESERVE_ORDER);
     dump_str5 = json_dumps(mac_input, JSON_COMPACT|JSON_PRESERVE_ORDER);
 
-    snprintf(query, MAX_LINE_SIZE ,
-       "INSERT INTO ? ( PeerId, mac_input, mac_input, Verp, Vers, server_state, "
+    os_snprintf(query, MAX_LINE_SIZE ,
+       "INSERT INTO %s ( PeerId, mac_input, mac_input, Verp, Vers, server_state, "
        "Cryptosuitep, Cryptosuites, Dirp, Dirs, Ns, Np, PeerInfo, ServerInfo,"
-       "Z, Noob, Hoob, oob_received_flag,sleep_count, PKs, "
-       "PKp, Kms, Kmp, Kz) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    ret = eap_noob_exec_query(data, query, NULL, 50, TEXT, data->db_table_name, TEXT, peer_attr->PeerId, TEXT, dump_str5, TEXT, "",
-       INT, peer_attr->version, TEXT, dump_str1, INT, peer_attr->server_state, INT, peer_attr->cryptosuite, TEXT, dump_str2,
+       "Z, Noob, Hoob, oob_received_flag,sleep_count, PKs, PKp, Kms, Kmp, Kz) VALUES "
+       "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", data->db_table_name);
+    ret = eap_noob_exec_query(data, query, NULL, 48, TEXT, peer_attr->PeerId, TEXT, dump_str5, TEXT, "", INT,
+       peer_attr->version, TEXT, dump_str1, INT, peer_attr->server_state, INT, peer_attr->cryptosuite, TEXT, dump_str2,
        INT, peer_attr->dir, INT, data->server_attr->dir, TEXT, peer_attr->kdf_nonce_data->nonce_server_b64, TEXT,
        peer_attr->kdf_nonce_data->nonce_peer_b64, TEXT, peer_attr->peerinfo, TEXT, data->server_attr->serverinfo, TEXT,
        peer_attr->ecdh_exchange_data->shared_key_b64, TEXT, "", TEXT, "", INT, 0, INT, peer_attr->sleep_count, TEXT, dump_str3,
@@ -1159,7 +1156,7 @@ static int eap_noob_create_db(struct eap_noob_server_context * data)
     /*  TODO: handle condition where there are two tuples for same peer id */
 
     if (SQLITE_OK != sqlite3_open_v2(data->db_name, &data->server_db,
-                SQLITE_OPEN_READWRITE, NULL)) {
+                     SQLITE_OPEN_READWRITE| SQLITE_OPEN_CREATE, NULL)) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to open and Create Table");
         return FAILURE;
     }
@@ -1175,21 +1172,20 @@ static int eap_noob_create_db(struct eap_noob_server_context * data)
     }
 
     if (data->peer_attr->peerid_rcvd) {
-        os_snprintf(buff, TMP_BUF_LEN, "SELECT COUNT(*) from ? where PeerId = ?");
-        ret = eap_noob_exec_query(data, buff, eap_noob_db_entry_check, 4, TEXT, data->db_table_name, TEXT, data->peer_attr->peerid_rcvd);
+        os_snprintf(buff, TMP_BUF_LEN, "SELECT COUNT(*) from %s where PeerId = ?", data->db_table_name);
+        ret = eap_noob_exec_query(data, buff, eap_noob_db_entry_check, 2, TEXT, data->peer_attr->peerid_rcvd);
 
         if (FAILURE != ret && (data->peer_attr->record_present)) {
             memset(buff, 0, sizeof(buff));
-            os_snprintf(buff, TMP_BUF_LEN, "SELECT * from ? WHERE  PeerId = ?");
-            ret = eap_noob_exec_query(data, buff, eap_noob_callback, 4, TEXT, data->db_table_name, TEXT, data->peer_attr->peerid_rcvd);
+            os_snprintf(buff, TMP_BUF_LEN, "SELECT * from %s WHERE  PeerId = ?", data->db_table_name);
+            ret = eap_noob_exec_query(data, buff, eap_noob_callback, 2, TEXT, data->db_table_name);
 
             if (ret == SUCCESS)
                 eap_noob_check_for_oob(data);
         }
         else {
             wpa_printf(MSG_ERROR, "EAP-NOOB: No record found ");
-            if (data->peer_attr->peer_state != REGISTERED_STATE &&
-                    data->peer_attr->peer_state != RECONNECTING_STATE) {
+            if (data->peer_attr->peer_state != REGISTERED_STATE && data->peer_attr->peer_state != RECONNECTING_STATE) {
                 data->peer_attr->peer_state = UNREGISTERED_STATE;
                 return SUCCESS;
             }
@@ -1646,7 +1642,7 @@ static void eap_noob_get_sid(struct eap_sm * sm, struct eap_noob_server_context 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s, Values Received: %s,%s", __func__,
                sm->rad_attr->calledSID, sm->rad_attr->callingSID);
 
-    snprintf(query, 500, "INSERT INTO radius (user_name, called_st_id, calling_st_id, NAS_id) VALUES (?, ?, ?, ?)");
+    os_snprintf(query, 500, "INSERT INTO radius (user_name, called_st_id, calling_st_id, NAS_id) VALUES (?, ?, ?, ?)");
     if (FAILURE == eap_noob_exec_query(data, query, NULL, 8, TEXT, data->peer_attr->PeerId, TEXT, sm->rad_attr->calledSID,
             TEXT, sm->rad_attr->callingSID, TEXT, sm->rad_attr->nasId)) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
@@ -2405,7 +2401,7 @@ static char * eap_noob_prepare_mac_input(struct eap_noob_server_context * data, 
     }
 
     query = os_zalloc(MAX_LINE_SIZE);
-    snprintf(query, MAX_LINE_SIZE, "SELECT mac_input from %s where PeerId=?", PEER_TABLE);
+    os_snprintf(query, MAX_LINE_SIZE, "SELECT mac_input from %s where PeerId=?", PEER_TABLE);
     if (eap_noob_exec_query(data, query, eap_noob_callback, 2, data->peer_attr->PeerId))
         goto EXIT;
 
@@ -3175,7 +3171,7 @@ static int eap_noob_del_temp_tuples(struct eap_noob_server_context * data)
     }
 
     if (query) {
-        snprintf(query, MAX_LINE_SIZE, "Delete from %s WHERE PeerId=?", DEVICE_TABLE);
+        os_snprintf(query, MAX_LINE_SIZE, "Delete from %s WHERE PeerId=?", DEVICE_TABLE);
         if (FAILURE == eap_noob_exec_query(data, query, NULL, 2, data->peer_attr->peerid_rcvd)) {
             wpa_printf(MSG_ERROR, "EAP-NOOB: DB tuple deletion failed");
             ret = FAILURE; goto EXIT;
@@ -3695,7 +3691,7 @@ static int eap_noob_exec_noobid_queries(struct eap_noob_server_context * data)
     //To-Do: send error if NoodID not found
 
     if (query) {
-        snprintf(query, MAX_LINE_SIZE, "SELECT Noob, Hoob from %s where PeerId=? and NoobId=?", DEVICE_TABLE);
+        os_snprintf(query, MAX_LINE_SIZE, "SELECT Noob, Hoob from %s where PeerId=? and NoobId=?", DEVICE_TABLE);
         if (eap_noob_exec_query(data, query, eap_noob_callback, 4, TEXT, data->peer_attr->PeerId,
             TEXT, data->peer_attr->oob_data->NoobId_b64)) {
             return eap_noob_db_update(data, UPDATE_OOB);

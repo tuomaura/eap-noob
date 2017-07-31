@@ -104,48 +104,44 @@ def print_log(val):
 	f1.close()
 
 def get_hoob(peer_id, noob_b64,path):
-      
-	query = 'select Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,Cryptosuitep,\
-        Dirp, PeerInfo, PKs, Ns, PKp, Np  \
-        from peers_connected where PeerId ='+'\''+str(peer_id)+'\''	
-	
-	out = exe_db_query(query, path)
-	set_realm()
-	if out is None:
-		return ret_obj(None, None, "No DB or no recored found")
+    query = 'select Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,Cryptosuitep, \
+            Dirp, PeerInfo, PKs, Ns, PKp, Np from peers_connected where PeerId \
+            ='+'\''+str(peer_id)+'\''
 
-        Dir = int(1) and int(3)	
+    out = exe_db_query(query, path)
+    set_realm()
+    if out is None:
+        return ret_obj(None, None, "No DB or no recored found")
 
-	hoob_arr = []
+    Dir = int(1) and int(3)
+    hoob_arr = []
+    # Add Dir to list
+    hoob_arr.append(Dir)
 
-	# Add Dir to list
-	hoob_arr.append(Dir)
-	
-	# Add params selected from DB to list
-	for item in range (0,len(out)):
-		hoob_arr.append(out[item])
-		if item == 7 and realm != 'eap-noob.net':
-			hoob_arr.append(realm) 
-	
-	# Add noob to list
-	hoob_arr.append(noob_b64)
+    # Add params selected from DB to list
+    for item in range (0,len(out)):
+        hoob_arr.append(out[item])
+        if item == 7 and realm != 'eap-noob.net':
+            hoob_arr.append(realm)
 
-	#convert it to string
-	hoob_str = json.dumps(hoob_arr)
+    # Add noob to list
+    hoob_arr.append(noob_b64)
 
-	print_log(hoob_str)
+    #convert it to string
+    hoob_str = json.dumps(hoob_arr)
 
-	# create hoob by hashing the hoob string
-	hoob = hashlib.sha256(hoob_str).hexdigest()	
-	# convert it into URL safe Base64 type
-	#hoob_b64 = base64.urlsafe_b64encode(hoob[0:16] +'=' * (4 - (len(hoob[0:16]) % 4)));
-	hoob_b64 = base64.urlsafe_b64encode(hoob[0:16]);
-	hoob_b64 = hoob_b64.strip('=')
-	f = open("log.txt","w")
-	f.write(hoob_str);
-	f.write(hoob_b64);
+    print_log(hoob_str)
 
-	return ret_obj( noob_b64 , hoob_b64 , None)
+    # create hoob by hashing the hoob string
+    hoob = hashlib.sha256(hoob_str).hexdigest()	
+    # convert it into URL safe Base64 type
+    hoob_b64 = base64.urlsafe_b64encode(hoob[0:16]);
+    hoob_b64 = hoob_b64.strip('=')
+    f = open("log.txt","w")
+    f.write(hoob_str);
+    f.write(hoob_b64);
+
+    return ret_obj( noob_b64 , hoob_b64 , None)
 
 def get_hoob_comp_res(peerId,noob,path,max_tries, recv_hoob):
 
