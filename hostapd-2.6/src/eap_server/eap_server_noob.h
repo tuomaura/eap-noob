@@ -129,7 +129,9 @@
 #define DEVICE_TABLE            "devices"
 #define PEER_TABLE              "peers_connected"
 
-/*SQL query to create peer connection database*/
+/*SQL query to create peer connection database
+ * TODO:check Vers, Cryptosuites - datatypes
+ **/
 #define CREATE_CONNECTION_TABLE                     \
     "CREATE TABLE IF NOT EXISTS peers_connected(    \
     PeerId TEXT PRIMARY KEY,                        \
@@ -213,8 +215,6 @@
     "SELECT * FROM PersistentState WHERE PeerId=?;"
 
 
-
-
 #define CREATE_RADIUS_TABLE                         \
     "CREATE TABLE IF NOT EXISTS radius(             \
     called_st_id TEXT,                              \
@@ -226,16 +226,7 @@
     if (_D) {                                       \
         os_free(_D);                                \
         (_D) = NULL;                                \
-    }                                               
-
-/* TA: cannot do this for the reference count */
-/*
-#define EAP_NOOB_JSON_FREE(_J)                      \
-    if (_J) {                                       \
-        json_decref(_J);                   \
-        _J = NULL;                                  \
     }
-*/
 
 #define EAP_NOOB_FREE_MALLOC(_D,_l)                 \
     EAP_NOOB_FREE(_D)                               \
@@ -268,11 +259,10 @@
         (_data)->peer_attr->server_state = (_s);      \
     }
 
-
  /* Flag used during KDF and MAC generation */
 enum {COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW};
 
-enum {UNREGISTERED_STATE, WAITING_FOR_OOB_STATE, OOB_RECEIVED_STATE, 
+enum {UNREGISTERED_STATE, WAITING_FOR_OOB_STATE, OOB_RECEIVED_STATE,
     RECONNECTING_STATE, REGISTERED_STATE};
 
 enum {NONE, EAP_NOOB_TYPE_1, EAP_NOOB_TYPE_2, EAP_NOOB_TYPE_3,
@@ -287,6 +277,8 @@ enum eap_noob_err_code{NO_ERROR, E1001, E1002, E1003, E1004, E1005,
      E1006, E1007, E2001, E2002, E3001, E3002, E3003, E4001};
 
 enum {HOOB_TYPE, MACS_TYPE, MACP_TYPE};
+
+enum sql_datatypes {TEXT, INT, UNSIGNED_BIG_INT, BLOB,};
 
 struct eap_noob_global_conf {
     int read_conf;
@@ -445,7 +437,7 @@ const char *error_info[] = {
 /* This 2-D arry is used for state validation.
  * Cloumn number represents the state of Peer and the row number
  * represents the server state
- * The states are in squence as: {UNREGISTERED_STATE, WAITING_FOR_OOB_STATE, 
+ * The states are in squence as: {UNREGISTERED_STATE, WAITING_FOR_OOB_STATE,
  *  OOB_RECEIVED_STATE, RECONNECTING_STATE, REGISTERED_STATE}
  * for both peer and server */
 const int state_machine[][5] = {
