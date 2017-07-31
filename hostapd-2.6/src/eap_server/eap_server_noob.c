@@ -587,50 +587,105 @@ EXIT:
 }
 
 
-
-
 /**
- * eap_noob_exec_query : wrapper function to execute a sql query
+ * eap_noob_exec_query : Function to execute a sql query. Prepapres, binds and steps.
+ * Takes variable number of arguments (TYPE, VAL). For Blob, (TYPE, LEN, VAL)
+ * @data : Server context
  * @query : query to be executed
  * @callback : pointer to callback function
- * @data : server context
+ * @num_args : number of variable inputs to function
  * Returns  :  SUCCESS/FAILURE
  **/
-static int eap_noob_exec_query(const char * query,
-                               int(*callback)(void*, int ,char **, char **),
-                               struct eap_noob_server_context * data)
+static int eap_noob_exec_query(struct eap_noob_server_context * data, const char * query,
+                               int (*callback)(void *, int, char **, char **),
+                               int num_args, ...)
 {
-    char * sql_error = NULL;
-    int ret = SUCCESS;
+    sqlite3_stmt * stmt = NULL;
+    va_list args;
+    int ret, i, indx = 0, ival, bval_len;
+    char * sval = NULL;
+    u8 * bval = NULL;
 
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s",__func__);
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s, query - (%s), Number of arguments (%d)", __func__, query, num_args);
 
-    if (NULL == data) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Server context is NULL");
+    if (SQLITE_OK != (ret = sqlite3_prepare_v2(data->server_db, query, strlen(query)+1, &stmt, NULL))) {
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Error preparing statement, ret (%d)", ret);
         return FAILURE;
     }
 
-#if 0
-    if (SQLITE_OK != sqlite3_open_v2(data->db_name, &data->server_db,
-                SQLITE_OPEN_READWRITE, NULL)) {
-        wpa_printf(MSG_ERROR, "EAP-NOOB: Error opening DB");
-        return FAILURE;
-    }
-#endif
+    va_start(args, num_args);
 
-    if (SQLITE_OK != sqlite3_exec(data->server_db, query, callback,
-                data, &sql_error)) {
-        if (sql_error != NULL)
-            wpa_printf(MSG_DEBUG,"EAP-NOOB: SQL error : %s\n", sql_error);
-        ret = FAILURE;
+    for (i = 0; i < num_args; ++i, ++indx) {
+        enum sql_datatypes type = va_arg(args, enum sql_datatypes);
+        switch(type) {
+            case INT:
+                ival = va_arg(args, int);
+                if (SQLITE_OK != sqlite3_bind_int(stmt, (indx+1), ival)) {
+                    wpa_printf(MSG_DEBUG, "EAP-NOOB: Error binding %d at index %d", ival, i+1);
+                    ret = FAILURE; goto EXIT;
+                }
+                i++;
+                break;
+            case UNSIGNED_BIG_INT:
+                break;
+            case TEXT:
+                sval = va_arg(args, char *);
+                if (SQLITE_OK != sqlite3_bind_text(stmt, (indx+1), sval, strlen(sval), NULL)) {
+                    wpa_printf(MSG_DEBUG, "EAP-NOOB:Error binding %s at index %d", sval, i+1);
+                    ret = FAILURE; goto EXIT;
+                }
+                i++;
+                break;
+            case BLOB:
+                bval = va_arg(args, u8 *);
+                bval_len = va_arg(args, int);
+                if (SQLITE_OK != sqlite3_bind_blob(stmt, (indx+1), (void *)bval, bval_len, NULL)) {
+                    wpa_printf(MSG_DEBUG, "EAP-NOOB: Error binding %.*s at index %d", bval_len, bval, indx+1);
+                    ret = FAILURE; goto EXIT;
+                } i+= 2;
+                break;
+            default:
+                wpa_printf(MSG_DEBUG, "EAP-NOOB: Wrong data type");
+                ret = FAILURE; goto EXIT;
+        }
     }
-#if 0
-    Open and close only once
-    if (SQLITE_OK != sqlite3_close(data->server_db)) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Error closing DB");
+#define MAX_FIELDS 32
+
+    int fieldCount = sqlite3_column_count(stmt);
+    while(1) {
+        ret = sqlite3_step(stmt);
+        if (ret != SQLITE_DONE && ret != SQLITE_ROW) {
+            wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected error in step, ret (%d)", ret);
+            ret = FAILURE; goto EXIT;
+        }
+
+        if (ret == SQLITE_DONE) {
+            wpa_printf(MSG_DEBUG, "EAP-NOOB: Done executing the query, ret (%d)\n", ret);
+            ret = SUCCESS; break;
+        }
+
+        if (NULL == callback)
+            continue;
+
+        char * fieldNames[MAX_FIELDS];
+        char * fieldVals[MAX_FIELDS];
+        char * fieldTypes[MAX_FIELDS];
+        for (i = 0; i < fieldCount; ++i) {
+            fieldNames[i] = (char *)sqlite3_column_name(stmt, i);
+            fieldVals[i] = (char *)sqlite3_column_text(stmt, i);
+            fieldTypes[i] = (char *)sqlite3_column_decltype(stmt, i);
+        }
+
+        if (SUCCESS != callback(data, fieldCount, fieldVals, fieldNames)) {/*, fieldTypes)) {*/
+            wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected error in DB callback. Exiting query");
+            ret = FAILURE; break;
+        }
     }
-#endif
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s, ret %d",__func__, ret);
+
+EXIT:
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s, ret %d", __func__, ret);
+    va_end(args);
+    sqlite3_finalize(stmt);
     return ret;
 }
 
@@ -643,7 +698,7 @@ static int eap_noob_exec_query(const char * query,
 static int eap_noob_db_update(struct eap_noob_server_context * data, u8 type)
 {
     char query[MAX_LINE_SIZE] = {0};
-    int len = MAX_LINE_SIZE;
+    int len = MAX_LINE_SIZE, ret = SUCCESS;
 
     if (NULL == data) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Server context is NULL");
@@ -653,53 +708,55 @@ static int eap_noob_db_update(struct eap_noob_server_context * data, u8 type)
 
     switch(type) {
         case UPDATE_ALL:
-            snprintf(query, len, "UPDATE '%s' SET Verp=%d , server_state=%d, Csuite=%d,"
-                    "Dirp=%d, nonce='%s', PeerInfo='%s' WHERE PeerId='%s'",
-                    data->db_table_name, data->peer_attr->version,
-                    data->peer_attr->server_state, data->peer_attr->cryptosuite,
-                    data->peer_attr->dir,data->peer_attr->kdf_nonce_data->Np,
-                    data->peer_attr->peerinfo, data->peer_attr->PeerId);
+            snprintf(query, len, "UPDATE ? SET Verp=?, server_state=?, Csuite=?,"
+                    "Dirp=?, nonce=?, PeerInfo=? where PeerId=?");
+            ret = eap_noob_exec_query(data, query, NULL, 17, TEXT, data->db_table_name, INT,
+                    data->peer_attr->version, INT, data->peer_attr->server_state, INT,
+                    data->peer_attr->cryptosuite, INT, data->peer_attr->dir, BLOB, NONCE_LEN,
+                    data->peer_attr->kdf_nonce_data->Np, TEXT, data->peer_attr->peerinfo,
+                    TEXT, data->peer_attr->PeerId);
+
             break;
         case UPDATE_STATE:
-            snprintf(query,len,"UPDATE '%s' SET server_state=%d WHERE PeerId='%s'",
-                    data->db_table_name, data->peer_attr->server_state,
-                    data->peer_attr->PeerId);
+            snprintf(query,len,"UPDATE ? SET server_state=? where PeerId=?");
+            ret = eap_noob_exec_query(data, query, NULL, 6, TEXT, data->db_table_name, INT,
+                    data->peer_attr->server_state, TEXT, data->peer_attr->PeerId);
             break;
         case UPDATE_STATE_ERROR:
-            snprintf(query,len,"UPDATE '%s' SET server_state=%d, ErrorCode=%d  "
-                    "WHERE PeerId='%s'", data->db_table_name,data->peer_attr->server_state,
-                    data->peer_attr->err_code,data->peer_attr->PeerId); break;
+            snprintf(query,len,"UPDATE ? SET server_state=?, ErrorCode=? where PeerId=?");
+            eap_noob_exec_query(data, query, NULL, 8, TEXT, data->db_table_name, INT,
+                    data->peer_attr->server_state, INT, data->peer_attr->err_code,
+                    TEXT, data->peer_attr->PeerId);
+            break;
         case UPDATE_STATE_MINSLP:
-            snprintf(query,len,"UPDATE '%s' SET server_state=%d, sleep_count =%d, "
-                    "last_used_time = %ld  WHERE PeerId='%s'",
-                    data->db_table_name, data->peer_attr->server_state,
-                    data->peer_attr->sleep_count,
-                    data->peer_attr->last_used_time, data->peer_attr->PeerId);
+            snprintf(query,len,"UPDATE ? SET server_state=?, sleep_count =?, last_used_time = ? where PeerId=?");
+            ret = eap_noob_exec_query(data, query, NULL, 10, TEXT, data->db_table_name,
+                    INT, data->peer_attr->server_state, INT, data->peer_attr->sleep_count,
+                    UNSIGNED_BIG_INT, data->peer_attr->last_used_time, TEXT, data->peer_attr->PeerId);
             break;
         case UPDATE_PERSISTENT_KEYS_SECRET:
-            snprintf(query,len,"UPDATE '%s' SET Kms='%s', Kmp='%s', Kz='%s', "
-                    "server_state=%d  WHERE PeerId='%s'",
-                    data->db_table_name,data->peer_attr->kdf_out->kms_b64,
-                    data->peer_attr->kdf_out->kmp_b64, data->peer_attr->kdf_out->kz_b64,
-                    data->peer_attr->server_state, data->peer_attr->PeerId);
+            snprintf(query,len,"UPDATE ? SET Kms=?, Kmp=?, Kz=?, server_state=?  where PeerId=?");
+            ret = eap_noob_exec_query(data, query, NULL, 12, TEXT, data->db_table_name, TEXT,
+                    data->peer_attr->kdf_out->kms_b64, TEXT, data->peer_attr->kdf_out->kmp_b64,
+                    TEXT, data->peer_attr->kdf_out->kz_b64, INT, data->peer_attr->server_state, TEXT,
+                    data->peer_attr->PeerId);
             break;
         case UPDATE_OOB:
-            snprintf(query, MAX_LINE_SIZE, "UPDATE '%s' SET noob='%s',hoob='%s',"
-                    "WHERE PeerId='%s'",
-                    data->db_table_name,data->peer_attr->oob_data->noob_b64,
-                    data->peer_attr->oob_data->hoob_b64, data->peer_attr->PeerId);
+            snprintf(query, MAX_LINE_SIZE, "UPDATE ? SET noob=?,hoob=?, where PeerId=?");
+            ret = eap_noob_exec_query(data, query, NULL, 10, TEXT, data->db_table_name, TEXT,
+                    data->peer_attr->oob_data->noob_b64, TEXT, data->peer_attr->oob_data->hoob_b64,
+                    TEXT, data->peer_attr->PeerId);
             break;
         default:
             wpa_printf(MSG_ERROR, "EAP-NOOB: Wrong DB update type");
             return FAILURE;
     }
 
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: Query = %s",query);
-    if (FAILURE == eap_noob_exec_query(query, NULL, data)) {
+    if (FAILURE == ret) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: DB value update failed");
         return FAILURE;
     }
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s, ret = SUCCESS",__func__);
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s, ret = SUCCESS", __func__);
     return SUCCESS;
 }
 
@@ -716,10 +773,8 @@ static int eap_noob_exec_no_noobid_queries(struct eap_noob_server_context * data
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Server context is NULL");
         return FAILURE;
     }
-    snprintf(query, MAX_LINE_SIZE, "SELECT * from %s where PeerId='%s'",
-             DEVICE_TABLE, data->peer_attr->PeerId);
-    wpa_printf(MSG_DEBUG, "Query = %s\n", query);
-    if (eap_noob_exec_query(query, eap_noob_callback, data)) {
+    snprintf(query, MAX_LINE_SIZE, "SELECT * from %s where PeerId=?", DEVICE_TABLE);
+    if (eap_noob_exec_query(data, query, eap_noob_callback, 2, TEXT, data->peer_attr->PeerId)) {
         return eap_noob_db_update(data, UPDATE_OOB);
     }
     return FAILURE;
@@ -856,16 +911,16 @@ int eap_noob_verify_oob_msg_len(struct eap_noob_peer_data *data)
  * @data : server context
  * Returns : FAILURE/SUCCESS
  **/
-static int eap_noob_db_entry(struct eap_noob_server_context *data)
+static int eap_noob_db_entry(struct eap_noob_server_context * data)
 {
     struct eap_noob_peer_data * peer_attr = NULL;
     char query[MAX_LINE_SIZE] = {0};
-    char * dump_str1 = NULL, * dump_str2 = NULL;
-    char * dump_str3 = NULL, * dump_str4 = NULL;
+    char * dump_str1 = NULL, * dump_str2 = NULL, * dump_str3 = NULL;
+    char * dump_str4 = NULL, * dump_str5 = NULL;
     json_t * ver_arr = NULL;
     json_t * csuite_arr = NULL;
     json_t * mac_input;
-    int i;
+    int i, ret;
 
     if (NULL == data) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
@@ -898,34 +953,29 @@ static int eap_noob_db_entry(struct eap_noob_server_context *data)
             JSON_COMPACT|JSON_PRESERVE_ORDER);
     dump_str4 = json_dumps(peer_attr->ecdh_exchange_data->jwk_peer,
             JSON_COMPACT|JSON_PRESERVE_ORDER);
+    dump_str5 = json_dumps(mac_input, JSON_COMPACT|JSON_PRESERVE_ORDER);
 
     snprintf(query, MAX_LINE_SIZE ,
-       "INSERT INTO %s ( PeerId, mac_input, mac_input, Verp, Vers, server_state, "
+       "INSERT INTO ? ( PeerId, mac_input, mac_input, Verp, Vers, server_state, "
        "Cryptosuitep, Cryptosuites, Dirp, Dirs, Ns, Np, PeerInfo, ServerInfo,"
        "Z, Noob, Hoob, oob_received_flag,sleep_count, PKs, "
-       "PKp, Kms, Kmp, Kz) VALUES ( '%s','%s','%s',%d ,'%s', %d, %d, '%s', %d, %d, "
-       "'%s', '%s', '%s', '%s', '%s', '%s', '%s', %d, %d, '%s', '%s', '%s', '%s', '%s')",
-       data->db_table_name, peer_attr->PeerId,json_dumps(mac_input, JSON_COMPACT|JSON_PRESERVE_ORDER),"", peer_attr->version,
-       dump_str1, peer_attr->server_state, peer_attr->cryptosuite, dump_str2,
-       peer_attr->dir,data->server_attr->dir, peer_attr->kdf_nonce_data->nonce_server_b64,
-       peer_attr->kdf_nonce_data->nonce_peer_b64, peer_attr->peerinfo,
-       data->server_attr->serverinfo, peer_attr->ecdh_exchange_data->shared_key_b64,
-       "", "", 0, peer_attr->sleep_count, dump_str3, dump_str4, "","","");
+       "PKp, Kms, Kmp, Kz) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    ret = eap_noob_exec_query(data, query, NULL, 50, TEXT, data->db_table_name, TEXT, peer_attr->PeerId, TEXT, dump_str5, TEXT, "",
+       INT, peer_attr->version, TEXT, dump_str1, INT, peer_attr->server_state, INT, peer_attr->cryptosuite, TEXT, dump_str2,
+       INT, peer_attr->dir, INT, data->server_attr->dir, TEXT, peer_attr->kdf_nonce_data->nonce_server_b64, TEXT,
+       peer_attr->kdf_nonce_data->nonce_peer_b64, TEXT, peer_attr->peerinfo, TEXT, data->server_attr->serverinfo, TEXT,
+       peer_attr->ecdh_exchange_data->shared_key_b64, TEXT, "", TEXT, "", INT, 0, INT, peer_attr->sleep_count, TEXT, dump_str3,
+       TEXT, dump_str4, TEXT, "", TEXT, "", TEXT, "");
 
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: QUERY = %s", query);
-
-    os_free(dump_str1); os_free(dump_str2); os_free(dump_str3); os_free(dump_str4);
-    /* os_free on json objects which has reference of other objects will
-     * not free up everything. Ex., prepare_vers_arr uses append_new
-     * which has the refernce of the argument json object transferred to it. */
+    os_free(dump_str1); os_free(dump_str2); os_free(dump_str3); os_free(dump_str4); os_free(dump_str5);
     json_decref(ver_arr); json_decref(csuite_arr);
 
-    if (FAILURE == eap_noob_exec_query(query, NULL, data)) {
+    if (FAILURE == ret) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
         return FAILURE;
     }
 
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s",__func__);
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s", __func__);
     return SUCCESS;
 }
 
@@ -1096,6 +1146,7 @@ static int eap_noob_create_db(struct eap_noob_server_context * data)
 {
 #define TMP_BUF_LEN     200
     char buff[TMP_BUF_LEN] = {0};
+    int ret;
 
     if (NULL == data) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
@@ -1113,43 +1164,30 @@ static int eap_noob_create_db(struct eap_noob_server_context * data)
         return FAILURE;
     }
 
-#if 0
-    if (SQLITE_OK != sqlite3_close(data->server_db)) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB:Error closing DB");
-        return FAILURE;
-    }
-#endif
-
-    if (FAILURE == eap_noob_exec_query(CREATE_CONNECTION_TABLE, NULL, data)) {
+    if (FAILURE == eap_noob_exec_query(data, CREATE_CONNECTION_TABLE, NULL, 0)) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: connections Table creation failed");
         return FAILURE;
     }
 
-    if (FAILURE == eap_noob_exec_query(CREATE_RADIUS_TABLE, NULL, data)) {
+    if (FAILURE == eap_noob_exec_query(data, CREATE_RADIUS_TABLE, NULL, 0)) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: connections Table creation failed");
         return FAILURE;
     }
 
     if (data->peer_attr->peerid_rcvd) {
-        os_snprintf(buff, TMP_BUF_LEN, "SELECT COUNT(*) from %s WHERE  PeerId = '%s'",
-                data->db_table_name, data->peer_attr->peerid_rcvd);
-        /* os_snprintf(buff, TMP_BUF_LEN, "SELECT COUNT(*) from %s WHERE  PeerId = ?", data->db_table_name);
-         * eap_noob_exec_query_new(data, buff, eap_noob_db_entry_check, 1, (void *)&data->peer_attr->peerID_rcvd);
-         */
+        os_snprintf(buff, TMP_BUF_LEN, "SELECT COUNT(*) from ? where PeerId = ?");
+        ret = eap_noob_exec_query(data, buff, eap_noob_db_entry_check, 4, TEXT, data->db_table_name, TEXT, data->peer_attr->peerid_rcvd);
 
-        if (FAILURE != eap_noob_exec_query(buff, eap_noob_db_entry_check,
-                    data) && (data->peer_attr->record_present)) {
+        if (FAILURE != ret && (data->peer_attr->record_present)) {
             memset(buff, 0, sizeof(buff));
-            os_snprintf(buff, TMP_BUF_LEN, "SELECT * from %s WHERE  PeerId = '%s'",
-                    data->db_table_name, data->peer_attr->peerid_rcvd);
+            os_snprintf(buff, TMP_BUF_LEN, "SELECT * from ? WHERE  PeerId = ?");
+            ret = eap_noob_exec_query(data, buff, eap_noob_callback, 4, TEXT, data->db_table_name, TEXT, data->peer_attr->peerid_rcvd);
 
-            if (eap_noob_exec_query(buff, eap_noob_callback, data)) {
+            if (ret == SUCCESS)
                 eap_noob_check_for_oob(data);
-            }
-
-        } else {
+        }
+        else {
             wpa_printf(MSG_ERROR, "EAP-NOOB: No record found ");
-
             if (data->peer_attr->peer_state != REGISTERED_STATE &&
                     data->peer_attr->peer_state != RECONNECTING_STATE) {
                 data->peer_attr->peer_state = UNREGISTERED_STATE;
@@ -1593,9 +1631,9 @@ static void eap_noob_get_sid(struct eap_sm * sm, struct eap_noob_server_context 
 {
     char *query = NULL;
     if ((NULL == sm->rad_attr) ||
-            (NULL == sm->rad_attr->calledSID) ||
-            (NULL == sm->rad_attr->callingSID) ||
-            (NULL == sm->rad_attr->nasId)) {
+        (NULL == sm->rad_attr->calledSID) ||
+        (NULL == sm->rad_attr->callingSID) ||
+        (NULL == sm->rad_attr->nasId)) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input tot %s is null", __func__);
         return;
     }
@@ -1608,12 +1646,9 @@ static void eap_noob_get_sid(struct eap_sm * sm, struct eap_noob_server_context 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s, Values Received: %s,%s", __func__,
                sm->rad_attr->calledSID, sm->rad_attr->callingSID);
 
-    snprintf(query, 500, "INSERT INTO radius (user_name, called_st_id, "
-            "calling_st_id, NAS_id) VALUES ('%s','%s','%s','%s')",
-            data->peer_attr->PeerId, sm->rad_attr->calledSID,
-            sm->rad_attr->callingSID, sm->rad_attr->nasId);
-
-    if (FAILURE == eap_noob_exec_query(query, NULL, data)) {
+    snprintf(query, 500, "INSERT INTO radius (user_name, called_st_id, calling_st_id, NAS_id) VALUES (?, ?, ?, ?)");
+    if (FAILURE == eap_noob_exec_query(data, query, NULL, 8, TEXT, data->peer_attr->PeerId, TEXT, sm->rad_attr->calledSID,
+            TEXT, sm->rad_attr->callingSID, TEXT, sm->rad_attr->nasId)) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
     }
 
@@ -2370,9 +2405,8 @@ static char * eap_noob_prepare_mac_input(struct eap_noob_server_context * data, 
     }
 
     query = os_zalloc(MAX_LINE_SIZE);
-    snprintf(query, MAX_LINE_SIZE, "SELECT %s from %s where PeerId='%s' ",
-        "mac_input", PEER_TABLE, data->peer_attr->PeerId);
-    if (eap_noob_exec_query(query, eap_noob_callback, data))
+    snprintf(query, MAX_LINE_SIZE, "SELECT mac_input from %s where PeerId=?", PEER_TABLE);
+    if (eap_noob_exec_query(data, query, eap_noob_callback, 2, data->peer_attr->PeerId))
         goto EXIT;
 
     mac_input = data->peer_attr->mac_input;
@@ -2382,7 +2416,6 @@ static char * eap_noob_prepare_mac_input(struct eap_noob_server_context * data, 
     else if (type == MACS_TYPE)
         json_array_insert_new(mac_input,0,json_integer(2));
     mac_input_str = json_dumps(mac_input, JSON_COMPACT|JSON_PRESERVE_ORDER);
-
 EXIT:
     os_free(query);
     json_decref(mac_input);
@@ -3142,9 +3175,8 @@ static int eap_noob_del_temp_tuples(struct eap_noob_server_context * data)
     }
 
     if (query) {
-        snprintf(query, MAX_LINE_SIZE, "Delete from %s WHERE PeerId='%s'",
-                 DEVICE_TABLE, data->peer_attr->peerid_rcvd);
-        if (FAILURE == eap_noob_exec_query(query, NULL, data)) {
+        snprintf(query, MAX_LINE_SIZE, "Delete from %s WHERE PeerId=?", DEVICE_TABLE);
+        if (FAILURE == eap_noob_exec_query(data, query, NULL, 2, data->peer_attr->peerid_rcvd)) {
             wpa_printf(MSG_ERROR, "EAP-NOOB: DB tuple deletion failed");
             ret = FAILURE; goto EXIT;
         }
@@ -3663,20 +3695,19 @@ static int eap_noob_exec_noobid_queries(struct eap_noob_server_context * data)
     //To-Do: send error if NoodID not found
 
     if (query) {
-        snprintf(query, MAX_LINE_SIZE, "SELECT Noob, Hoob from %s where PeerId='%s' and  NoobId='%s'", DEVICE_TABLE,
-                data->peer_attr->PeerId,data->peer_attr->oob_data->NoobId_b64);
-        printf("Query = %s\n",query);
-        if (eap_noob_exec_query(query, eap_noob_callback, data) && data->peer_attr->oob_data->noob != NULL) {
+        snprintf(query, MAX_LINE_SIZE, "SELECT Noob, Hoob from %s where PeerId=? and NoobId=?", DEVICE_TABLE);
+        if (eap_noob_exec_query(data, query, eap_noob_callback, 4, TEXT, data->peer_attr->PeerId,
+            TEXT, data->peer_attr->oob_data->NoobId_b64)) {
             return eap_noob_db_update(data, UPDATE_OOB);
         }
         os_free(query);
     }
-    printf("No NoobId found========================\n");
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: No NoobId found");
     return FAILURE;
 }
 
 static void eap_noob_rsp_noobid(struct eap_noob_server_context * data,
-                              json_t * resp_obj)
+                                json_t * resp_obj)
 {
     eap_noob_decode_obj(data->peer_attr,resp_obj);
     //check error code after decoding
