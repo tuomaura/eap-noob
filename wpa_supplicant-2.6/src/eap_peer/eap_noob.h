@@ -41,6 +41,7 @@
 #define MAX_INFO_LEN			500
 #define MAX_LINE_SIZE           	1000
 
+#define NONCE_LEN               32
 #define KDF_LEN				288
 #define MSK_LEN     			64
 #define EMSK_LEN			64
@@ -136,7 +137,8 @@
 #define CONF_PARAMS                 (DIRS_RCVD|CRYPTOSUITES_RCVD|VERSION_RCVD|PEER_TYPE_RCVD|PEER_ID_NUM_RCVD|PEER_TYPE_RCVD)
 
 
-/* SQL query to create peer connection database */
+/* SQL query to create peer connection database
+ * TODO check crytposuites type */
 #define CREATE_CONNECTION_TABLE                         \
     "CREATE TABLE connections(                          \
     ssid TEXT PRIMARY KEY,                              \
@@ -148,8 +150,8 @@
     Csuitep INTEGER,                                    \
     Dirs INTEGER,                                       \
     Dirp INTEGER,                                       \
-    nonce_peer TEXT,                                    \
-    nonce_serv TEXT,                                    \
+    Np BLOB,                                    \
+    Ns BLOB,                                    \
     minsleep INTEGER,                                   \
     ServInfo TEXT,                                      \
     PeerInfo TEXT,                                      \
@@ -157,9 +159,9 @@
     Noob TEXT,                                          \
     Hoob TEXT,                                          \
     OOB_RECEIVED_FLAG INTEGER,                          \
-    kms TEXt,                                           \
-    kmp TEXT,                                           \
-    kz TEXT,                                            \
+    Kms TEXt,                                           \
+    Kmp TEXT,                                           \
+    Kz TEXT,                                            \
     pub_key_serv TEXT,                                  \
     pub_key_peer TEXT,                                  \
     err_code INTEGER,                                   \
@@ -227,6 +229,8 @@ enum {HOOB_TYPE, MACS_TYPE, MACP_TYPE};
 
 enum {UPDATE_ALL, UPDATE_STATE, UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET, UPDATE_STATE_ERROR,
       UPDATE_OOB, DELETE_EXPIRED_NOOB, DELETE_SSID};
+
+enum sql_datatypes {TEXT, INT, UNSIGNED_BIG_INT, BLOB,};
 
 /* server state vs message type matrix */
 const int state_message_check[NUM_OF_STATES][MAX_MSG_TYPES] =  {
@@ -302,7 +306,7 @@ struct eap_noob_ecdh_key_exchange {
     size_t shared_key_b64_len;
 };
 
-struct eap_noob_serv_data {
+struct eap_noob_server_data {
 
     u32 version[MAX_SUP_VER];
     u32 state;
@@ -315,7 +319,7 @@ struct eap_noob_serv_data {
     char * NAI;
     char * MAC;
     char * ssid;
-    char * peerID;
+    char * peerId;
     char * realm;
 
     enum eap_noob_err_code err_code;
@@ -341,7 +345,7 @@ struct eap_noob_peer_data {
     u32 minsleep;
     u32 config_params;
 
-    char * peerID;
+    char * peerId;
     char * peer_info;
     char * MAC;
     char * realm;
@@ -352,10 +356,10 @@ struct eap_noob_peer_data {
 
 struct eap_noob_peer_context {
     struct eap_noob_peer_data * peer_attr;
-    struct eap_noob_serv_data * serv_attr;
+    struct eap_noob_server_data * server_attr;
     char * db_name;
     char * db_table_name;
-    sqlite3 * peerDB;
+    sqlite3 * peer_db;
     int wired;
 };
 
@@ -380,99 +384,5 @@ const char *error_info[] =  {
     "Application-specific error",
     "Invalid server info",
     "Invalid server URL"};
-
-
-#if 0
-/*Function prototypes*/
-static noob_json_t * eap_noob_json_array();
-static u32  eap_noob_json_array_append(noob_json_t * arr, noob_json_t * value);
-static noob_json_t * eap_noob_json_integer(noob_json_int_t value);
-static noob_json_int_t eap_noob_json_integer_value(noob_json_t * value);
-static u32 eap_noob_json_is_integer(const noob_json_t * value);
-static noob_json_t * eap_noob_json_string(const noob_json_str_t * value);
-static noob_json_str_t * eap_noob_json_string_value(noob_json_t * value);
-static noob_json_t * eap_noob_json_object();
-static u32 eap_noob_json_object_set_new (noob_json_t * obj, const char* key, noob_json_t * value);
-static char * eap_noob_json_dumps(noob_json_t * root, size_t flags);
-static noob_json_t * eap_noob_json_loads(const char * input, size_t flags, noob_json_error_t * error);
-static u32 eap_noob_json_is_object(noob_json_t * obj);
-static noob_json_t * eap_noob_json_object_get(noob_json_t * obj, const char * key);
-static u32 eap_noob_json_typeof(const noob_json_t * value);
-//static int eap_noob_sendUpdateSignal();
-static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state);
-static noob_json_t * eap_noob_prepare_peer_info_json(struct eap_sm *sm,struct eap_noob_peer_config_params * data);
-static char * eap_noob_prepare_mac_arr(const struct eap_noob_peer_context * data, int type, int state);
-static u8 * eap_noob_gen_MAC(const struct eap_noob_peer_context * data,int type, u8 * key, int keylen, int state);
-//static int eap_noob_get_noob(struct eap_noob_peer_context *data);
-//static int eap_noob_send_oob(struct eap_noob_peer_context *data);
-size_t eap_noob_calcDecodeLength(const char* b64input);
-int eap_noob_Base64Decode(char* b64message, unsigned char** buffer, size_t* length);
-int eap_noob_Base64Encode(const unsigned char* buffer, size_t length, char** b64text);
-int eap_noob_ECDH_KDF_X9_63(unsigned char *out, size_t outlen,
-        const unsigned char *Z, size_t Zlen,
-        const unsigned char *algorithm_id, size_t algorithm_id_len,
-        const unsigned char * partyUinfo, size_t partyUinfo_len,
-        const unsigned char * partyVinfo, size_t partyVinfo_len,
-        const unsigned char * suppPrivinfo, size_t suppPrivinfo_len,
-        const EVP_MD *md);
-//static char * eap_noob_prepare_hoob_arr(const struct eap_noob_peer_context * data);
-//static int eap_noob_get_hoob(struct eap_noob_peer_context *data,unsigned char *out, size_t outlen);
-static int eap_noob_derive_secret(struct eap_noob_peer_context *data, size_t *secret_len);
-static int eap_noob_get_key(struct eap_noob_serv_data *data);
-static void eap_noob_verify_param_len(struct eap_noob_serv_data * data);
-static void  eap_noob_decode_obj(struct eap_noob_serv_data * data ,noob_json_t * req_obj);
-static void eap_noob_assign_waittime(struct eap_sm *sm,struct eap_noob_peer_context *data);
-int eap_noob_check_compatibility(struct eap_noob_peer_context *data);
-static void eap_noob_config_change(struct eap_sm *sm , struct eap_noob_peer_context *data);
-int eap_noob_db_entry_check(void * priv , int argc, char **argv, char **azColName);
-int eap_noob_callback(void * priv , int argc, char **argv, char **azColName);
-static int eap_noob_exec_query(const char * query, int(*callback)(void*, int ,char **, char ** ),
-        void * argv, struct eap_noob_peer_context *data);
-static int eap_noob_db_update (struct eap_noob_peer_context *data, u8 type);
-static int eap_noob_db_entry(struct eap_sm *sm,struct eap_noob_peer_context *data);
-static struct wpabuf * eap_noob_err_msg(struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_verify_peerID(struct eap_noob_peer_context * data, u8  id);
-static struct wpabuf * eap_noob_rsp_type_four(const struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_rsp_type_three(const struct eap_noob_peer_context *data, u8 id);
-static int eap_noob_build_JWK( noob_json_t ** jwk, const char * x_b64);
-static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_rsp_type_one(struct eap_sm *sm,const struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_rsp_type_five(struct eap_sm *sm,const struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_rsp_type_six(struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_rsp_type_seven(const struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_req_type_seven(struct eap_sm *sm, noob_json_t * req_obj , struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_req_type_six(struct eap_sm *sm, noob_json_t * req_obj , struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_req_type_five(struct eap_sm *sm,noob_json_t * req_obj , struct eap_noob_peer_context *data,
-        u8 id);
-static struct wpabuf * eap_noob_req_type_four(struct eap_sm *sm, noob_json_t * req_obj , struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_req_type_three(struct eap_sm *sm, noob_json_t * req_obj , struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_req_type_two(struct eap_sm *sm, noob_json_t * req_obj , struct eap_noob_peer_context *data, u8 id);
-static struct wpabuf * eap_noob_req_type_one(struct eap_sm *sm,noob_json_t * req_obj , struct eap_noob_peer_context *data,
-        u8 id);
-static void eap_noob_req_err_handling(struct eap_sm *sm,noob_json_t * req_obj , struct eap_noob_peer_context *data,
-        u8 id);
-static struct wpabuf * eap_noob_process (struct eap_sm *sm, void *priv,
-        struct eap_method_ret *ret,
-        const struct wpabuf *reqData);
-static void eap_noob_free_ctx(struct eap_noob_peer_context * data);
-static void eap_noob_deinit(struct eap_sm *sm, void *priv);
-static int eap_noob_create_db(struct eap_sm *sm,struct eap_noob_peer_context * data);
-static void eap_noob_assign_config(char * conf_name,char * conf_value,struct eap_noob_peer_data * data);
-static void eap_noob_parse_config(char * buff,struct eap_noob_peer_data * data);
-static int eap_noob_handle_incomplete_conf(struct eap_noob_peer_context * data);
-//static int eap_noob_prepare_peer_info_obj(struct eap_noob_peer_data * data);
-static int eap_noob_read_config(struct eap_sm *sm,struct eap_noob_peer_context * data);
-static int eap_noob_peer_ctxt_alloc(struct eap_sm *sm,  struct eap_noob_peer_context * data);
-static int eap_noob_peer_ctxt_init(struct eap_sm *sm,  struct eap_noob_peer_context * data);
-static void * eap_noob_init(struct eap_sm *sm);
-static Boolean eap_noob_isKeyAvailable(struct eap_sm *sm, void *priv);
-static u8 * eap_noob_getKey(struct eap_sm *sm, void *priv, size_t *len);
-static u8 * eap_noob_get_emsk(struct eap_sm *sm, void *priv, size_t *len);
-static void eap_noob_deinit_for_reauth(struct eap_sm *sm, void *priv);
-static Boolean eap_noob_has_reauth_data(struct eap_sm *sm, void *priv);
-int eap_peer_noob_register(void);
-
-#endif
 
 #endif
