@@ -127,7 +127,6 @@ static int eap_noob_Base64Decode(const char * b64message, unsigned char ** buffe
     /* Convert base64url to base64 encoding. */
     int b64pad = 4*((len+3)/4)-len;
     temp = os_zalloc(len + b64pad);
-    /* temp = os_strdup(b64message); */
     os_memcpy(temp, b64message, len);
     if (b64pad == 3) {
             wpa_printf(MSG_DEBUG, "EAP-NOOB Input to %s is incorrect", __func__);
@@ -676,7 +675,7 @@ static int eap_noob_exec_query(struct eap_noob_server_context * data, const char
             /* fieldTypes[i] = (char *)sqlite3_column_decltype(stmt, i); */
         }
 
-        if (SUCCESS != callback(data, fieldCount, fieldVals, fieldNames)) {/*, fieldTypes)) {*/
+        if (SUCCESS != callback(data, fieldCount, fieldVals, fieldNames)) {
             wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected error in DB callback. Exiting query");
             ret = FAILURE; break;
         }
@@ -2140,8 +2139,6 @@ static struct wpabuf * eap_noob_err_msg(struct eap_noob_server_context * data, u
     }
 
     if (code != E1001 && FAILURE == eap_noob_db_update(data, UPDATE_STATE_ERROR)) {
-        /* eap_oob_set_error(); //Internal error
-        set_done(data, NOT_DONE); */
         wpa_printf(MSG_DEBUG,"Fail to Write Error to DB");
     }
 
@@ -3149,8 +3146,6 @@ static Boolean eap_noob_check(struct eap_sm * sm, void * priv,
 EXIT:
     EAP_NOOB_FREE(resp_obj);
     EAP_NOOB_FREE(resp_type);
-    /* TODO check -- Rohan, why did you remove the security checks? */
-    /* return FALSE; */
     return ret;
 }
 
