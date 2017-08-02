@@ -3144,8 +3144,10 @@ static Boolean eap_noob_check(struct eap_sm * sm, void * priv,
     }
 
 EXIT:
-    EAP_NOOB_FREE(resp_obj);
-    EAP_NOOB_FREE(resp_type);
+    if (resp_type)
+        json_decref(resp_type);
+    else
+        json_decref(resp_obj);
     return ret;
 }
 
