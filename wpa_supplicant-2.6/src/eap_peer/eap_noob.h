@@ -316,7 +316,7 @@ struct eap_noob_server_data {
     u32 rcvd_params;
 
     char * serv_info;
-    char * NAI;
+    //char * NAI;
     char * MAC;
     char * ssid;
     char * peerId;
