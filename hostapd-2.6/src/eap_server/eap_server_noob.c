@@ -127,6 +127,7 @@ static int eap_noob_Base64Decode(const char * b64message, unsigned char ** buffe
     /* Convert base64url to base64 encoding. */
     int b64pad = 4*((len+3)/4)-len;
     temp = os_zalloc(len + b64pad);
+    /* temp = os_strdup(b64message); */
     os_memcpy(temp, b64message, len);
     if (b64pad == 3) {
             wpa_printf(MSG_DEBUG, "EAP-NOOB Input to %s is incorrect", __func__);
@@ -596,7 +597,7 @@ EXIT:
  * Returns  :  SUCCESS/FAILURE
  **/
 static int eap_noob_exec_query(struct eap_noob_server_context * data, const char * query,
-                               int (*callback)(void *, int, char **, char **),
+                               int (*callback)(void *, sqlite3_stmt *),
                                int num_args, ...)
 {
     sqlite3_stmt * stmt = NULL;
@@ -636,8 +637,9 @@ static int eap_noob_exec_query(struct eap_noob_server_context * data, const char
                 i++;
                 break;
             case BLOB:
-                bval = va_arg(args, u8 *);
                 bval_len = va_arg(args, int);
+                bval = va_arg(args, u8 *);
+
                 if (SQLITE_OK != sqlite3_bind_blob(stmt, (indx+1), (void *)bval, bval_len, NULL)) {
                     wpa_printf(MSG_DEBUG, "EAP-NOOB: Error binding %.*s at index %d", bval_len, bval, indx+1);
                     ret = FAILURE; goto EXIT;
@@ -658,14 +660,18 @@ static int eap_noob_exec_query(struct eap_noob_server_context * data, const char
             ret = FAILURE; goto EXIT;
         }
 
+        if (NULL != callback && SUCCESS != callback(data, stmt)){
+            wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected error in DB callback. Exiting query");
+            ret = FAILURE; break;
+	}
+
         if (ret == SQLITE_DONE) {
             wpa_printf(MSG_DEBUG, "EAP-NOOB: Done executing the query, ret (%d)\n", ret);
             ret = SUCCESS; break;
         }
 
-        if (NULL == callback)
-            continue;
 
+#if 0
         char * fieldNames[MAX_FIELDS];
         char * fieldVals[MAX_FIELDS];
         /* char * fieldTypes[MAX_FIELDS]; */
@@ -674,11 +680,8 @@ static int eap_noob_exec_query(struct eap_noob_server_context * data, const char
             fieldVals[i] = (char *)sqlite3_column_text(stmt, i);
             /* fieldTypes[i] = (char *)sqlite3_column_decltype(stmt, i); */
         }
+#endif
 
-        if (SUCCESS != callback(data, fieldCount, fieldVals, fieldNames)) {
-            wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected error in DB callback. Exiting query");
-            ret = FAILURE; break;
-        }
     }
 
 EXIT:
@@ -716,27 +719,24 @@ static int eap_noob_db_update(struct eap_noob_server_context * data, u8 type)
 
             break;
         case UPDATE_STATE:
-            os_snprintf(query,len,"UPDATE %s SET server_state=? where PeerId=?", data->db_table_name);
+            os_snprintf(query,len,"UPDATE %s SET server_state=? where PeerId=?", "EphemeralState");
             ret = eap_noob_exec_query(data, query, NULL, 4, INT, data->peer_attr->server_state,
                   TEXT, data->peer_attr->PeerId);
             break;
         case UPDATE_STATE_ERROR:
-            os_snprintf(query,len,"UPDATE %s SET server_state=?, ErrorCode=? where PeerId=?", data->db_table_name);
+            os_snprintf(query,len,"UPDATE %s SET server_state=?, error_code=? where PeerId=?", "EphemeralState");
             eap_noob_exec_query(data, query, NULL, 6, INT, data->peer_attr->server_state, INT,
                     data->peer_attr->err_code, TEXT, data->peer_attr->PeerId);
             break;
         case UPDATE_STATE_MINSLP:
-            os_snprintf(query,len,"UPDATE %s SET server_state=?, sleep_count =?, last_used_time = ? where PeerId=?",
-                    data->db_table_name);
-            ret = eap_noob_exec_query(data, query, NULL, 8, INT, data->peer_attr->server_state, INT,
-                    data->peer_attr->sleep_count, UNSIGNED_BIG_INT, data->peer_attr->last_used_time,
-                    TEXT, data->peer_attr->PeerId);
+            os_snprintf(query,len,"UPDATE %s SET server_state=?, sleep_count =? where PeerId=?", "EphemeralState");
+            ret = eap_noob_exec_query(data, query, NULL, 6, INT, data->peer_attr->server_state, INT,
+                    data->peer_attr->sleep_count, TEXT, data->peer_attr->PeerId);
             break;
         case UPDATE_PERSISTENT_KEYS_SECRET:
-            os_snprintf(query,len,"UPDATE %s SET Kms=?, Kmp=?, Kz=?, server_state=?  where PeerId=?", data->db_table_name);
-            ret = eap_noob_exec_query(data, query, NULL, 10, data->peer_attr->kdf_out->kms_b64, TEXT,
-                    data->peer_attr->kdf_out->kmp_b64, TEXT, data->peer_attr->kdf_out->kz_b64, INT,
-                    data->peer_attr->server_state, TEXT, data->peer_attr->PeerId);
+            os_snprintf(query,len,"INSERT INTO %s(PeerId,Verp,Cryptosuitep,Realm,Kz) VALUES(?,?,?,?,?)", "PersistentState");
+            ret = eap_noob_exec_query(data, query, NULL, 10, TEXT, data->peer_attr->PeerId, INT,data->peer_attr->version,
+                  INT,data->peer_attr->cryptosuite, TEXT, server_conf.realm, BLOB,KZ_LEN, data->peer_attr->kdf_out->kz);
             break;
         case UPDATE_OOB:
             os_snprintf(query, MAX_LINE_SIZE, "UPDATE %s SET noob=?,hoob=?, where PeerId=?", data->db_table_name);
@@ -951,17 +951,15 @@ static int eap_noob_db_entry(struct eap_noob_server_context * data)
             JSON_COMPACT|JSON_PRESERVE_ORDER);
     dump_str5 = json_dumps(mac_input, JSON_COMPACT|JSON_PRESERVE_ORDER);
 
+
     os_snprintf(query, MAX_LINE_SIZE ,
-       "INSERT INTO %s ( PeerId, mac_input, mac_input, Verp, Vers, server_state, "
-       "Cryptosuitep, Cryptosuites, Dirp, Dirs, Ns, Np, PeerInfo, ServerInfo,"
-       "Z, Noob, Hoob, oob_received_flag,sleep_count, PKs, PKp, Kms, Kmp, Kz) VALUES "
-       "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", data->db_table_name);
-    ret = eap_noob_exec_query(data, query, NULL, 48, TEXT, peer_attr->PeerId, TEXT, dump_str5, TEXT, "", INT,
-       peer_attr->version, TEXT, dump_str1, INT, peer_attr->server_state, INT, peer_attr->cryptosuite, TEXT, dump_str2,
-       INT, peer_attr->dir, INT, data->server_attr->dir, TEXT, peer_attr->kdf_nonce_data->nonce_server_b64, TEXT,
-       peer_attr->kdf_nonce_data->nonce_peer_b64, TEXT, peer_attr->peerinfo, TEXT, data->server_attr->serverinfo, TEXT,
-       peer_attr->ecdh_exchange_data->shared_key_b64, TEXT, "", TEXT, "", INT, 0, INT, peer_attr->sleep_count, TEXT, dump_str3,
-       TEXT, dump_str4, TEXT, "", TEXT, "", TEXT, "");
+       "INSERT INTO %s ( PeerId, Verp, Cryptosuitep, Realm, Dirp, PeerInfo, Ns, Np"
+       "Z, MacInput, sleep_count, server_state) VALUES "
+       "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", "EphemeralState");
+    ret = eap_noob_exec_query(data, query, NULL, 24, TEXT, peer_attr->PeerId, INT, peer_attr->version, 
+       INT, peer_attr->cryptosuite, TEXT, server_conf.realm, INT, peer_attr->dir, TEXT, peer_attr->peerinfo, BLOB,  
+       NONCE_LEN, peer_attr->kdf_nonce_data->nonce_server, BLOB,NONCE_LEN, peer_attr->kdf_nonce_data->nonce_peer, BLOB, 
+       ECDH_SHARED_SECRET_LEN, peer_attr->ecdh_exchange_data->shared_key,TEXT,dump_str5, INT, peer_attr->sleep_count, INT, peer_attr->server_state);
 
     os_free(dump_str1); os_free(dump_str2); os_free(dump_str3); os_free(dump_str4); os_free(dump_str5);
     json_decref(ver_arr); json_decref(csuite_arr);
@@ -2139,6 +2137,8 @@ static struct wpabuf * eap_noob_err_msg(struct eap_noob_server_context * data, u
     }
 
     if (code != E1001 && FAILURE == eap_noob_db_update(data, UPDATE_STATE_ERROR)) {
+        /* eap_oob_set_error(); //Internal error
+        set_done(data, NOT_DONE); */
         wpa_printf(MSG_DEBUG,"Fail to Write Error to DB");
     }
 
