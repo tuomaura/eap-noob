@@ -158,7 +158,7 @@
     Kmp TEXT,                                       \
     server_state INTEGER,                           \
     oob_received_flag INTEGER,                      \
-    last_used_time UNSIGNED BIG INT,                     \
+    last_used_time UNSIGNED BIG INT,                \
     sleep_count INTEGER,                            \
     mac_input TEXT)"
 
@@ -167,7 +167,7 @@
 #define CREATE_TABLES_EPHEMERALSTATE                \
     "CREATE TABLE IF NOT EXISTS EphemeralState(     \
     PeerId TEXT PRIMARY KEY,                        \
-    Verp INTEGER NUT NULL,                          \
+    Verp INTEGER NOT NULL,                          \
     Cryptosuitep INTEGER NOT NULL,                  \
     Realm TEXT,                                     \
     Dirp INTEGER,                                   \
@@ -176,7 +176,10 @@
     Np BLOB,                                        \
     Z BLOB,                                         \
     MacInput TEXT,                                  \
-    creation_time  BIGINT);                         \
+    creation_time  BIGINT,                          \
+    error_code INTEGER,                             \
+    sleep_count INTEGER,                            \
+    server_state INTEGER);                          \
                                                     \
     CREATE TABLE IF NOT EXISTS EphemeralNoob(       \
     PeerId TEXT NOT NULL REFERENCES EphemeralState(PeerId), \
