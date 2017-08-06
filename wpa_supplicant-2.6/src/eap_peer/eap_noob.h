@@ -21,59 +21,56 @@
 #define DOMAIN                      "@eap-noob.net"
 #define DEFAULT_REALM               "eap-noob.net"
 #define VERSION_ONE                 1
-#define SUITE_ONE 			1
-#define TABLE_NAME			"connections"
-#define DB_NAME				"peer_connection_db"
-#define EAP_NOOB_NOOB_LEN      		16
-#define EAP_NOOB_NONCE_LEN      	32
-#define EAP_SHARED_SECRET_LEN   	32
-#define ECDH_KDF_MAX 			(1 << 30)
-#define MAX_URL_LEN			60
-#define ALGORITHM_ID			"EAP-NOOB"
-#define ALGORITHM_ID_LEN    		8
-#define FORMAT_BASE64URL		1
+#define SUITE_ONE                   1
+#define TABLE_NAME                  "connections"
+#define DB_NAME                     "peer_connection_db"
+#define EAP_NOOB_NOOB_LEN           16
+#define EAP_NOOB_NONCE_LEN          32
+#define EAP_SHARED_SECRET_LEN       32
+#define ECDH_KDF_MAX                (1 << 30)
+#define MAX_URL_LEN                 60
+#define ALGORITHM_ID                "EAP-NOOB"
+#define ALGORITHM_ID_LEN            8
+#define FORMAT_BASE64URL            1
 
 /*MAX values for the fields*/
-#define MAX_SUP_VER             	1
-#define MAX_SUP_CSUITES			1
-#define MAX_PEER_ID_LEN 		22
-#define MAX_CONF_LEN			500
-#define MAX_INFO_LEN			500
-#define MAX_LINE_SIZE           	1000
+#define MAX_SUP_VER             1
+#define MAX_SUP_CSUITES         1
+#define MAX_PEER_ID_LEN         22
+#define MAX_CONF_LEN            500
+#define MAX_INFO_LEN            500
+#define MAX_LINE_SIZE           1000
 
-#define NONCE_LEN               32
-#define KDF_LEN				288
-#define MSK_LEN     			64
-#define EMSK_LEN			64
-#define AMSK_LEN			64
-#define KZ_LEN				32
-#define KMS_LEN				32
-#define KMP_LEN				32
-#define MAC_LEN				16
-#define FIXED_LENGTH             	6
-#define MAX_X25519_LEN			48
+#define KDF_LEN                 288
+#define MSK_LEN                 64
+#define EMSK_LEN                64
+#define AMSK_LEN                64
+#define KZ_LEN                  32
+#define KMS_LEN                 32
+#define KMP_LEN                 32
+#define MAC_LEN                 16
+#define FIXED_LENGTH            6
+#define MAX_X25519_LEN          48
 
-#define HASH_LEN     			16
-#define NUM_OF_STATES           	5
-#define MAX_MSG_TYPES           	8
+#define HASH_LEN                16
+#define NUM_OF_STATES           5
+#define MAX_MSG_TYPES           8
 
-/*OOB DIRECTIONS*/
-#define PEER_TO_SERV 			1
-#define SERV_TO_PEER			2
-#define BOTH_DIR			3
+/* OOB DIRECTIONS */
+#define PEER_TO_SERV            1
+#define SERV_TO_PEER            2
+#define BOTH_DIR                3
 
+#define SUCCESS                 1
+#define FAILURE                 0
 
-
-#define SUCCESS 			1
-#define FAILURE 			0
-
-#define INVALID                 	0
-#define VALID                   	1
+#define INVALID                 0
+#define VALID                   1
 
 /* keywords for json encoding and decoding */
 #define TYPE                    "Type"
-#define ERR_INFO                "ErrorInfo"
-#define ERR_CODE                "ErrorCode"
+#define ERRORINFO               "ErrorInfo"
+#define ERRORCODE               "ErrorCode"
 #define VERS                    "Vers"
 #define CRYPTOSUITES            "Cryptosuites"
 #define DIRS                    "Dirs"
@@ -150,8 +147,8 @@
     Csuitep INTEGER,                                    \
     Dirs INTEGER,                                       \
     Dirp INTEGER,                                       \
-    Np BLOB,                                    \
-    Ns BLOB,                                    \
+    Np BLOB,                                            \
+    Ns BLOB,                                            \
     minsleep INTEGER,                                   \
     ServInfo TEXT,                                      \
     PeerInfo TEXT,                                      \
@@ -230,7 +227,7 @@ enum {HOOB_TYPE, MACS_TYPE, MACP_TYPE};
 enum {UPDATE_ALL, UPDATE_STATE, UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET, UPDATE_STATE_ERROR,
       UPDATE_OOB, DELETE_EXPIRED_NOOB, DELETE_SSID};
 
-enum sql_datatypes {TEXT, INT, UNSIGNED_BIG_INT, BLOB,};
+enum sql_datatypes {TEXT, INT, UNSIGNED_BIG_INT, BLOB};
 
 /* server state vs message type matrix */
 const int state_message_check[NUM_OF_STATES][MAX_MSG_TYPES] =  {

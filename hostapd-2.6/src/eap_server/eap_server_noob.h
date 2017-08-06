@@ -212,7 +212,7 @@
 
 #define QUERY_EPHEMERALNOOB                         \
     "SELECT * FROM EphemeralState                   \
-    WHERE PeerId=? AND NoobId=?;"
+    WHERE PeerId=?;"//AND NoobId=?;"
 
 #define QUERY_PERSISTENTSTATE                       \
     "SELECT * FROM PersistentState WHERE PeerId=?;"
@@ -259,7 +259,7 @@
 
 #define EAP_NOOB_CHANGE_STATE(_data,_s)             \
     if ((_data) && ((_data)->peer_attr)) {          \
-        (_data)->peer_attr->server_state = (_s);      \
+        (_data)->peer_attr->server_state = (_s);    \
     }
 
  /* Flag used during KDF and MAC generation */

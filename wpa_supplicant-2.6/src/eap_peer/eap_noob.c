@@ -545,7 +545,7 @@ static int eap_noob_Base64Decode(const char * b64message, unsigned char ** buffe
     /* Length should equal decodeLen, else something goes horribly wrong */
     if (len != decodeLen) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB Unexpected error decoding message. Decoded len (%d),"
-                   " expected (%d), input b64message len (%d)", len, decodeLen, os_strlen(b64message));
+                   " expected (%d), input b64message len (%d)", len, decodeLen, (int)os_strlen(b64message));
         decodeLen = 0;
         os_free(*buffer);
         *buffer = NULL;
@@ -1194,7 +1194,7 @@ static void  eap_noob_decode_obj(struct eap_noob_server_data * data, json_t * re
 {
     const char * key = NULL;
     char * retval_char = NULL, * dump_str = NULL;
-    size_t arr_index, decode_length, decode_length_nonce, len;
+    size_t arr_index, decode_length;
     json_t * arr_value, * value;
     json_error_t  error;
     int retval_int = 0;
@@ -1243,7 +1243,7 @@ static void  eap_noob_decode_obj(struct eap_noob_server_data * data, json_t * re
                 } else if (0 == strcmp(key, SLEEPTIME)) {
                     data->minsleep = retval_int;
                     //data->rcvd_params |= MINSLP_RCVD;
-                } else if (0 == strcmp(key, ERR_CODE)) {
+                } else if (0 == strcmp(key, ERRORCODE)) {
                     data->err_code = retval_int;
                 }
                 break;
@@ -1264,7 +1264,7 @@ static void  eap_noob_decode_obj(struct eap_noob_server_data * data, json_t * re
                     wpa_printf(MSG_DEBUG, "EAP-NOOB:Realm %s",data->realm);
                 } else if (0 == strcmp(key, NS)) {
                     data->kdf_nonce_data->nonce_serv_b64 = os_strdup(retval_char);
-                    decode_length_nonce = eap_noob_Base64Decode(data->kdf_nonce_data->nonce_serv_b64,
+                    decode_length = eap_noob_Base64Decode(data->kdf_nonce_data->nonce_serv_b64,
                                           &data->kdf_nonce_data->nonce_serv);
                     data->rcvd_params |= NONCE_RCVD;
                 } else if (0 == strcmp(key, HINT_SERV)) {
@@ -1723,35 +1723,32 @@ static int eap_noob_exec_query(struct eap_noob_peer_context * data, const char *
     }
 
     va_start(args, num_args);
-
-    for (i = 0; i < num_args; ++i, ++indx) {
+    for (i = 0; i < num_args; i+=2, ++indx) {
         enum sql_datatypes type = va_arg(args, enum sql_datatypes);
         switch(type) {
             case INT:
                 ival = va_arg(args, int);
                 if (SQLITE_OK != sqlite3_bind_int(stmt, (indx+1), ival)) {
-                    wpa_printf(MSG_DEBUG, "EAP-NOOB: Error binding %d at index %d", ival, i+1);
+                    wpa_printf(MSG_DEBUG, "EAP-NOOB: Error binding %d at index %d", ival, indx+1);
                     ret = FAILURE; goto EXIT;
                 }
-                i++;
                 break;
             case UNSIGNED_BIG_INT:
                 break;
             case TEXT:
                 sval = va_arg(args, char *);
                 if (SQLITE_OK != sqlite3_bind_text(stmt, (indx+1), sval, strlen(sval), NULL)) {
-                    wpa_printf(MSG_DEBUG, "EAP-NOOB:Error binding %s at index %d", sval, i+1);
+                    wpa_printf(MSG_DEBUG, "EAP-NOOB:Error binding %s at index %d", sval, indx+1);
                     ret = FAILURE; goto EXIT;
                 }
-                i++;
                 break;
             case BLOB:
-                bval = va_arg(args, u8 *);
                 bval_len = va_arg(args, int);
-                if (SQLITE_OK != sqlite3_bind_blob(stmt, (indx+1), (void *)bval, bval_len, NULL)) {
+                bval = va_arg(args, u8 *);
+                if (SQLITE_OK != sqlite3_bind_blob(stmt, (indx+1), bval, bval_len, NULL)) {
                     wpa_printf(MSG_DEBUG, "EAP-NOOB: Error binding %.*s at index %d", bval_len, bval, indx+1);
                     ret = FAILURE; goto EXIT;
-                } i+= 2;
+                } i++;
                 break;
             default:
                 wpa_printf(MSG_DEBUG, "EAP-NOOB: Wrong data type");
@@ -1896,7 +1893,7 @@ static int eap_noob_db_entry(struct eap_sm * sm, struct eap_noob_peer_context * 
             EAP_NOOB_NONCE_LEN, data->server_attr->kdf_nonce_data->nonce_serv_b64, INT, data->server_attr->minsleep, TEXT,
             data->server_attr->serv_info, TEXT, data->peer_attr->peer_info, TEXT,
             data->server_attr->ecdh_exchange_data->shared_key_b64, TEXT, "", TEXT, "", INT, 0, TEXT,
-            dump_str3, TEXT, dump_str4, INT, data->server_attr->err_code, TEXT, data->peer_attr->realm);
+            dump_str3, TEXT, dump_str4? dump_str4:"", INT, data->server_attr->err_code, TEXT, data->peer_attr->realm);
 
     if (FAILURE == ret) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
@@ -1935,8 +1932,8 @@ static struct wpabuf * eap_noob_err_msg(struct eap_noob_peer_context * data, u8 
         json_object_set_new(req_obj,PEERID,json_string(data->peer_attr->peerId));
     }
     json_object_set_new(req_obj, TYPE, json_integer(NONE));
-    json_object_set_new(req_obj, ERR_CODE, json_integer(error_code[code]));
-    json_object_set_new(req_obj, ERR_INFO, json_string(error_info[code]));
+    json_object_set_new(req_obj, ERRORCODE, json_integer(error_code[code]));
+    json_object_set_new(req_obj, ERRORINFO, json_string(error_info[code]));
 
     req_json = json_dumps(req_obj,JSON_COMPACT);
     if (NULL == req_json)
@@ -3030,16 +3027,17 @@ EXIT:
 **/
 static void eap_noob_free_ctx(struct eap_noob_peer_context * data)
 {
-
+    if (NULL == data) {
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
+        return;
+    }
     struct eap_noob_peer_data * peer = data->peer_attr;
     struct eap_noob_server_data * serv = data->server_attr;
-
-    if (NULL == data)
-        return;
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
 
     if (serv) {
+        wpa_printf(MSG_DEBUG, "EAP_NOOB: Clearing server data");
         EAP_NOOB_FREE(serv->serv_info);
-        //EAP_NOOB_FREE(serv->NAI);
         EAP_NOOB_FREE(serv->MAC);
         EAP_NOOB_FREE(serv->ssid);
         EAP_NOOB_FREE(serv->peerId);
@@ -3091,6 +3089,7 @@ static void eap_noob_free_ctx(struct eap_noob_peer_context * data)
     }
 
     if (peer) {
+        wpa_printf(MSG_DEBUG, "EAP_NOOB: Clearing peer data");
         EAP_NOOB_FREE(peer->peerId);
         EAP_NOOB_FREE(peer->peer_info);
         EAP_NOOB_FREE(peer->MAC);
@@ -3103,13 +3102,19 @@ static void eap_noob_free_ctx(struct eap_noob_peer_context * data)
         os_free(peer);
     }
 
+#if 0
     /* Close DB */
+    wpa_printf(MSG_DEBUG, "EAP_NOOB: Closing DB");
+    /* TODO check again */
+    if (data->peer_db)
     if (SQLITE_OK != sqlite3_close(data->peer_db)) {
-            wpa_printf(MSG_DEBUG, "EAP-NOOB:Error closing DB");
+        wpa_printf(MSG_DEBUG, "EAP-NOOB:Error closing DB");
     }
     EAP_NOOB_FREE(data->db_name);
     EAP_NOOB_FREE(data->db_table_name);
-    os_free(data);
+    os_free(data); data = NULL;
+    wpa_printf(MSG_DEBUG, "EAP_NOOB: Exit %s", __func__);
+#endif
 }
 
 /**
@@ -3117,7 +3122,6 @@ static void eap_noob_free_ctx(struct eap_noob_peer_context * data)
  * @sm : eap statemachine context
  * @priv : method context
 **/
-
 static void eap_noob_deinit(struct eap_sm * sm, void * priv)
 {
     wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB DEINIT");
@@ -3153,8 +3157,7 @@ static int eap_noob_create_db(struct eap_sm *sm, struct eap_noob_peer_context * 
         if (FAILURE != eap_noob_exec_query(data, buff, eap_noob_db_entry_check, 2, TEXT, wpa_s->current_ssid->ssid) &&
            (data->server_attr->record_present)) {
             memset(buff, 0, sizeof(buff));
-            os_snprintf(buff, 100, "SELECT * from %s where ssid =?",data->db_table_name,
-                    wpa_s->current_ssid->ssid);
+            os_snprintf(buff, 100, "SELECT * from %s where ssid =?",data->db_table_name);
             if (FAILURE !=  eap_noob_exec_query(data, buff, eap_noob_callback, 2, TEXT, wpa_s->current_ssid->ssid)) {
                 data->peer_attr->peerId = os_strdup(data->server_attr->peerId);
             }
