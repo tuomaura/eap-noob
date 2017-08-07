@@ -3035,6 +3035,7 @@ static void eap_noob_free_ctx(struct eap_noob_peer_context * data)
     struct eap_noob_server_data * serv = data->server_attr;
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
 
+#if 0
     if (serv) {
         wpa_printf(MSG_DEBUG, "EAP_NOOB: Clearing server data");
         EAP_NOOB_FREE(serv->serv_info);
@@ -3102,7 +3103,6 @@ static void eap_noob_free_ctx(struct eap_noob_peer_context * data)
         os_free(peer);
     }
 
-#if 0
     /* Close DB */
     wpa_printf(MSG_DEBUG, "EAP_NOOB: Closing DB");
     /* TODO check again */
@@ -3551,7 +3551,6 @@ static void * eap_noob_init_for_reauth(struct eap_sm *sm, void *priv)
     return data;
 }
 
-
 /**
  * eap_noob_has_reauth_data : Changes the state to RECONNECT ,
  * if the current state is REGISTERED_STATE
@@ -3567,7 +3566,7 @@ static Boolean eap_noob_has_reauth_data(struct eap_sm *sm, void *priv)
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Current SSID = %s, Stored SSID = %s\n",
             wpa_s->current_ssid->ssid,data->server_attr->ssid);
     if (data->server_attr->state == REGISTERED_STATE &&
-            0 == strcmp((char *)wpa_s->current_ssid->ssid,data->server_attr->ssid)) {
+        0 == strcmp((char *)wpa_s->current_ssid->ssid,data->server_attr->ssid)) {
         data->server_attr->state = RECONNECTING_STATE;
         eap_noob_config_change(sm,data);
         eap_noob_db_update(data,UPDATE_STATE);
@@ -3580,11 +3579,9 @@ static Boolean eap_noob_has_reauth_data(struct eap_sm *sm, void *priv)
 /**
  * eap_peer_noob_register : register eap noob method
 **/
-
 int eap_peer_noob_register(void)
 {
     struct eap_method * eap = NULL;
-
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: NOOB REGISTER");
     eap = eap_peer_method_alloc(EAP_PEER_METHOD_INTERFACE_VERSION,

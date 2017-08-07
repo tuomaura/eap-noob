@@ -211,7 +211,7 @@
     "SELECT * FROM EphemeralState WHERE PeerId=?;"
 
 #define QUERY_EPHEMERALNOOB                         \
-    "SELECT * FROM EphemeralState                   \
+    "SELECT * FROM EphemeralNoob                    \
     WHERE PeerId=?;"//AND NoobId=?;"
 
 #define QUERY_PERSISTENTSTATE                       \
@@ -242,25 +242,6 @@
     _D64 = os_strdup(fieldValue[i]);                \
     _l = eap_noob_Base64Decode(_D64,&_D)
 
-
-#define EAP_NOOB_SET_DONE(_data,_v)                 \
-    (_data)->peer_attr->is_done = (_v)
-
-
-#define EAP_NOOB_SET_SUCCESS(_data,_v)              \
-    (_data)->peer_attr->is_success = (_v)
-
-
-#define EAP_NOOB_SET_ERROR(_pdata,_v)               \
-    if (_pdata) {                                   \
-        (_pdata)->next_req = NONE;                  \
-        (_pdata)->err_code = _v;                    \
-    }
-
-#define EAP_NOOB_CHANGE_STATE(_data,_s)             \
-    if ((_data) && ((_data)->peer_attr)) {          \
-        (_data)->peer_attr->server_state = (_s);    \
-    }
 
  /* Flag used during KDF and MAC generation */
 enum {COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW};
