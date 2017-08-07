@@ -3635,7 +3635,7 @@ static int eap_noob_exec_noobid_queries(struct eap_noob_server_context * data)
 {
     char * query = os_malloc(MAX_LINE_SIZE);
     if (NULL == query) return FAILURE;
-    os_snprintf(query, MAX_LINE_SIZE, "SELECT * FROM EphemeralState WHERE PeerId=? AND NoobId=?;");
+    os_snprintf(query, MAX_LINE_SIZE, "SELECT * FROM EphemeralNoob WHERE PeerId=? AND NoobId=?;");
     return eap_noob_exec_query(data, query, columns_ephemeralnoob, 4, TEXT, data->peer_attr->PeerId,
             TEXT, data->peer_attr->oob_data->NoobId_b64);
 }
