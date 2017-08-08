@@ -185,8 +185,8 @@
     PeerId TEXT NOT NULL REFERENCES EphemeralState(PeerId), \
     NoobId TEXT NOT NULL,                           \
     Noob TEXT NOT NULL,                             \
-    sent_time BIGINT NOT NULL                       \
-    UNIQUE (Peerid,NoobId));"
+    sent_time BIGINT NOT NULL,                      \
+    UNIQUE(Peerid,NoobId));"
 
 #define CREATE_TABLES_PERSISTENTSTATE               \
     "CREATE TABLE IF NOT EXISTS PersistentState(    \

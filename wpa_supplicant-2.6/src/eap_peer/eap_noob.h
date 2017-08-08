@@ -147,8 +147,8 @@
     Csuitep INTEGER,                                    \
     Dirs INTEGER,                                       \
     Dirp INTEGER,                                       \
-    Np BLOB,                                            \
-    Ns BLOB,                                            \
+    Np TEXT,                                            \
+    Ns TEXT,                                            \
     minsleep INTEGER,                                   \
     ServInfo TEXT,                                      \
     PeerInfo TEXT,                                      \

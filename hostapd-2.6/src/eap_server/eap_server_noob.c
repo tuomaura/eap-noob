@@ -496,7 +496,6 @@ int eap_noob_callback(void * priv , int fieldCount, char ** fieldValue, char ** 
     return 0;
 }
 
-
 /**
  * eap_noob_db_statements : execute one or more sql statements that do not return rows
  * @db : open sqlite3 database handle
@@ -516,18 +515,17 @@ static int eap_noob_db_statements(sqlite3 * db, const char * query)
 
     /* Loop through multiple SQL statements in sqlite3 */
     while (tail < query + nByte) {
-        if (SQLITE_OK != sqlite3_prepare_v2(db, query, -1, &stmt, &tail)
-            || NULL == stmt)
-            ret = FAILURE; goto EXIT;
-        if (SQLITE_DONE != sqlite3_step(stmt))
-            ret = FAILURE; goto EXIT;
+        if (SQLITE_OK != sqlite3_prepare_v2(db, tail, -1, &stmt, &tail)
+            || NULL == stmt) {
+            ret = FAILURE; goto EXIT; }
+        if (SQLITE_DONE != sqlite3_step(stmt)) {
+            ret = FAILURE; goto EXIT; }
     }
-
 EXIT:
     if (ret == FAILURE) {
         sql_error = sqlite3_errmsg(db);
         if (sql_error != NULL)
-            wpa_printf(MSG_DEBUG,"EAP-NOOB: SQL error : %s\n", sql_error);
+            wpa_printf(MSG_DEBUG,"EAP-NOOB: SQL error : %s", sql_error);
     }
     if (stmt) sqlite3_finalize(stmt);
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s, ret %d",__func__, ret);
@@ -603,7 +601,6 @@ EXIT:
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s, ret %d",__func__, ret);
     return ret;
 }
-
 
 /**
  * eap_noob_exec_query : Function to execute a sql query. Prepapres, binds and steps.
@@ -1111,19 +1108,17 @@ static int eap_noob_create_db(struct eap_noob_server_context * data)
         return FAILURE;
     }
 
-    if (FAILURE == eap_noob_exec_query(data, CREATE_TABLES_EPHEMERALSTATE, NULL, 0) ||
-        FAILURE == eap_noob_exec_query(data, CREATE_TABLES_PERSISTENTSTATE, NULL, 0)) {
+     if (FAILURE == eap_noob_db_statements(data->server_db, CREATE_TABLES_EPHEMERALSTATE) ||
+        FAILURE == eap_noob_db_statements(data->server_db, CREATE_TABLES_PERSISTENTSTATE)) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: Unexpected error in table creation");
         return FAILURE;
     }
-
     /* Based on peer_state, decide which table to query */
     if (data->peer_attr->peerid_rcvd) {
-        if (data->peer_attr->peer_state <= OOB_RECEIVED_STATE) {
+        if (data->peer_attr->peer_state <= OOB_RECEIVED_STATE)
             return eap_noob_query_ephemeralstate(data);
-        } else {
+        else
             return eap_noob_query_persistentstate(data);
-        }
     }
 
 #if 0
@@ -2392,6 +2387,7 @@ static u8 * eap_noob_gen_MAC(struct eap_noob_server_context * data, int type, u8
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: %s",__func__);
 
+    /* TODO change here */
     if (NULL != (mac_str = eap_noob_prepare_mac_input(data, type, state))) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: MAC_STR = %s", mac_str);
         wpa_printf(MSG_DEBUG, "EAP-NOOB: LENGTH = %d", (int)strlen(mac_str));
