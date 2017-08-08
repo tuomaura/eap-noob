@@ -1886,11 +1886,11 @@ static int eap_noob_db_entry(struct eap_sm * sm, struct eap_noob_peer_context * 
             "Np, Ns, minsleep, ServInfo, PeerInfo,SharedSecret, Noob, Hoob, OOB_RECEIVED_FLAG, "
             "pub_key_serv, pub_key_peer, err_code, Realm) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", data->db_table_name);
-    ret = eap_noob_exec_query(data, query, NULL, 46, TEXT, wpa_s->current_ssid->ssid, TEXT, data->server_attr->peerId,
+    ret = eap_noob_exec_query(data, query, NULL, 44, TEXT, wpa_s->current_ssid->ssid, TEXT, data->server_attr->peerId,
             TEXT,  dump_str1, INT, data->peer_attr->version, INT, data->server_attr->state,
             TEXT, dump_str2 , INT, data->peer_attr->cryptosuite, INT, data->server_attr->dir,
-            INT, data->peer_attr->dir, BLOB, EAP_NOOB_NONCE_LEN, data->server_attr->kdf_nonce_data->nonce_peer_b64, BLOB,
-            EAP_NOOB_NONCE_LEN, data->server_attr->kdf_nonce_data->nonce_serv_b64, INT, data->server_attr->minsleep, TEXT,
+            INT, data->peer_attr->dir, TEXT, data->server_attr->kdf_nonce_data->nonce_peer_b64,TEXT,
+            data->server_attr->kdf_nonce_data->nonce_serv_b64, INT, data->server_attr->minsleep, TEXT,
             data->server_attr->serv_info, TEXT, data->peer_attr->peer_info, TEXT,
             data->server_attr->ecdh_exchange_data->shared_key_b64, TEXT, "", TEXT, "", INT, 0, TEXT,
             dump_str3, TEXT, dump_str4? dump_str4:"", INT, data->server_attr->err_code, TEXT, data->peer_attr->realm);
