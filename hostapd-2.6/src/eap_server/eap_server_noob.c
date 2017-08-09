@@ -45,7 +45,7 @@
 #include "eap_server_noob.h"
 
 static struct eap_noob_global_conf server_conf;
-static json_t * eap_noob_prepare_vers_arr(const struct eap_noob_server_context *);
+//static json_t * eap_noob_prepare_vers_arr(const struct eap_noob_server_context *);
 static json_t * eap_noob_prepare_csuites_arr(const struct eap_noob_server_context *);
 
 /*
@@ -555,6 +555,9 @@ static void columns_ephemeralstate(struct eap_noob_server_context * data,
     data->peer_attr->Z = os_memdup(sqlite3_column_blob(stmt, 8), ECDH_SHARED_SECRET_LEN) ;
     data->peer_attr->mac_input_str = os_strdup((char *) sqlite3_column_text(stmt, 9));
     data->peer_attr->creation_time = (uint64_t) sqlite3_column_int64(stmt, 10);
+    data->peer_attr->err_code = sqlite3_column_int(stmt, 11);
+    data->peer_attr->sleep_count = sqlite3_column_int(stmt, 12);
+    data->peer_attr->server_state = sqlite3_column_int(stmt, 13);
 }
 
 static void columns_ephemeralnoob(struct eap_noob_server_context * data,
@@ -907,12 +910,12 @@ static int eap_noob_db_entry(struct eap_noob_server_context * data)
 {
     struct eap_noob_peer_data * peer_attr = NULL;
     char query[MAX_LINE_SIZE] = {0};
-    char * dump_str1 = NULL, * dump_str2 = NULL, * dump_str3 = NULL;
-    char * dump_str4 = NULL, * dump_str5 = NULL;
-    json_t * ver_arr = NULL;
-    json_t * csuite_arr = NULL;
-    json_t * mac_input;
-    int i, ret;
+    //char * dump_str1 = NULL, * dump_str2 = NULL, * dump_str3 = NULL;
+    char * dump_str = NULL;//, * dump_str5 = NULL;
+    //json_t * ver_arr = NULL;
+    //json_t * csuite_arr = NULL;
+    //json_t * mac_input;
+    int ret;
 
     if (NULL == data) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
@@ -921,6 +924,7 @@ static int eap_noob_db_entry(struct eap_noob_server_context * data)
     peer_attr = data->peer_attr;
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s",__func__);
 
+#if 0
     if ((ver_arr = eap_noob_prepare_vers_arr(data)) == NULL)
         return FAILURE;
 
@@ -945,20 +949,24 @@ static int eap_noob_db_entry(struct eap_noob_server_context * data)
             JSON_COMPACT|JSON_PRESERVE_ORDER);
     dump_str4 = json_dumps(peer_attr->ecdh_exchange_data->jwk_peer,
             JSON_COMPACT|JSON_PRESERVE_ORDER);
-    dump_str5 = json_dumps(mac_input, JSON_COMPACT|JSON_PRESERVE_ORDER);
+#endif
+    dump_str = json_dumps(data->peer_attr->mac_input, JSON_COMPACT|JSON_PRESERVE_ORDER);
 
 
     os_snprintf(query, MAX_LINE_SIZE ,
        "INSERT INTO EphemeralState ( PeerId, Verp, Cryptosuitep, Realm, Dirp, PeerInfo, Ns, Np,Z, MacInput, "
        "sleep_count, server_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    ret = eap_noob_exec_query(data, query, NULL, 24, TEXT, peer_attr->PeerId, INT, peer_attr->version,
+    ret = eap_noob_exec_query(data, query, NULL, 26, TEXT, peer_attr->PeerId, INT, peer_attr->version,
        INT, peer_attr->cryptosuite, TEXT, server_conf.realm, INT, peer_attr->dir, TEXT, peer_attr->peerinfo, BLOB,
-       NONCE_LEN, peer_attr->kdf_nonce_data->Ns, BLOB,NONCE_LEN, peer_attr->kdf_nonce_data->Np, BLOB,
-       ECDH_SHARED_SECRET_LEN, peer_attr->ecdh_exchange_data->shared_key,TEXT,dump_str5, INT, peer_attr->sleep_count,
+       NONCE_LEN, peer_attr->kdf_nonce_data->Ns, BLOB, NONCE_LEN, peer_attr->kdf_nonce_data->Np, BLOB,
+       ECDH_SHARED_SECRET_LEN, peer_attr->ecdh_exchange_data->shared_key, TEXT, dump_str, INT, peer_attr->sleep_count,
        INT, peer_attr->server_state);
 
-    os_free(dump_str1); os_free(dump_str2); os_free(dump_str3); os_free(dump_str4); os_free(dump_str5);
+#if 0
+    //os_free(dump_str1); os_free(dump_str2); os_free(dump_str3); os_free(dump_str4); os_free(dump_str5);
     json_decref(ver_arr); json_decref(csuite_arr);
+#endif
+    os_free(dump_str);
 
     if (FAILURE == ret) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
@@ -2277,7 +2285,6 @@ err:
     EVP_MD_CTX_destroy(mctx);
     return rv;
 }
-#endif
 
 /**
  * eap_noob_prepare_vers_arr : prepares a JSON array for Vers
@@ -2299,6 +2306,7 @@ static json_t * eap_noob_prepare_vers_arr(const struct eap_noob_server_context *
     }
     return ver_arr;
 }
+#endif
 
 
 /**
@@ -2808,6 +2816,10 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_noob_server_context *dat
     }
 
     wpabuf_put_data(req, req_json, len);
+    /* Append to the mac_input PKs and Ns */
+    json_array_set(data->peer_attr->mac_input, 11, data->peer_attr->ecdh_exchange_data->jwk_serv);
+    json_array_set_new(data->peer_attr->mac_input, 12, json_string(base64_nonce));
+
 EXIT:
     json_decref(req_obj);
     EAP_NOOB_FREE(req_json);
@@ -2839,7 +2851,6 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_noob_server_context * da
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
         return NULL;
     }
-
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Request 1/Initial Exchange");
 
     EAP_NOOB_FREE_MALLOC(data->peer_attr->PeerId, MAX_PEERID_LEN);
@@ -2886,7 +2897,7 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_noob_server_context * da
         goto EXIT;
     }
 
-    printf("Request Sending = %s = %d\n", req_json, (int)strlen(req_json));
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Request Sending = %s = %d", req_json, (int)strlen(req_json));
     len = strlen(req_json);
 
     if (NULL == (req = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB, len+1, EAP_CODE_REQUEST, id))) {
@@ -3537,8 +3548,7 @@ static void eap_noob_rsp_type_three(struct eap_noob_server_context * data,
  * @data: Pointer to private EAP-NOOB data
  * @resp_obj: json object of the response received
  **/
-static void eap_noob_rsp_type_two(struct eap_noob_server_context * data,
-                                  json_t * resp_obj)
+static void eap_noob_rsp_type_two(struct eap_noob_server_context * data, json_t * resp_obj)
 {
     size_t secret_len = ECDH_SHARED_SECRET_LEN;
 
@@ -3576,6 +3586,10 @@ static void eap_noob_rsp_type_two(struct eap_noob_server_context * data,
                 data->peer_attr->ecdh_exchange_data->shared_key_b64);
         eap_noob_change_state(data,WAITING_FOR_OOB_STATE);
 
+        /* Set MAC input before updating DB */
+        json_array_set(data->peer_attr->mac_input, 13, data->peer_attr->ecdh_exchange_data->jwk_peer);
+        json_array_set_new(data->peer_attr->mac_input, 14,
+                json_string(data->peer_attr->kdf_nonce_data->nonce_peer_b64));
         if (FAILURE == eap_noob_db_entry(data)) {
             eap_noob_set_done(data, DONE);
             eap_noob_set_success(data,FAILURE);
@@ -3597,6 +3611,9 @@ static void eap_noob_rsp_type_two(struct eap_noob_server_context * data,
 static void eap_noob_rsp_type_one(struct eap_sm * sm, struct eap_noob_server_context * data,
                                   json_t * resp_obj)
 {
+    json_error_t error;
+    json_t * PeerInfo;
+
     /* Check for the supporting cryptosuites, PeerId, version, direction*/
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Response Processed/NOOB-IE-1");
 
@@ -3625,6 +3642,14 @@ static void eap_noob_rsp_type_one(struct eap_sm * sm, struct eap_noob_server_con
     eap_noob_get_sid(sm, data);
     eap_noob_set_done(data, NOT_DONE);
     data->peer_attr->rcvd_params = 0;
+
+    /* Set mac_input values received from peer in type 1 message */
+    PeerInfo = json_loads(data->peer_attr->peerinfo, JSON_COMPACT, &error);
+    if (NULL == PeerInfo) return;
+    json_array_set_new(data->peer_attr->mac_input, 2, json_integer(data->peer_attr->version));
+    json_array_set_new(data->peer_attr->mac_input, 7, json_integer(data->peer_attr->cryptosuite));
+    json_array_set_new(data->peer_attr->mac_input, 8, json_integer(data->peer_attr->dir));
+    json_array_set_new(data->peer_attr->mac_input, 10, PeerInfo);
 }
 
 static int eap_noob_exec_noobid_queries(struct eap_noob_server_context * data)
