@@ -728,9 +728,11 @@ module.exports = function(app, passport) {
 		else if(enableAC == 0 || row1.al1 >= row1.al2){
 
             		//db.get('SELECT server_state,errorCode FROM peers_connected WHERE PeerId = ?', peer_id, function(err, row2) {
-            		db.get('SELECT a.count(*) AS rowCount, b.server_state, b.error_code FROM EphemeralState b, EphemeralNoob a WHERE PeerId = ?', peer_id, function(err, row2) {
+            		//db.get('SELECT a.count(*) AS rowCount, b.server_state, b.error_code FROM EphemeralState b, EphemeralNoob a WHERE PeerId = ?', peer_id, function(err, row2) {
+            		db.get('SELECT server_state, error_code FROM EphemeralState WHERE PeerId = ?', peer_id, function(err, row2) {
+                        db.get('SELECT count(*) as rowCount FROM EphemeralNoob WHERE PeerId = ?', peer_id, function(err, row3) {
 
-                		if (!row2 || row2.rowCount != 0){req.flash('profileMessage','Some Error contact admin!');res.redirect('/profile');console.log("Internal Error");}
+                		if (!row2 || row3.rowCount != 0){req.flash('profileMessage','Some Error contact admin!');res.redirect('/profile');console.log("Internal Error");}
 				else if(row2.error_code) {req.flash('profileMessage','Error: ' + error_info[parseInt(row2.errorCode)] +'!!');res.redirect('/profile');console.log("Error" + row2.errorCode);}
                 		else if(parseInt(row2.server_state) != 1) {req.flash('profileMessage','Error: state mismatch. Reset device');res.redirect('/profile');console.log("state mismatch");}
 				else {
@@ -772,7 +774,8 @@ module.exports = function(app, passport) {
 						}	
 					});
 				}
-            		});
+            		    });
+                    });
 
                }
 	       else{req.flash('profileMessage','Access denied! Please contact admin.'); res.redirect('/profile'); }
