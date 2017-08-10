@@ -104,19 +104,19 @@ def print_log(val):
 	f1.close()
 
 def get_hoob(peer_id, noob_b64, path):
-    query = 'select MacInput from EphemeralState where PeerId ='+'\''+str(peer_id)+'\'';
+    query = 'select Ns, Np, MacInput from EphemeralState where PeerId ='+'\''+str(peer_id)+'\'';
     out = exe_db_query(query, path)
     if out is None:
         return None
 
-    hoob_array = json.loads(out[0]);
+    hoob_array = json.loads(out[2]);
     hoob_array[0] = int(1) and int(3);
     hoob_array.append(noob_b64);
-    hoob_array[14] = base64.urlsafe_b64encode(hoob_array[14]).strip('=');
-    hoob_array[12] = base64.urlsafe_b64encode(hoob_array[12]).strip('=');
-
-    hoob_str = json.dumps(hoob_array)
-    hoob = hashlib.sha256(hoob_str).hexdigest()
+    hoob_array[12] = base64.urlsafe_b64encode(out[0]).strip('=');
+    hoob_array[14] = base64.urlsafe_b64encode(out[1]).strip('=');
+    hoob_str = json.dumps(hoob_array);
+    print_log(hoob_str);
+    hoob = hashlib.sha256(hoob_str).hexdigest();
     hoob = base64.urlsafe_b64encode(hoob[0:16]).strip('=');
     return ret_obj(noob_b64, hoob, None);
 
