@@ -742,7 +742,7 @@ static int eap_noob_db_functions(struct eap_noob_server_context * data, u8 type)
             dump_str = json_dumps(data->peer_attr->mac_input, JSON_COMPACT|JSON_PRESERVE_ORDER);
             os_snprintf(query, MAX_LINE_SIZE, "INSERT INTO EphemeralState ( PeerId, Verp, Cryptosuitep, Realm, Dirp, PeerInfo, "
                   "Ns, Np,Z, MacInput, sleep_count, server_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            ret = eap_noob_exec_query(data, query, NULL, 26, TEXT, data->peer_attr->PeerId, INT, data->peer_attr->version,
+            ret = eap_noob_exec_query(data, query, NULL, 27, TEXT, data->peer_attr->PeerId, INT, data->peer_attr->version,
                   INT, data->peer_attr->cryptosuite, TEXT, server_conf.realm, INT, data->peer_attr->dir, TEXT,
                   data->peer_attr->peerinfo, BLOB, NONCE_LEN, data->peer_attr->kdf_nonce_data->Ns, BLOB, NONCE_LEN,
                   data->peer_attr->kdf_nonce_data->Np, BLOB, ECDH_SHARED_SECRET_LEN, data->peer_attr->ecdh_exchange_data->shared_key,
@@ -986,16 +986,14 @@ static int eap_noob_create_db(struct eap_noob_server_context * data)
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
 
-    /* check for the peer ID inside the DB */
-    /*  TODO: handle condition where there are two tuples for same peer id */
     if (SQLITE_OK != sqlite3_open_v2(data->db_name, &data->server_db,
-                     SQLITE_OPEN_READWRITE| SQLITE_OPEN_CREATE, NULL)) {
+                SQLITE_OPEN_READWRITE| SQLITE_OPEN_CREATE, NULL)) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to open and Create Table");
         return FAILURE;
     }
 
-     if (FAILURE == eap_noob_db_statements(data->server_db, CREATE_TABLES_EPHEMERALSTATE) ||
-        FAILURE == eap_noob_db_statements(data->server_db, CREATE_TABLES_PERSISTENTSTATE)) {
+    if (FAILURE == eap_noob_db_statements(data->server_db, CREATE_TABLES_EPHEMERALSTATE) ||
+            FAILURE == eap_noob_db_statements(data->server_db, CREATE_TABLES_PERSISTENTSTATE)) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: Unexpected error in table creation");
         return FAILURE;
     }

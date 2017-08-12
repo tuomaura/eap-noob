@@ -7,14 +7,6 @@
 
 /* All the pre-processors of EAP-NOOB */
 
-#if 0
-/* Unused macros */
-#define NUM_OF_VERSIONS 		 1
-#define PEER_ID_DEFAULT 		"noob@eap-noob.net"
-#define HINT_SALT			"AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING"
-#define JSON_WEB_KEY          "jwk"
-#endif
-
 #define MAX_PATH_LEN                256
 #define MAX_QUERY_LEN               2048
 #define SHORT_QUERY_LEN             500
@@ -24,9 +16,10 @@
 #define SUITE_ONE                   1
 #define TABLE_NAME                  "connections"
 #define DB_NAME                     "peer_connection_db"
-#define EAP_NOOB_NOOB_LEN           16
-#define EAP_NOOB_NONCE_LEN          32
-#define EAP_SHARED_SECRET_LEN       32
+#define NOOB_LEN                    16
+#define NOOBID_LEN                  16
+#define NONCE_LEN                   32
+#define ECDH_SHARED_SECRET_LEN      32
 #define ECDH_KDF_MAX                (1 << 30)
 #define MAX_URL_LEN                 60
 #define ALGORITHM_ID                "EAP-NOOB"
@@ -168,9 +161,62 @@
     OobRetries INTEGER DEFAULT 0,                       \
     Realm TEXT)                                         \
     "
-
 /* SQL query to check number of rows */
 #define CHECK_NUMBER_OF_ROWS  "SELECT COUNT(*) FROM connections;"
+
+#define CREATE_TABLES_EPHEMERALSTATE                \
+    "CREATE TABLE IF NOT EXISTS EphemeralState(     \
+    Ssid TEXT PRIMARY KEY,                          \
+    PeerId TEXT,                                    \
+    Vers TEXT NOT NULL,                             \
+    Cryptosuites TEXT NOT NULL,                     \
+    Realm TEXT,                                     \
+    Dirs INTEGER,                                   \
+    ServerInfo TEXT,                                \
+    Ns BLOB,                                        \
+    Np BLOB,                                        \
+    Z BLOB,                                         \
+    MacInput TEXT,                                  \
+    creation_time  BIGINT,                          \
+    PeerState INTEGER);                            \
+                                                    \
+    CREATE TABLE IF NOT EXISTS EphemeralNoob(       \
+    Ssid TEXT NOT NULL REFERENCES EphemeralState(Ssid), \
+    PeerId TEXT NOT NULL,                           \
+    NoobId TEXT NOT NULL,                           \
+    Noob TEXT NOT NULL,                             \
+    sent_time BIGINT NOT NULL,                      \
+    UNIQUE(Peerid,NoobId));"
+
+#define CREATE_TABLES_PERSISTENTSTATE               \
+    "CREATE TABLE IF NOT EXISTS PersistentState(    \
+    Ssid TEXT NOT NULL PRIMARY KEY,                 \
+    PeerId TEXT NOT NULL,                           \
+    Vers INTEGER NOT NULL CHECK (Vers=1),           \
+    Cryptosuites INTEGER NOT NULL,                  \
+    Realm TEXT,                                     \
+    Kz BLOB NOT NULL,                               \
+    creation_time BIGINT,                           \
+    last_used_time BIGINT                           \
+    );"
+
+#define DELETE_EPHEMERAL_FOR_SSID                   \
+    "DELETE FROM EphemeralNoob WHERE Ssid=?;        \
+    DELETE FROM EphemeralState WHERE Ssid=?;"
+
+#define DELETE_EPHEMERAL_FOR_ALL                    \
+    "DELETE FROM EphemeralNoob;                     \
+    DELETE FROM EphemeralState;"
+
+#define QUERY_EPHEMERALSTATE                        \
+    "SELECT * FROM EphemeralState WHERE Ssid=?;"
+
+#define QUERY_EPHEMERALNOOB                         \
+    "SELECT * FROM EphemeralNoob WHERE Ssid=?;"
+
+#define QUERY_PERSISTENTSTATE                       \
+    "SELECT * FROM PersistentState WHERE Ssid=?;"
+
 
 #define EAP_NOOB_FREE(_D)                           \
     if (_D) {                                       \
@@ -312,12 +358,15 @@ struct eap_noob_server_data {
     u32 minsleep;
     u32 rcvd_params;
 
-    char * serv_info;
+    char * server_info;
     //char * NAI;
     char * MAC;
     char * ssid;
     char * peerId;
-    char * realm;
+    char * Realm;
+
+    json_t * mac_input;
+    char * mac_input_str;
 
     enum eap_noob_err_code err_code;
     Boolean record_present;
@@ -345,11 +394,10 @@ struct eap_noob_peer_data {
     char * peerId;
     char * peer_info;
     char * MAC;
-    char * realm;
+    char * Realm;
 
     struct eap_noob_peer_config_params * peer_config_params;
 };
-
 
 struct eap_noob_peer_context {
     struct eap_noob_peer_data * peer_attr;
