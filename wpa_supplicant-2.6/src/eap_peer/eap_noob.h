@@ -185,6 +185,7 @@
     PeerId TEXT NOT NULL,                           \
     NoobId TEXT NOT NULL,                           \
     Noob TEXT NOT NULL,                             \
+    Hoob TEXT NOT NULL,                             \
     sent_time BIGINT NOT NULL,                      \
     UNIQUE(Peerid,NoobId));"
 

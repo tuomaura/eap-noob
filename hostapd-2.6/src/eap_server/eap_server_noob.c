@@ -714,22 +714,22 @@ static int eap_noob_db_functions(struct eap_noob_server_context * data, u8 type)
 
     switch(type) {
         case UPDATE_STATE:
-            os_snprintf(query, MAX_LINE_SIZE, "UPDATE %s SET server_state=? where PeerId=?", "EphemeralState");
+            os_snprintf(query, MAX_LINE_SIZE, "UPDATE EphemeralState SET server_state=? where PeerId=?");
             ret = eap_noob_exec_query(data, query, NULL, 4, INT, data->peer_attr->server_state,
                   TEXT, data->peer_attr->PeerId);
             break;
         case UPDATE_STATE_ERROR:
-            os_snprintf(query, MAX_LINE_SIZE, "UPDATE %s SET server_state=?, error_code=? where PeerId=?", "EphemeralState");
+            os_snprintf(query, MAX_LINE_SIZE, "UPDATE EphemeralState SET server_state=?, error_code=? where PeerId=?");
             ret = eap_noob_exec_query(data, query, NULL, 6, INT, data->peer_attr->server_state, INT,
                   data->peer_attr->err_code, TEXT, data->peer_attr->PeerId);
             break;
         case UPDATE_STATE_MINSLP:
-            os_snprintf(query, MAX_LINE_SIZE, "UPDATE %s SET server_state=?, sleep_count =? where PeerId=?", "EphemeralState");
+            os_snprintf(query, MAX_LINE_SIZE, "UPDATE EphemeralState SET server_state=?, sleep_count =? where PeerId=?");
             ret = eap_noob_exec_query(data, query, NULL, 6, INT, data->peer_attr->server_state, INT,
                   data->peer_attr->sleep_count, TEXT, data->peer_attr->PeerId);
             break;
         case UPDATE_PERSISTENT_KEYS_SECRET:
-            os_snprintf(query, MAX_LINE_SIZE, "INSERT INTO %s(PeerId,Verp,Cryptosuitep,Realm,Kz) VALUES(?,?,?,?,?)", "PersistentState");
+            os_snprintf(query, MAX_LINE_SIZE, "INSERT INTO PersistentState (PeerId,Verp,Cryptosuitep,Realm,Kz) VALUES(?,?,?,?,?)");
             ret = eap_noob_exec_query(data, query, NULL, 10, TEXT, data->peer_attr->PeerId, INT,data->peer_attr->version,
                   INT,data->peer_attr->cryptosuite, TEXT, server_conf.realm, BLOB,KZ_LEN, data->peer_attr->kdf_out->Kz);
             break;
@@ -985,7 +985,6 @@ static int eap_noob_create_db(struct eap_noob_server_context * data)
     }
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
-
     if (SQLITE_OK != sqlite3_open_v2(data->db_name, &data->server_db,
                 SQLITE_OPEN_READWRITE| SQLITE_OPEN_CREATE, NULL)) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to open and Create Table");
@@ -999,6 +998,7 @@ static int eap_noob_create_db(struct eap_noob_server_context * data)
     }
     /* Based on peer_state, decide which table to query */
     if (data->peer_attr->peerid_rcvd) {
+        data->peer_attr->PeerId = os_strdup(data->peer_attr->peerid_rcvd);
         if (data->peer_attr->peer_state <= OOB_RECEIVED_STATE)
             return eap_noob_query_ephemeralstate(data);
         else
