@@ -1425,7 +1425,7 @@ static int eap_noob_db_entry(struct eap_sm * sm, struct eap_noob_peer_context * 
             TEXT, data->server_attr->server_info, BLOB, NONCE_LEN, data->server_attr->kdf_nonce_data->nonce_serv, BLOB,
             NONCE_LEN, data->server_attr->kdf_nonce_data->nonce_peer, BLOB, ECDH_SHARED_SECRET_LEN,
             data->server_attr->ecdh_exchange_data->shared_key, TEXT, data->server_attr->mac_input_str, INT,
-            data->peer_attr->state);
+            data->server_attr->state);
 
     if (FAILURE == ret) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
@@ -2240,7 +2240,6 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_sm *sm, json_t * req_obj
         return NULL;
     }
     wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB PROCESS REQ TYPE 2");
-
     eap_noob_decode_obj(data->server_attr,req_obj);
     if (data->server_attr->err_code != NO_ERROR) {
         resp = eap_noob_err_msg(data,id);
@@ -2258,10 +2257,10 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_sm *sm, json_t * req_obj
         data->server_attr->state = WAITING_FOR_OOB_STATE;
         if (eap_noob_db_entry(sm,data)) {
             eap_noob_config_change(sm,data);
-            if ((PEER_TO_SERV == (data->server_attr->dir & data->peer_attr->dir)) && (FAILURE == eap_noob_db_update(data,UPDATE_OOB))) {
+            /* if ((PEER_TO_SERV == (data->server_attr->dir & data->peer_attr->dir)) && (FAILURE == eap_noob_db_update(data,UPDATE_OOB))) {
                 os_free(resp);
                 return NULL;
-            }
+            } */
         }
     }
     if (0!= data->server_attr->minsleep)
