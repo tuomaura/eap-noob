@@ -1,0 +1,330 @@
+#!/usr/bin/python3
+import subprocess
+import signal
+import os
+import time
+import sqlite3
+import json
+import argparse
+from urllib.parse import urlparse
+import urllib
+import re
+import _thread
+import base64
+import hashlib
+import threading
+from ws4py.client.threadedclient import WebSocketClient
+from selenium import webdriver
+import json
+from socket import error as socket_error
+import xml.etree.ElementTree as ET
+import errno
+
+global conf_file;
+global driver;
+global webSocket;
+
+max_oob_tries = 0
+oob_try_keyword = "OobRetries";
+noob_interval_keyword = "NoobInterval";
+noob_timeout_keyword = "NoobTimeout";
+web_socket_keyword = "EnableWebSocket";
+config_file = "wpa_supplicant.conf";
+db_name = "peer_connection_db";
+oob_file = "file.txt";
+noob_conf_file = "eapoob.conf";
+keyword = "OobDirs";
+
+def print_log(val):
+    f1=open('./logfile_supplicant', 'a+');
+    f1.write(val); f1.write("\n");
+    f1.close();
+
+def runbash(cmd):
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    out = p.stdout.read().strip()
+    return out
+
+def get_pid(arg):
+    pid_list = [];
+    pname = arg.encode(encoding='UTF-8');
+    p = runbash(b"ps -A | grep "+pname);
+    if None == p:
+        return None
+    for line in p.splitlines():
+        if pname in line:
+            pid = int(line.split(None,1)[0])
+            pid_list.append(pid)
+    return pid_list
+
+
+def get_result():
+    scan_result = runbash("wpa_cli scan_result | awk '$4 ~ /WPA2-EAP/ {print $3,$5,$1}' | sort $1")
+    conf_file = open(config_file,'a')
+    token = ''; ssid_list = []; token_list = [];
+
+    for item in scan_result.decode():
+        if '\n' == item:
+            token_list.append(token)
+            if token_list[1] not in ssid_list:
+                ssid_list.append(token_list[1])
+                conf_file.write("network={\n\tssid=\""+token_list[1]+"\"\n\tbssid="+token_list[2]+
+                "\n\tkey_mgmt=WPA-EAP\n\tpairwise=CCMP TKIP\n\tgroup=CCMP TKIP\n\teap=NOOB\n\tidentity=\"noob@eap-noob.net\"\n}\n\n");
+                token = '';
+            token_list[:] = [];
+        elif ' ' == item:
+            token_list.append(token);
+            token = ''
+        else:
+            token += str(item)
+    conf_file.close()
+    return ssid_list 
+
+def get_direction():
+    noob_conf = open(noob_conf_file, 'r')
+    for line in noob_conf:
+        if '#' != line[0] and keyword in line:
+            parts = re.sub('[\s+]', '', line)
+            direction =  (parts[len(keyword)+1])
+    return direction
+
+def check_result():
+    res = runbash("./wpa_cli status | grep 'EAP state=SUCCESS'")
+    if res == b"EAP state=SUCCESS":
+        return True
+    return False
+
+def network_scan():
+    while True:
+        result = runbash("./wpa_cli scan | grep OK")
+        if 'OK' == result.decode():
+            print_log("Network scan OK");
+            return
+
+def prepare(iface):
+    pid = get_pid('wpa_supplicant')
+    for item in pid:
+        os.kill(int(item),signal.SIGKILL)
+    print_log("Starting wpa_supplicant");
+    runbash('rm -f '+config_file+' touch '+config_file+' ; rm -f '+db_name+' ; rm -f '+oob_file);
+    conf_file = open(config_file,'w')
+    conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=1200\n\n")
+    conf_file.close();
+    cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant -d"
+    subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
+
+def reconfigure_peer():
+    print_log("Reconfigure wpa_supplicant");
+    pid = get_pid('wpa_supplicant');
+    os.kill(int(pid[0]),signal.SIGHUP);
+
+def terminate_supplicant():
+    pid = get_pid('wpa_supplicant')
+    os.kill(int(pid[0]),signal.SIGKILL)
+
+def sigint_handler(signum, frame):
+    print_log("Caught signal {0}".format(signum));
+    print("Caught signal {0}".format(signum));
+    terminate_supplicant()
+    exit(0)
+
+def test_internet(interface):
+    cmd = "ping -c 8 -I " + interface +" 8.8.8.8"
+    p = subprocess.Popen(cmd,shell=True)
+    status = p.wait()
+
+def check_wpa():
+    return os.path.isfile('wpa_supplicant')
+
+def set_max_oob_tries():
+    global max_oob_tries, noob_interval, noob_timeout, webSocket;
+    noob_conf = open(noob_conf_file, 'r')
+
+    for line in noob_conf:
+        if '#' != line[0]:
+            if oob_try_keyword in line:
+                parts = re.sub('[\s+]', '', line)
+                parts = parts.split("#",1)[0]
+                parts = parts.split("=",1)[1]
+                max_oob_tries = int (parts) if int(parts) > 0 else 5
+
+            elif noob_interval_keyword in line:
+                parts = re.sub('[\s+]', '', line)
+                parts = parts.split("#",1)[0]
+                parts = parts.split("=",1)[1]
+                noob_interval = int (parts) if int(parts) > 29 else 1800
+
+            elif noob_timeout_keyword in line:
+                parts = re.sub('[\s+]', '', line)
+                parts = parts.split("#",1)[0]
+                parts = parts.split("=",1)[1]
+                noob_timeout = int (parts) if int(parts) > 59 else 3600
+
+            elif web_socket_keyword in line:
+                parts = re.sub('[\s+]', '', line)
+                parts = parts.split("#",1)[0]
+                parts = parts.split("=",1)[1]
+                webSocket = int (parts) if int(parts) == 0 else 1
+
+def exe_db_query(query, args=None):
+    res = os.path.isfile(db_name)
+    if True != res:
+        return None
+
+    db_conn = sqlite3.connect(db_name)
+    if db_conn is None:
+        return None
+    if args is None:
+        args = [];
+    out = [];
+    db_cur = db_conn.cursor();
+    db_cur.execute(query, args);
+    db_conn.commit();
+    out = db_cur.fetchone();
+    db_conn.close();
+    return out
+
+def update_file(signum, frame):
+    gen_oob();
+    file = open(oob_file, "wb")
+    result = exe_db_query("SELECT a.ServerInfo, b.Ssid, b.PeerId, b.Noob, b.Hoob from EphemeralState a, EphemeralNoob b WHERE a.PeerId = b.PeerId");
+    if result:
+        serverInfo = json.loads(row[0]);
+        line = (row[1].encode(encoding='UTF-8') + b',' + serverInfo['Name'].encode(encoding='UTF-8') + b','
+        + serverInfo['Url'].encode(encoding='UTF-8')+b'/?P='+row [2].encode(encoding='UTF-8') +
+        b'&N=' + row[3].encode(encoding='UTF-8')+ b'&H=' + row[4].encode(encoding='UTF-8') + b'\n')
+        file.write(line)
+    file.close();
+    return
+
+
+def get_hoob(PeerId, Noob):
+    query = 'SELECT Ns, Np, MacInput from EphemeralState where PeerId=?';
+    out = exe_db_query(query, [PeerId]);
+    if out is None:
+        print_log("Query returned None, get_hoob");
+        return None
+
+    Ns_b64 = base64.urlsafe_b64encode(out[0]).decode('ascii').strip('=');
+    Np_b64 = base64.urlsafe_b64encode(out[1]).decode('ascii').strip('=');
+    hoob_array = json.loads(out[2]);
+    hoob_array[0] = int(1) and int(3);
+    hoob_array.append(Noob);
+    hoob_array[12] = Ns_b64;
+    hoob_array[14] = Np_b64;
+    hoob_str = json.dumps(hoob_array).encode('utf-8');
+    hoob = hashlib.sha256(hoob_str).hexdigest()[0:16];
+    hoob = base64.urlsafe_b64encode(hoob.encode('utf-8')).decode('ascii').strip('=');
+    return hoob;
+
+def get_noob_id(noob_b64):
+    print_log("Inside get_noob_id");
+    noob_id_str = noob_b64+"AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING";
+    noob_id_enc = noob_id_str.encode('utf-8')
+    noob_id = hashlib.sha256(noob_id_enc).hexdigest()
+    noob_id_b64 = base64.urlsafe_b64encode(noob_id[0:16].encode('utf-8'))
+    noob_id_b64 = str(noob_id_b64,'utf-8').strip('=')
+    return noob_id_b64
+
+def get_noob():
+    noob = os.urandom(16);
+    noob_64 = base64.urlsafe_b64encode(noob);
+    noob_64 = str(noob_64,'utf-8').strip('=');
+    return noob_64
+
+def create_oob(PeerId, Ssid):
+    print_log("In create_oob");
+    if PeerId is None:
+        return;
+    Noob = get_noob();
+    NoobId =  get_noob_id(Noob);
+    Hoob = get_hoob(PeerId, Noob);
+    print_log("Noob = {0}\nHoob = {1}\n".format(Noob, Hoob));
+
+    query ="INSERT INTO EphemeralNoob(SSid, PeerId, NoobId, Noob, Hoob, sent_time) VALUES(?, ?, ?, ?, ?, ?)";
+    args = [Ssid, PeerId, NoobId, Noob, Hoob, 12344];
+    ret = exe_db_query(query, args);
+
+    #t = threading.Timer(noob_interval, noob_interval_callback, [PeerId, Ssid, NoobId])
+    #t = threading.Timer(noob_interval, create_oob, [PeerId, Ssid])
+    #t.start()
+    #interval_threads.append(t)
+
+    #t = threading.Timer(noob_timeout, mark_expired, [NoobId])
+    #t.start()
+    #timeout_threads.append(t)
+
+
+def gen_oob():
+    print_log("In function gen_oob");
+    query="SELECT * from EphemeralState WHERE PeerState=1";
+    result = exe_db_query(query);
+    if result:
+       print_log("Result of query - PeerId {0}, Ssid {1}\n".format(result[1], result[0]));
+       create_oob(result[1], result[0]);
+    return
+
+def main():
+    global driver, webSocket;
+    no_result=0;
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--interface', dest='interface',help='Name of the wireless interface')
+    parser.add_argument('-p', '--path', dest='path', help='absolute path to home directory of nfcpy')
+    parser.add_argument('-n','--nfc', dest='nfc', action='store_const',const='nfc', help='oob message transfer through nfc')
+    args = parser.parse_args();
+
+    if args.interface is None:
+        print('Usage:wpa_auto_run.py -i <interface> [-p <path>] [-n]')
+        return
+
+    if not(check_wpa()):
+        print_log("WPA_Supplicant not found")
+        return
+
+    interface=args.interface
+    runbash('sudo ifconfig '+interface+' 0.0.0.0 up');
+
+    #test_internet(interface);
+    signal.signal(signal.SIGINT, sigint_handler);
+    prepare(interface); time.sleep(2); network_scan();
+    while True:
+        ssid_list = get_result();
+        if len(ssid_list) > 0:
+            print(ssid_list)
+            break
+        time.sleep(2)
+    reconfigure_peer();
+    direction = get_direction();
+    set_max_oob_tries();
+    if direction is '2':
+        print_log("Server to peer direction")
+        if args.nfc == 'nfc':
+            _thread.start_new_thread(read_nfc_card,(None,))
+        else:
+            _thread.start_new_thread(read_qr_code,(None,))
+    elif direction is '1':
+        print_log("Peer to server direction")
+        if args.path is None:
+            gen_oob();
+            update_file(None,None);
+            #launch_browser()
+        else:
+            _thread.start_new_thread(send_via_NFC,(args.path,))
+    else:
+        print_log("No direction specified")
+        terminate_supplicant()
+        exit(0)
+
+    while no_result == 0:
+        if check_result():
+            no_result =1
+            time.sleep(5)
+        if direction is '1':
+            gen_oob()
+            update_file(None,None)
+        time.sleep(5)
+
+    print_log("EAP AUTH SUCCESSFUL");
+
+if __name__=='__main__':
+    main();
