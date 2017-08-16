@@ -3864,6 +3864,9 @@ static void eap_noob_free_ctx(struct eap_noob_server_context * data)
 
     if (SQLITE_OK != sqlite3_close(data->server_db)) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB:Error closing DB");
+        char * sql_error = (char *)sqlite3_errmsg(data->server_db);
+        if (sql_error != NULL)
+            wpa_printf(MSG_DEBUG,"EAP-NOOB: SQL error : %s\n", sql_error);
     }
 
     EAP_NOOB_FREE(data->db_name); EAP_NOOB_FREE(data->db_table_name);
