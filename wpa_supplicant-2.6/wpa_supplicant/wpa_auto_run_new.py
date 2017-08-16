@@ -41,9 +41,19 @@ def print_log(val):
     f1.close();
 
 def runbash(cmd):
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    out = p.stdout.read().strip()
-    return out
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE);
+    out = p.stdout.read().strip();
+    return out;
+
+def launch_browser():
+    global driver;
+    url = "file:///" + os.getcwd() + "/test.html";
+    #Latest Firefox and gecodriver support issues. Disable marionette
+    capabilities = webdriver.DesiredCapabilities().FIREFOX;
+    capabilities["marionette"] = False
+    driver = webdriver.Firefox(capabilities=capabilities);
+    driver.get(url);
+    driver.maximize_window();
 
 def get_pid(arg):
     pid_list = [];
@@ -56,7 +66,6 @@ def get_pid(arg):
             pid = int(line.split(None,1)[0])
             pid_list.append(pid)
     return pid_list
-
 
 def get_result():
     scan_result = runbash("wpa_cli scan_result | awk '$4 ~ /WPA2-EAP/ {print $3,$5,$1}' | sort $1")
@@ -184,19 +193,22 @@ def exe_db_query(query, args=None):
     db_conn.close();
     return out
 
-def update_file(signum, frame):
-    gen_oob();
+def update_file():
     file = open(oob_file, "wb")
-    result = exe_db_query("SELECT a.ServerInfo, b.Ssid, b.PeerId, b.Noob, b.Hoob from EphemeralState a, EphemeralNoob b WHERE a.PeerId = b.PeerId");
-    if result:
-        serverInfo = json.loads(row[0]);
-        line = (row[1].encode(encoding='UTF-8') + b',' + serverInfo['Name'].encode(encoding='UTF-8') + b','
-        + serverInfo['Url'].encode(encoding='UTF-8')+b'/?P='+row [2].encode(encoding='UTF-8') +
-        b'&N=' + row[3].encode(encoding='UTF-8')+ b'&H=' + row[4].encode(encoding='UTF-8') + b'\n')
-        file.write(line)
+    #TODO For all rows
+    result_serverInfo = exe_db_query("SELECT PeerId, ServerInfo from EphemeralState WHERE PeerState=1");
+    if result_serverInfo is None:
+        return;
+    result_Noob = exe_db_query("SELECT Ssid, PeerId, Noob, Hoob from EphemeralNoob WHERE PeerId = ?",[result_serverInfo[0]]);
+    if result_Noob is None:
+        return;
+    serverInfo = json.loads(result_serverInfo[1]);
+    line = result_Noob[0] + "," + serverInfo['Name'] + "," + serverInfo['Url'] + "/?P=" + result_serverInfo[0] + \
+            "&N=" + result_Noob[2] + "&H=" + result_Noob[3] + "\n";
+    line = bytearray(line.encode('utf-8'));
+    file.write(line);
     file.close();
     return
-
 
 def get_hoob(PeerId, Noob):
     query = 'SELECT Ns, Np, MacInput from EphemeralState where PeerId=?';
@@ -218,7 +230,6 @@ def get_hoob(PeerId, Noob):
     return hoob;
 
 def get_noob_id(noob_b64):
-    print_log("Inside get_noob_id");
     noob_id_str = noob_b64+"AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING";
     noob_id_enc = noob_id_str.encode('utf-8')
     noob_id = hashlib.sha256(noob_id_enc).hexdigest()
@@ -233,7 +244,6 @@ def get_noob():
     return noob_64
 
 def create_oob(PeerId, Ssid):
-    print_log("In create_oob");
     if PeerId is None:
         return;
     Noob = get_noob();
@@ -256,12 +266,12 @@ def create_oob(PeerId, Ssid):
 
 
 def gen_oob():
-    print_log("In function gen_oob");
     query="SELECT * from EphemeralState WHERE PeerState=1";
     result = exe_db_query(query);
-    if result:
+    if result: #TODO for all rows
        print_log("Result of query - PeerId {0}, Ssid {1}\n".format(result[1], result[0]));
        create_oob(result[1], result[0]);
+    update_file();
     return
 
 def main():
@@ -306,8 +316,7 @@ def main():
         print_log("Peer to server direction")
         if args.path is None:
             gen_oob();
-            update_file(None,None);
-            #launch_browser()
+            launch_browser()
         else:
             _thread.start_new_thread(send_via_NFC,(args.path,))
     else:
@@ -320,8 +329,7 @@ def main():
             no_result =1
             time.sleep(5)
         if direction is '1':
-            gen_oob()
-            update_file(None,None)
+            gen_oob();
         time.sleep(5)
 
     print_log("EAP AUTH SUCCESSFUL");
