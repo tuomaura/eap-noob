@@ -14,6 +14,7 @@ import base64
 import hashlib
 import threading
 from ws4py.client.threadedclient import WebSocketClient
+from collections import OrderedDict
 from selenium import webdriver
 import json
 from socket import error as socket_error
@@ -219,12 +220,13 @@ def get_hoob(PeerId, Noob):
 
     Ns_b64 = base64.urlsafe_b64encode(out[0]).decode('ascii').strip('=');
     Np_b64 = base64.urlsafe_b64encode(out[1]).decode('ascii').strip('=');
-    hoob_array = json.loads(out[2]);
+    hoob_array = json.loads(out[2], object_pairs_hook=OrderedDict);
     hoob_array[0] = int(1) and int(3);
     hoob_array.append(Noob);
     hoob_array[12] = Ns_b64;
     hoob_array[14] = Np_b64;
     hoob_str = json.dumps(hoob_array).encode('utf-8');
+    print_log(hoob_str.decode('utf-8'));
     hoob = hashlib.sha256(hoob_str).hexdigest()[0:16];
     hoob = base64.urlsafe_b64encode(hoob.encode('utf-8')).decode('ascii').strip('=');
     return hoob;

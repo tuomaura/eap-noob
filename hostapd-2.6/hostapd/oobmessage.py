@@ -7,6 +7,7 @@ import base64
 import sys, getopt
 import argparse
 import re
+from collections import OrderedDict
 #db_name = "peer_connection_db"
 realm = None;
 noob_conf_file = '../hostapd-2.6/hostapd/eapoob.conf'
@@ -72,30 +73,23 @@ def get_noob():
 	noob_64 = noob_64.strip('=')
 	return noob_64
 
-def exe_db_query(query,path):
+def exe_db_query(query, path, args=None):
+    res = os.path.isfile(path)
+    if True != res:
+        return None
 
-	res = os.path.isfile(path)
-
-	if True != res:
-		return None
- 
-	# create a DB connection 
-	db_conn = sqlite3.connect(path)
-
-	# check if DB cannot be accessed
-	if db_conn is None:		 
-		return None
-
- 	out = []	
-	db_cur = db_conn.cursor() 	
-      
-	db_cur.execute(query)
-	
-	out = db_cur.fetchone()
-
-	db_conn.close()
-
-	return out
+    db_conn = sqlite3.connect(path)
+    if db_conn is None:
+        return None
+    if args is None:
+        args = [];
+    out = [];
+    db_cur = db_conn.cursor();
+    db_cur.execute(query, args);
+    db_conn.commit();
+    out = db_cur.fetchone();
+    db_conn.close();
+    return out
 
 def print_log(val):
 
@@ -103,6 +97,27 @@ def print_log(val):
 	f1.write(val)
 	f1.close()
 
+def get_hoob(PeerId, Noob, path):
+    query = 'SELECT Ns, Np, MacInput from EphemeralState where PeerId=?';
+    out = exe_db_query(query, path, [PeerId]);
+    if out is None:
+        print_log("Query returned None, get_hoob");
+        return (Noob,None,None);
+
+    Ns_b64 = base64.urlsafe_b64encode(out[0]).decode('ascii').strip('=');
+    Np_b64 = base64.urlsafe_b64encode(out[1]).decode('ascii').strip('=');
+    hoob_array = json.loads(out[2], object_pairs_hook=OrderedDict);
+    hoob_array[0] = int(1) and int(3);
+    hoob_array.append(Noob);
+    hoob_array[12] = Ns_b64;
+    hoob_array[14] = Np_b64;
+    hoob_str = json.dumps(hoob_array).encode('utf-8');
+    print_log(hoob_str.decode('utf-8'));
+    hoob = hashlib.sha256(hoob_str).hexdigest()[0:16];
+    hoob = base64.urlsafe_b64encode(hoob.encode('utf-8')).decode('ascii').strip('=');
+    return ret_obj(Noob,hoob,None);
+
+"""
 def get_hoob(peer_id, noob_b64, path):
     query = 'select Ns, Np, MacInput from EphemeralState where PeerId ='+'\''+str(peer_id)+'\'';
     out = exe_db_query(query, path)
@@ -119,6 +134,7 @@ def get_hoob(peer_id, noob_b64, path):
     hoob = hashlib.sha256(hoob_str).hexdigest();
     hoob = base64.urlsafe_b64encode(hoob[0:16]).strip('=');
     return ret_obj(noob_b64, hoob, None);
+"""
 
 def get_hoob_comp_res(peerId,noob,path,max_tries, recv_hoob):
 

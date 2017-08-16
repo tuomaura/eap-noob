@@ -759,11 +759,14 @@ module.exports = function(app, passport) {
 								}
 							}else{
             							db.serialize(function() {
-       		 							/*var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, userName = ?, serv_state = ?, hint_peer = ? WHERE PeerID = ?");*/
-       		 							var stmt = db.prepare("INSERT INTO EphemeralNoob(PeerId, NoobId, Noob) VALUES(?,?,?)");
-       		 							//stmt.run(1234,noob,hoob,req.user.username,2,hint,peer_id);
-       		 							stmt.run(peer_id, noob, hint);
-		 							stmt.finalize();
+       		 							var stmt = db.prepare("INSERT INTO EphemeralNoob(PeerId, NoobId, Noob, sent_time) VALUES(?,?,?,?)");
+       		 							stmt.run(peer_id, noob, hint, 1234);
+		 							    stmt.finalize();
+    	    							});
+                                        db.serialize(function() {
+       		 							    var stmt = db.prepare("UPDATE EphemeralState SET server_state = ? WHERE PeerId = ?");
+       		 							    stmt.run(2, peer_id);
+		 							        stmt.finalize();
     	    							});
 
 								db.close();

@@ -946,7 +946,7 @@ static int eap_noob_query_ephemeralstate(struct eap_noob_server_context * data)
     }
 
     if (data->peer_attr->server_state == OOB_RECEIVED_STATE) {
-        if (FAILURE != eap_noob_exec_query(data, QUERY_EPHEMERALNOOB, columns_ephemeralnoob, 2,
+        if (FAILURE == eap_noob_exec_query(data, QUERY_EPHEMERALNOOB, columns_ephemeralnoob, 2,
                 TEXT, data->peer_attr->peerid_rcvd)) {
             wpa_printf(MSG_DEBUG, "EAP-NOOB: Error in retreiving NoobId");
             return FAILURE;
