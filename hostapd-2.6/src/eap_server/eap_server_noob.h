@@ -274,34 +274,34 @@ struct eap_noob_global_conf {
 struct eap_noob_ecdh_kdf_out {
 
     u8 * msk;
-    char * msk_b64;
+    //char * msk_b64;
     u8 * emsk;
-    char * emsk_b64;
+    //char * emsk_b64;
     u8 * amsk;
-    char * amsk_b64;
+    //char * amsk_b64;
     u8 * Kms;
-    char * kms_b64;
+    //char * kms_b64;
     u8 * Kmp;
-    char * kmp_b64;
+    //char * kmp_b64;
     u8 * Kz;
-    char * kz_b64;
+    //char * kz_b64;
 };
 
 struct eap_noob_ecdh_kdf_nonce {
     u8 * Ns;
-    char * nonce_server_b64;
+    //char * nonce_server_b64;
     u8 * Np;
-    char * nonce_peer_b64;
+    char * nonce_peer_b64; //Can be removed
 };
 
 struct eap_noob_oob_data {
 
     char * noob_b64;
-    size_t noob_len;
+    //size_t noob_len;
     u8 * noob;
 
-    char * hoob_b64;
-    size_t hoob_len;
+    //char * hoob_b64;
+    //size_t hoob_len;
     u8 * hoob;
 
     char * NoobId_b64;
@@ -396,9 +396,7 @@ struct eap_noob_server_context {
     sqlite3 * server_db;
 };
 
-
-const int error_code[] = {0, 1001, 1002, 1003, 1004, 1005, 1006, 1007,
-                          2001, 2002, 3001, 3002, 3003, 4001};
+const int error_code[] = {0, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 2001, 2002, 3001, 3002, 3003, 4001};
 
 const char *error_info[] = {
     "No error",
