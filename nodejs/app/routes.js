@@ -760,7 +760,7 @@ module.exports = function(app, passport) {
 							}else{
             							db.serialize(function() {
        		 							var stmt = db.prepare("INSERT INTO EphemeralNoob(PeerId, NoobId, Noob, sent_time) VALUES(?,?,?,?)");
-       		 							stmt.run(peer_id, noob, hint, 1234);
+       		 							stmt.run(peer_id, hint, noob, 1234);
 		 							    stmt.finalize();
     	    							});
                                         db.serialize(function() {

@@ -178,7 +178,7 @@
     Z BLOB,                                         \
     MacInput TEXT,                                  \
     creation_time  BIGINT,                          \
-    PeerState INTEGER);                            \
+    PeerState INTEGER);                             \
                                                     \
     CREATE TABLE IF NOT EXISTS EphemeralNoob(       \
     Ssid TEXT NOT NULL REFERENCES EphemeralState(Ssid), \
@@ -193,8 +193,8 @@
     "CREATE TABLE IF NOT EXISTS PersistentState(    \
     Ssid TEXT NOT NULL PRIMARY KEY,                 \
     PeerId TEXT NOT NULL,                           \
-    Vers INTEGER NOT NULL CHECK (Vers=1),           \
-    Cryptosuites INTEGER NOT NULL,                  \
+    Vers TEXT NOT NULL CHECK (Vers=1),              \
+    Cryptosuites TEXT NOT NULL,                     \
     Realm TEXT,                                     \
     Kz BLOB NOT NULL,                               \
     creation_time BIGINT,                           \
@@ -225,38 +225,6 @@
         (_D) = NULL;                                \
     }
 
-#define EAP_NOOB_FREE_MALLOC(_D,_l)                 \
-    EAP_NOOB_FREE(_D)                               \
-    (_D)=os_malloc(_l)
-
-
-#define EAP_NOOB_CB_GET_B64(_D64,_D,_l)             \
-    EAP_NOOB_FREE(_D64)                             \
-    EAP_NOOB_FREE(_D)                               \
-    _D64 = os_strdup(fieldValue[i]);                \
-    _l = eap_noob_Base64Decode(_D64,&_D)
-
-
-#define EAP_NOOB_SET_DONE(_data,_v)                 \
-    (_data)->peer_attr->is_done = (_v)
-
-
-#define EAP_NOOB_SET_SUCCESS(_data,_v)              \
-    (_data)->peer_attr->is_success = (_v)
-
-
-#define EAP_NOOB_SET_ERROR(_pdata,_v)               \
-    if (_pdata) {                                   \
-        (_pdata)->next_req = NONE;                  \
-        (_pdata)->err_code = _v;                    \
-    }
-
-#define EAP_NOOB_CHANGE_STATE(_data,_s)             \
-    if ((_data) && ((_data)->peer_attr)) {          \
-        (_data)->peer_attr->server_state = (_s);      \
-    }
-
-
 enum {UNREGISTERED_STATE, WAITING_FOR_OOB_STATE, OOB_RECEIVED_STATE,
       RECONNECTING_STATE, REGISTERED_STATE};
 
@@ -271,8 +239,8 @@ enum eap_noob_err_code {NO_ERROR, E1001, E1002, E1003, E1004, E1005, E1006, E100
 
 enum {HOOB_TYPE, MACS_TYPE, MACP_TYPE};
 
-enum {UPDATE_ALL, UPDATE_STATE, UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET, UPDATE_STATE_ERROR,
-      UPDATE_OOB, DELETE_EXPIRED_NOOB, DELETE_SSID};
+enum {UPDATE_ALL, UPDATE_STATE, UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_STATE, UPDATE_STATE_ERROR,
+      UPDATE_OOB, DELETE_EXPIRED_NOOB, DELETE_SSID, UPDATE_INITIAL_EXCHANGE_INFO};
 
 enum sql_datatypes {TEXT, INT, UNSIGNED_BIG_INT, BLOB};
 
@@ -296,25 +264,18 @@ struct eap_noob_globle_conf {
 struct eap_noob_ecdh_kdf_out {
 
     u8 * msk;
-    char * msk_b64;
     u8 * emsk;
-    char * emsk_b64;
     u8 * amsk;
-    char * amsk_b64;
     u8 * Kms;
-    char * kms_b64;
     u8 * Kmp;
-    char * kmp_b64;
     u8 * Kz;
-    char * kz_b64;
 };
 
 struct eap_noob_ecdh_kdf_nonce {
 
-    u8 * nonce_serv;
-    char * nonce_serv_b64;
-    u8 * nonce_peer;
-    char * nonce_peer_b64;
+    u8 * Ns;
+    char * Ns_b64;
+    u8 * Np;
 };
 
 
@@ -322,12 +283,13 @@ struct eap_noob_oob_data {
 
     char * noob_b64;
     u8 * noob;
+
     char * hoob_b64;
     u8 * hoob;
 
-    char * hint_b64;
-    size_t hint_len;
-    u8 * hint;
+    char * NoobId_b64;
+    size_t NoobId_len;
+    u8 * NoobId;
 };
 
 struct eap_noob_ecdh_key_exchange {
@@ -360,10 +322,9 @@ struct eap_noob_server_data {
     u32 rcvd_params;
 
     char * server_info;
-    //char * NAI;
     char * MAC;
     char * ssid;
-    char * peerId;
+    char * PeerId;
     char * Realm;
 
     json_t * mac_input;
@@ -392,7 +353,7 @@ struct eap_noob_peer_data {
     u32 minsleep;
     u32 config_params;
 
-    char * peerId;
+    char * PeerId;
     char * peer_info;
     char * MAC;
     char * Realm;
