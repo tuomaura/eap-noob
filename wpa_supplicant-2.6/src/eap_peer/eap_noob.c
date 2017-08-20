@@ -249,50 +249,6 @@ static json_t * eap_noob_prepare_peer_info_json(struct eap_sm * sm, struct eap_n
     return info_obj;
 }
 
-#if 0
-/**
- * eap_noob_prepare_vers_arr : prepares a JSON array for Vers
- * @data: peer context
- * return : Json array/NULL
-**/
-static json_t * eap_noob_prepare_vers_arr(const struct eap_noob_peer_context * data)
-{
-    json_t * ver_arr = NULL;
-    u32 count  = 0;
-
-    if (!data || NULL == (ver_arr = json_array())) {
-        return NULL;
-    }
-
-    for(count = 0; count < MAX_SUP_VER ; count++) {
-        json_array_append_new(ver_arr,json_integer(data->server_attr->version[count]));
-    }
-
-    return ver_arr;
-}
-
-/**
- * eap_noob_prepare_csuites_arr : prepares a JSON array for Csuites
- * @data: peer context
- * return : Json array/NULL
-**/
-static json_t * eap_noob_prepare_csuites_arr(const struct eap_noob_peer_context * data)
-{
-    json_t * csuite_arr = NULL;
-    u32 count  = 0;
-
-    if (!data || NULL == (csuite_arr = json_array())) {
-        return NULL;
-    }
-
-    for(count = 0; count < MAX_SUP_CSUITES ; count++) {
-        json_array_append_new(csuite_arr,json_integer(data->server_attr->cryptosuite[count]));
-    }
-
-    return csuite_arr;
-}
-#endif
-
 /**
  * eap_noob_db_statements : execute one or more sql statements that do not return rows
  * @db : open sqlite3 database handle
@@ -303,8 +259,7 @@ static int eap_noob_db_statements(sqlite3 * db, const char * query)
 {
     int nByte = os_strlen(query);
     sqlite3_stmt * stmt;
-    const char * tail = query;
-    const char * sql_error;
+    const char * tail = query, * sql_error;
     int ret = SUCCESS;
 
     if (NULL == db || NULL == query) return FAILURE;
@@ -329,22 +284,40 @@ EXIT:
     return ret;
 }
 
+static void eap_noob_decode_vers_cryptosuites(struct eap_noob_peer_context * data,
+        const char * Vers, const char * Cryptosuites)
+{
+    json_t * Vers_obj, * Cryptosuites_obj, * value;
+    json_error_t  error;
+    int err = 0; size_t indx;
+
+    err -= (NULL == (Vers_obj = json_loads(Vers, JSON_COMPACT, &error)));
+    err -= (NULL == (Cryptosuites_obj = json_loads(Cryptosuites, JSON_COMPACT, &error)));
+    if (err < 0) {
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected error in allocating json objects");
+        return;
+    }
+    json_array_foreach(Vers_obj, indx, value)
+        data->server_attr->version[indx] = json_integer_value(value);
+    json_array_foreach(Cryptosuites_obj, indx, value)
+        data->server_attr->cryptosuite[indx] = json_integer_value(value);
+}
+
 
 static void columns_persistentstate(struct eap_noob_peer_context * data, sqlite3_stmt * stmt)
 {
+    char * Vers, * Cryptosuites;
     data->server_attr->PeerId = os_strdup((char *)sqlite3_column_text(stmt, 1));
-    data->server_attr->oob_data->NoobId_b64 = os_strdup((char *)sqlite3_column_text(stmt, 2));
-    data->server_attr->oob_data->noob_b64 = os_strdup((char *)sqlite3_column_text(stmt, 3));
-    data->server_attr->oob_data->hoob_b64 = os_strdup((char *)sqlite3_column_text(stmt, 4));
-    //sent_time
+    Vers = os_strdup((char *)sqlite3_column_text(stmt, 2));
+    Cryptosuites = os_strdup((char *)sqlite3_column_text(stmt, 3));
+    data->server_attr->Realm = os_strdup((char *) sqlite3_column_text(stmt, 4));
+    data->server_attr->kdf_out->Kz = os_memdup(sqlite3_column_blob(stmt,5), KZ_LEN);
+    eap_noob_decode_vers_cryptosuites(data, Vers, Cryptosuites);
 }
 
 static void columns_ephemeralstate(struct eap_noob_peer_context * data, sqlite3_stmt * stmt)
 {
     char * Vers, * Cryptosuites;
-    json_t * Vers_obj, * Cryptosuites_obj, * value;
-    json_error_t  error;
-    int err = 0; size_t indx;
 
     data->server_attr->PeerId = os_strdup((char *) sqlite3_column_text(stmt, 1));
     Vers = os_strdup((char *)sqlite3_column_text(stmt, 2));
@@ -356,16 +329,9 @@ static void columns_ephemeralstate(struct eap_noob_peer_context * data, sqlite3_
     data->server_attr->kdf_nonce_data->Np = os_memdup(sqlite3_column_blob(stmt, 8), NONCE_LEN);
     data->server_attr->ecdh_exchange_data->shared_key = os_memdup(sqlite3_column_blob(stmt, 9), ECDH_SHARED_SECRET_LEN) ;
     data->server_attr->mac_input_str = os_strdup((char *) sqlite3_column_text(stmt, 10));
+    //data->server_attr->creation_time = (uint64_t) sqlite3_column_int64(stmt, 11);
     data->server_attr->state = sqlite3_column_int(stmt, 12);
-    //data->server_attr->creation_time = (uint64_t) sqlite3_column_int64(stmt, 10);
-
-    err -= (NULL == (Vers_obj = json_loads(Vers, JSON_COMPACT, &error)));
-    err -= (NULL == (Cryptosuites_obj = json_loads(Cryptosuites, JSON_COMPACT, &error)));
-    if (err < 0) wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected error in allocating json objects");
-    json_array_foreach(Vers_obj, indx, value)
-        data->server_attr->version[indx] = json_integer_value(value);
-    json_array_foreach(Cryptosuites_obj, indx, value)
-        data->server_attr->cryptosuite[indx] = json_integer_value(value);
+    eap_noob_decode_vers_cryptosuites(data, Vers, Cryptosuites);
 }
 
 static void columns_ephemeralnoob(struct eap_noob_peer_context * data, sqlite3_stmt * stmt)
@@ -373,6 +339,7 @@ static void columns_ephemeralnoob(struct eap_noob_peer_context * data, sqlite3_s
     data->server_attr->oob_data->NoobId_b64 = os_strdup((char *)sqlite3_column_text(stmt, 2));
     data->server_attr->oob_data->noob_b64 = os_strdup((char *)sqlite3_column_text(stmt, 3));
     data->server_attr->oob_data->hoob_b64 = os_strdup((char *)sqlite3_column_text(stmt, 4));
+    //sent time
 }
 
 /**
@@ -387,8 +354,7 @@ static u8 * eap_noob_gen_MAC(const struct eap_noob_peer_context * data, int type
 {
     u8 * mac = NULL;
     if (NULL == data || NULL == data->server_attr || NULL == data->server_attr->mac_input_str ||
-        NULL == key)
-        return NULL;
+        NULL == key) return NULL;
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s, MAC len = %d, MAC = %s", __func__, (int)os_strlen(data->server_attr->mac_input_str),
                data->server_attr->mac_input_str);
@@ -767,14 +733,9 @@ static void  eap_noob_decode_obj(struct eap_noob_server_data * data, json_t * re
                     data->Realm = os_strdup(retval_char);
                     wpa_printf(MSG_DEBUG, "EAP-NOOB:Realm %s",data->Realm);
                 } else if (0 == os_strcmp(key, NS)) {
-                    data->kdf_nonce_data->Ns_b64 = os_strdup(retval_char);
-                    decode_length = eap_noob_Base64Decode(data->kdf_nonce_data->Ns_b64,
-                                          &data->kdf_nonce_data->Ns);
-                    data->rcvd_params |= NONCE_RCVD;
+                    decode_length = eap_noob_Base64Decode(retval_char, &data->kdf_nonce_data->Ns);
+                    if (decode_length) data->rcvd_params |= NONCE_RCVD;
                 } else if (0 == os_strcmp(key, HINT_SERV)) {
-                    EAP_NOOB_FREE(data->oob_data->NoobId_b64);
-                    EAP_NOOB_FREE(data->oob_data->NoobId);
-
                     data->oob_data->NoobId_b64 = os_strdup(retval_char);
                     data->oob_data->NoobId_len = eap_noob_Base64Decode(data->oob_data->NoobId_b64, &data->oob_data->NoobId);
                     wpa_printf(MSG_DEBUG, "EAP-NOOB: Received NoobId = %s", data->oob_data->NoobId_b64);
@@ -939,249 +900,6 @@ int eap_noob_db_entry_check(void * priv , int argc, char **argv, char **azColNam
     }
     return 0;
 }
-
-#if 0
-/**
- * eap_noob_decode_vers_array : assigns the values of Vers JSON array to version array
- * @data: Server context
- * @array: Vers JSON array
- * Returns: SUCCESS/FAILURE
-**/
-static int eap_noob_decode_vers_array(char * array, struct eap_noob_server_data * data)
-{
-    json_t * ver_arr = NULL, * value = NULL;
-    size_t index = 0;
-
-    if (NULL == array || NULL == data ||
-        NULL == (ver_arr = json_loads(array, JSON_COMPACT, NULL))) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting function %s, invalid input or "
-                "unable to allocated json object", __func__);
-        return FAILURE;
-    }
-
-    json_array_foreach(ver_arr, index, value) {
-        if (index > MAX_SUP_VER) break; /* reject the rest */
-        data->version[index] = json_integer_value(value);
-    }
-    json_decref(ver_arr);
-
-    return SUCCESS;
-}
-
-/**
- * eap_noob_decode_csuites_array : assigns the values of Csuites JSON array to csuite array
- * @data: Server context
- * @array: Csuites JSON array
- * Returns: SUCCESS/FAILURE
-**/
-static int eap_noob_decode_csuites_array(char * array, struct eap_noob_server_data * data)
-{
-    json_t * csuites_arr = NULL;
-    json_t * value = NULL;
-    size_t index = 0;
-
-    if (NULL == array || NULL == data ||
-       NULL == (csuites_arr = json_loads(array, JSON_COMPACT, NULL))) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting function %s, invalid input or "
-                "unable to allocated json object", __func__);
-        return FAILURE;
-    }
-
-    json_array_foreach(csuites_arr, index, value) {
-        if (index > MAX_SUP_CSUITES) break; /* reject the rest */
-        data->cryptosuite[index] = json_integer_value(value);
-    }
-    json_decref(csuites_arr);
-
-    return SUCCESS;
-}
-
-/**
- * eap_noob_callback : Repopulate the peer context when method re initializes
- * @priv : server context
- * @argc : argument count
- * @argv : argument 2d array
- * @azColName : colomn name 2d arra
-**/
-int eap_noob_callback(void * priv , int argc, char **argv, char **azColName)
-{
-    struct eap_noob_peer_context * peer = priv;
-    struct eap_noob_server_data * data = peer->server_attr;
-    int count  = 0;
-    size_t len;
-    json_error_t error;
-
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB CALLBACK");
-
-    for (count =0; count <argc; count++) {
-        if (argv[count] && azColName[count]) {
-            if (os_strcmp(azColName[count], "ssid") == 0) {
-                if (NULL != data->ssid)
-                    os_free(data->ssid);
-                data->ssid = os_malloc(os_strlen(argv[count])+1);
-                strcpy(data->ssid, argv[count]);
-            }
-            else if (os_strcmp(azColName[count], "PeerID") == 0) {
-                if (NULL != data->PeerId)
-                    os_free(data->PeerId);
-
-                data->PeerId = os_malloc(os_strlen(argv[count]));
-                strcpy(data->PeerId, argv[count]);
-            }
-            else if (os_strcmp(azColName[count], "Vers") == 0) {
-                //data->version[0] = (int) strtol(argv[count], NULL, 10);
-                eap_noob_decode_vers_array(argv[count], data);
-            }
-            else if (os_strcmp(azColName[count], "Verp") == 0) {
-                peer->peer_attr->version = (int) strtol(argv[count], NULL, 10);
-            }
-            else if (os_strcmp(azColName[count], "state") == 0) {
-                data->state = (int) strtol(argv[count], NULL, 10);
-                wpa_printf(MSG_DEBUG, "EAP-NOOB: ****************state = %d\n",data->state);
-            }
-            else if (os_strcmp(azColName[count], "Csuites") == 0) {
-                //data->cryptosuite[0] = (int) strtol(argv[count], NULL, 10);
-                eap_noob_decode_csuites_array(argv[count], data);
-            }
-            else if (os_strcmp(azColName[count], "Csuitep") == 0) {
-                peer->peer_attr->cryptosuite = (int) strtol(argv[count], NULL, 10);
-            }
-            else if (os_strcmp(azColName[count], "Dirs") == 0) {
-                data->dir = (int) strtol(argv[count], NULL, 10);
-            }
-            else if (os_strcmp(azColName[count], "Dirp") == 0) {
-                peer->peer_attr->dir = (int) strtol(argv[count], NULL, 10);
-            }
-            /* else if (os_strcmp(azColName[count], "Np") == 0) {
-                if (NULL != data->kdf_nonce_data->Np_b64)
-                    os_free(data->kdf_nonce_data->Np_b64);
-
-                data->kdf_nonce_data->Np_b64 = os_malloc(os_strlen(argv[count]));
-                strcpy(data->kdf_nonce_data->Np_b64, argv[count]);
-
-                len = eap_noob_Base64Decode(data->kdf_nonce_data->Np_b64, &data->kdf_nonce_data->Np); //To-Do check for length
-
-            } */
-            else if (os_strcmp(azColName[count], "Ns") == 0) {
-                if (NULL != data->kdf_nonce_data->Ns_b64)
-                    os_free(data->kdf_nonce_data->Ns_b64);
-
-                data->kdf_nonce_data->Ns_b64 = os_malloc(os_strlen(argv[count]));
-                strcpy(data->kdf_nonce_data->Ns_b64, argv[count]);
-
-                len = eap_noob_Base64Decode(data->kdf_nonce_data->Ns_b64, &data->kdf_nonce_data->Ns); //To-Do check for length
-
-            }
-            else if (os_strcmp(azColName[count], "minsleep") == 0) {
-                data->minsleep = (int) strtol(argv[count], NULL, 10);
-            }
-            else if (os_strcmp(azColName[count], "ServInfo") == 0) {
-                if (NULL != data->server_info)
-                    os_free(data->server_info);
-
-                data->server_info = os_malloc(os_strlen(argv[count]));
-                strcpy(data->server_info, argv[count]);
-            }
-            else if (os_strcmp(azColName[count], "PeerInfo") == 0) {
-                if (NULL != peer->peer_attr->peer_info)
-                    os_free(peer->peer_attr->peer_info);
-
-                peer->peer_attr->peer_info = os_malloc(os_strlen(argv[count]));
-                strcpy(peer->peer_attr->peer_info, argv[count]);
-            }
-            else if (os_strcmp(azColName[count], "Realm") == 0) {
-                if (NULL != data->Realm)
-                    os_free(data->Realm);
-                if (NULL != peer->peer_attr->Realm)
-                    os_free(peer->peer_attr->Realm);
-
-                data->Realm = os_malloc(os_strlen(argv[count]));
-                strcpy(data->Realm, argv[count]);
-
-                peer->peer_attr->Realm = os_malloc(os_strlen(argv[count]));
-                strcpy(peer->peer_attr->Realm, argv[count]);
-
-                //len = eap_noob_Base64Decode(data->kdf_nonce_data->Np_b64, &data->kdf_nonce_data->Np); //To-Do check for length
-
-            }
-            else if (os_strcmp(azColName[count], "SharedSecret") == 0 && os_strlen(argv[count]) > 0) {
-                if (NULL != data->ecdh_exchange_data->shared_key_b64)
-                    os_free(data->ecdh_exchange_data->shared_key_b64);
-
-                data->ecdh_exchange_data->shared_key_b64 = os_malloc(os_strlen(argv[count]));
-                strcpy(data->ecdh_exchange_data->shared_key_b64, argv[count]);
-                len = eap_noob_Base64Decode(data->ecdh_exchange_data->shared_key_b64, &data->ecdh_exchange_data->shared_key);
-            }
-            else if (os_strcmp(azColName[count], "Noob") == 0 && os_strlen(argv[count]) > 0) {
-                if (NULL != data->oob_data->noob_b64)
-                    os_free(data->oob_data->noob_b64);
-
-                data->oob_data->noob_b64 = os_malloc(os_strlen(argv[count]));
-                strcpy(data->oob_data->noob_b64, argv[count]);
-
-                len = eap_noob_Base64Decode(data->oob_data->noob_b64, &data->oob_data->noob);
-            }
-            else if (os_strcmp(azColName[count], "hint_server") == 0 && os_strlen(argv[count]) > 0) {
-                if (NULL != data->oob_data->NoobId_b64)
-                    os_free(data->oob_data->NoobId_b64);
-
-                data->oob_data->NoobId_b64 = os_malloc(os_strlen(argv[count]));
-                strcpy(data->oob_data->NoobId_b64, argv[count]);
-
-                eap_noob_Base64Decode(data->oob_data->NoobId_b64, &data->oob_data->NoobId);
-            }
-
-            else if (os_strcmp(azColName[count], "Hoob") == 0 && os_strlen(argv[count]) > 0) {
-                if (NULL != data->oob_data->hoob_b64)
-                    os_free(data->oob_data->hoob_b64);
-
-                data->oob_data->hoob_b64 = os_malloc(os_strlen(argv[count]));
-                strcpy(data->oob_data->hoob_b64, argv[count]);
-                wpa_printf(MSG_DEBUG,"EAP-NOOB: HOOB: %s",argv[count]);
-
-                len = eap_noob_Base64Decode(data->oob_data->hoob_b64, &data->oob_data->hoob);
-            }else if (os_strcmp(azColName[count], "pub_key_serv") == 0) {
-                data->ecdh_exchange_data->jwk_serv = json_loads(argv[count], JSON_COMPACT, &error); //ToDo: check and free this before assigning if required
-
-                wpa_printf(MSG_DEBUG,"EAP-NOOB:Serv_KEY: %s",argv[count]);
-
-            }else if (os_strcmp(azColName[count], "pub_key_peer") == 0) {
-                data->ecdh_exchange_data->jwk_peer = json_loads(argv[count], JSON_COMPACT, &error); //ToDo: check and free this before assigning if required
-                wpa_printf(MSG_DEBUG,"EAP-NOOB:Peer_KEY: %s",argv[count]);
-            }
-            /* else if (os_strcmp(azColName[count], "kms") == 0 && os_strlen(argv[count]) > 0) {
-                if (NULL != data->kdf_out->kms_b64)
-                    os_free(data->kdf_out->kms_b64);
-
-                data->kdf_out->kms_b64 = os_malloc(os_strlen(argv[count]));
-                strcpy(data->kdf_out->kms_b64, argv[count]);
-                wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB kms");
-                len = eap_noob_Base64Decode(data->kdf_out->kms_b64, &data->kdf_out->Kms);
-            }
-            else if (os_strcmp(azColName[count], "kmp") == 0 && os_strlen(argv[count]) > 0) {
-                if (NULL != data->kdf_out->kmp_b64)
-                    os_free(data->kdf_out->kmp_b64);
-
-                data->kdf_out->kmp_b64 = os_malloc(os_strlen(argv[count]));
-                strcpy(data->kdf_out->kmp_b64, argv[count]);
-                wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB kmp");
-                len = eap_noob_Base64Decode(data->kdf_out->kmp_b64, &data->kdf_out->Kmp);
-            }
-            else if (os_strcmp(azColName[count], "kz") == 0 && os_strlen(argv[count]) > 0) {
-                if (NULL != data->kdf_out->kz_b64)
-                    os_free(data->kdf_out->kz_b64);
-
-                data->kdf_out->kz_b64 = os_malloc(os_strlen(argv[count]));
-                strcpy(data->kdf_out->kz_b64, argv[count]);
-                wpa_printf(MSG_DEBUG, "EAP-NOOB: EAP OOB kz");
-                len = eap_noob_Base64Decode(data->kdf_out->kz_b64, &data->kdf_out->Kz);
-            } */
-        }
-    }
-
-    return 0;
-}
-#endif
 
 /**
  * eap_noob_exec_query : Function to execute a sql query. Prepapres, binds and steps.
@@ -1564,7 +1282,7 @@ static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context * data
 {
     json_t * rsp_obj = NULL;
     struct wpabuf *resp = NULL;
-    char * resp_json = NULL, * base64_nonce = NULL;
+    char * resp_json = NULL, * base64_nonce = NULL, * Ns_b64 = NULL;
     size_t len = 0 ;
     size_t secret_len = ECDH_SHARED_SECRET_LEN;
     int err = 0;
@@ -1618,8 +1336,10 @@ static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context * data
         &data->server_attr->ecdh_exchange_data->shared_key_b64);
 
     /* Update MAC */
+    eap_noob_Base64Encode(data->server_attr->kdf_nonce_data->Ns, NONCE_LEN, &Ns_b64);
+    err -= (NULL == Ns_b64);
     err += json_array_append(data->server_attr->mac_input, data->server_attr->ecdh_exchange_data->jwk_serv);
-    err += json_array_append_new(data->server_attr->mac_input, json_string(data->server_attr->kdf_nonce_data->Ns_b64));
+    err += json_array_append_new(data->server_attr->mac_input, json_string(Ns_b64));
     err += json_array_append(data->server_attr->mac_input, data->server_attr->ecdh_exchange_data->jwk_peer);
     err += json_array_append_new(data->server_attr->mac_input, json_string(base64_nonce));
     if (err < 0) wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected error in setting MAC input values");
@@ -2411,23 +2131,16 @@ static void eap_noob_free_ctx(struct eap_noob_peer_context * data)
         }
         if (serv->kdf_nonce_data) {
             EAP_NOOB_FREE(serv->kdf_nonce_data->Ns);
-            EAP_NOOB_FREE(serv->kdf_nonce_data->Ns_b64);
             EAP_NOOB_FREE(serv->kdf_nonce_data->Np);
             os_free(serv->kdf_nonce_data);
         }
         if (serv->kdf_out) {
             EAP_NOOB_FREE(serv->kdf_out->msk);
-            //EAP_NOOB_FREE(serv->kdf_out->msk_b64);
             EAP_NOOB_FREE(serv->kdf_out->emsk);
-            //EAP_NOOB_FREE(serv->kdf_out->emsk_b64);
             EAP_NOOB_FREE(serv->kdf_out->amsk);
-            //EAP_NOOB_FREE(serv->kdf_out->amsk_b64);
             EAP_NOOB_FREE(serv->kdf_out->Kms);
-            //EAP_NOOB_FREE(serv->kdf_out->kms_b64);
             EAP_NOOB_FREE(serv->kdf_out->Kmp);
-            //EAP_NOOB_FREE(serv->kdf_out->kmp_b64);
             EAP_NOOB_FREE(serv->kdf_out->Kz);
-            //EAP_NOOB_FREE(serv->kdf_out->kz_b64);
             os_free(serv->kdf_out);
         }
         os_free(serv);
