@@ -274,7 +274,6 @@ struct eap_noob_ecdh_kdf_out {
 struct eap_noob_ecdh_kdf_nonce {
 
     u8 * Ns;
-    char * Ns_b64;
     u8 * Np;
 };
 
