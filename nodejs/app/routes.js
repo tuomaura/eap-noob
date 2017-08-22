@@ -333,13 +333,41 @@ app.get('/profile', isLoggedIn, function(req, res) {
     var seconds = Math.ceil(d.getTime() / 1000);
     var val = 0;
     var dev_status = ['Up to date','Update required','Obsolete', 'Update available!']
-        i = 0;
-    j = 0;
+    i = 0; j = 0;
     db = new sqlite3.Database(conn_str);
-    db.all('SELECT PeerID, PeerInfo, serv_state,sleepTime,errorCode FROM peers_connected where userName = ?', req.user.username , function(err,rows){
+    console.log("Connection done");
+    db.all('SELECT PeerId From UserDevices WHERE Username=?', req.user.username, function(err, rows0) {
+        console.log("Query done");
         if(!err){
-            db.all('SELECT PeerID, PeerInfo, serv_state, errorCode, Noob, Hoob FROM devices where userName = ?', req.user.username , function(err1,rows1){
-                if(!err1){
+            console.log("No error");
+            rows0.forEach(function(row0) {
+                console.log("Peer Id " + row0.PeerId);
+                deviceDetails[j] = new Object();
+                deviceDetails[j].peer_id = row0.PeerId;
+                /* parseJson1= JSON.parse(row1.PeerInfo);
+                deviceDetails[j].peer_name = parseJson1['Make'];
+                deviceDetails[j].peer_num = parseJson1['Serial'];
+                deviceDetails[j].noob = row1.Noob;
+                deviceDetails[j].hoob = row1.Hoob; 
+                if(row1.errorCode){
+                    deviceDetails[j].state_num = '0';
+                    deviceDetails[j].state = error_info[parseInt(row.errorCode)];
+                } */
+            });
+            res.render('profile.ejs', {
+                user : req.user, userInfo : ''/* userDetails*/, deviceInfo : deviceDetails,  url : configDB.url, message: req.flash('profileMessage')
+            });
+        } else{
+            console.log("Nothing to show");
+            db.close();
+            res.render('profile.ejs', {
+                user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage')
+            });
+        }
+    });
+});
+                //db.all('SELECT * from EphemeralState WHERE PeerId=?', row0.PeerId, function(err, rows1) {
+                /* if(!err1){
                     db.close();
                     rows1.forEach(function(row1) {
                         deviceDetails[j] = new Object();
@@ -390,14 +418,14 @@ app.get('/profile', isLoggedIn, function(req, res) {
 
                     res.render('profile.ejs', {
                         user : req.user, userInfo : userDetails, deviceInfo : deviceDetails,  url : configDB.url, message: req.flash('profileMessage') // get the user out of session and pass to template
-                    });
-                }else{
+                    }); 
+                else{
                     db.close();
                     res.render('profile.ejs', {
                         user : req.user, userInfo : userDetails, deviceInfo : '',  url : configDB.url,  message: req.flash('profileMessage') // get the user out of session and pass to template
                     });
                 }
-            });
+            }); 
         }else{
             db.close();
             res.render('profile.ejs', {
@@ -408,7 +436,7 @@ app.get('/profile', isLoggedIn, function(req, res) {
         //db.close();
     });
     //db.close();
-});
+});  */
 
 // =====================================
 // LOGOUT ==============================
@@ -664,10 +692,8 @@ app.get('/sendOOB/',isLoggedIn, function (req, res) {
         db = new sqlite3.Database(conn_str);
 
         db.serialize(function() {
-            /*var stmt = db.prepare("UPDATE peers_connected SET OOB_RECEIVED_FLAG = ?, Noob = ?, Hoob = ?, errorCode = ?, userName = ?, serv_state = ? WHERE PeerID = ?");*/
             var stmt = db.prepare("UPDATE EphemeralState SET ErrorCode = ? WHERE PeerID = ?");
             stmt.run(3,peer_id);
-            //stmt.run(1234,"","",3,req.user.username,2,peer_id);
             stmt.finalize();
             req.flash('profileMessage','Invalid Data');
             res.redirect('/profile');
@@ -731,7 +757,11 @@ app.get('/sendOOB/',isLoggedIn, function (req, res) {
                                             stmt.run(2, peer_id);
                                             stmt.finalize();
                                         });
-
+                                        db.serialize(function() {
+                                            var stmt = db.prepare("INSERT INTO UserDevices(Username, PeerId) VALUES(?,?)");
+                                            stmt.run(req.user.username, peer_id);
+                                            stmt.finalize();
+                                        });
                                         db.close();
                                         req.flash('profileMessage','Message Received Successfully');
                                         res.redirect('/profile');

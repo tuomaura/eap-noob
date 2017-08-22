@@ -35,6 +35,7 @@ db_name = "peer_connection_db";
 oob_file = "file.txt";
 noob_conf_file = "eapoob.conf";
 keyword = "OobDirs";
+timeout_threads = [];
 
 def print_log(val):
     f1=open('./logfile_supplicant', 'a+');
@@ -67,6 +68,14 @@ def get_pid(arg):
             pid = int(line.split(None,1)[0])
             pid_list.append(pid)
     return pid_list
+
+def terminate_threads():
+    for t in timeout_threads:
+        t.cancel()
+    #for t in interval_threads:
+    #    t.cancel()
+    print("All timers cancelled")
+
 
 def get_result():
     scan_result = runbash("wpa_cli scan_result | awk '$4 ~ /WPA2-EAP/ {print $3,$5,$1}' | sort $1")
@@ -211,6 +220,12 @@ def update_file():
     file.close();
     return
 
+def delete_noob(*args):
+    query='DELETE from EphemeralNoob WHERE NoobId=?';
+    out = exe_db_query(query, [args[0]]);
+    if out is None:
+        print_log("Deleting expired Noob failed");
+
 def get_hoob(PeerId, Noob):
     query = 'SELECT Ns, Np, MacInput from EphemeralState where PeerId=?';
     out = exe_db_query(query, [PeerId]);
@@ -262,9 +277,9 @@ def create_oob(PeerId, Ssid):
     #t.start()
     #interval_threads.append(t)
 
-    #t = threading.Timer(noob_timeout, mark_expired, [NoobId])
-    #t.start()
-    #timeout_threads.append(t)
+    t = threading.Timer(noob_timeout, delete_noob, [NoobId])
+    t.start()
+    timeout_threads.append(t)
 
 
 def gen_oob():
@@ -335,6 +350,7 @@ def main():
         time.sleep(5)
 
     print_log("EAP AUTH SUCCESSFUL");
+    terminate_threads();
 
 if __name__=='__main__':
     main();
