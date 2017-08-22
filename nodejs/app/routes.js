@@ -326,39 +326,52 @@ res.json({"status":"Success"});
 app.get('/profile', isLoggedIn, function(req, res) {
     var userDetails = new Array();
     var deviceDetails = new Array();
+    var PeerInfo_row, PeerInfo_j;
     var i,j;
-    var parseJson;
-    var parseJson1;
     var d = new Date();
     var seconds = Math.ceil(d.getTime() / 1000);
     var val = 0;
     var dev_status = ['Up to date','Update required','Obsolete', 'Update available!']
     i = 0; j = 0;
     db = new sqlite3.Database(conn_str);
-    console.log("Connection done");
     db.all('SELECT PeerId From UserDevices WHERE Username=?', req.user.username, function(err, rows0) {
-        console.log("Query done");
         if(!err){
-            console.log("No error");
             rows0.forEach(function(row0) {
-                console.log("Peer Id " + row0.PeerId);
                 deviceDetails[j] = new Object();
                 deviceDetails[j].peer_id = row0.PeerId;
-                /* parseJson1= JSON.parse(row1.PeerInfo);
-                deviceDetails[j].peer_name = parseJson1['Make'];
-                deviceDetails[j].peer_num = parseJson1['Serial'];
-                deviceDetails[j].noob = row1.Noob;
-                deviceDetails[j].hoob = row1.Hoob; 
-                if(row1.errorCode){
-                    deviceDetails[j].state_num = '0';
-                    deviceDetails[j].state = error_info[parseInt(row.errorCode)];
-                } */
-            });
-            res.render('profile.ejs', {
-                user : req.user, userInfo : ''/* userDetails*/, deviceInfo : deviceDetails,  url : configDB.url, message: req.flash('profileMessage')
+                db.all('SELECT PeerInfo From EphemeralState WHERE PeerId=?', row0.PeerId, function(err, rows1) {
+                    if (!err && rows1.length == 0) {
+                        db.all('SELECT PeerInfo From PersistentState WHERE PeerId=?', row0.PeerId, function(err, rows2) {
+                            if (!err && rows2.length == 0) {
+                                db.close();
+                                res.render('profile.ejs', {
+                                    user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage')
+                                });
+                            } else if (rows2.length > 0) {
+                                PeerInfo_row = rows2;
+                                PeerInfo_j= JSON.parse(PeerInfo_row[0]['PeerInfo']);
+                                deviceDetails[j].peer_name = PeerInfo_j['Make'];
+                                deviceDetails[j].peer_num = PeerInfo_j['Serial'];
+                                j++;
+                                res.render('profile.ejs', {
+                                    user : req.user, userInfo : ''/* userDetails*/, deviceInfo : deviceDetails,  url : configDB.url, message: req.flash('profileMessage')
+                                });
+                            }
+                        });
+                    } else if (rows1.length > 0 ) {
+                        PeerInfo_row = rows1;
+                        deviceDetails[j].peer_id = row0.PeerId;
+                        PeerInfo_j= JSON.parse(PeerInfo_row[0]['PeerInfo']);
+                        deviceDetails[j].peer_name = PeerInfo_j['Make'];
+                        deviceDetails[j].peer_num = PeerInfo_j['Serial'];
+                        j++;
+                        res.render('profile.ejs', {
+                            user : req.user, userInfo : ''/* userDetails*/, deviceInfo : deviceDetails,  url : configDB.url, message: req.flash('profileMessage')
+                        });
+                    }
+                });
             });
         } else{
-            console.log("Nothing to show");
             db.close();
             res.render('profile.ejs', {
                 user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage')
@@ -720,11 +733,11 @@ app.get('/sendOOB/',isLoggedIn, function (req, res) {
         db.get('SELECT a.accessLevel AS al1, b.accessLevel AS al2 FROM roleAccessLevel a,fqdnACLevel b WHERE (b.fqdn = (SELECT NAS_id FROM radius WHERE user_name = ?) OR b.fqdn = (SELECT d.fqdn FROM roleBasedAC d WHERE calledSID = (SELECT called_st_id FROM radius WHERE user_name = ?))) and a.role = (SELECT c.role FROM users c WHERE username = ?)', peer_id,peer_id,req.user.username, function(err, row1) {
             if(err){res.json({"ProfileMessage": "Failed because of Error!"});}
             else if(enableAC == 0 || row1.al1 >= row1.al2){
-                db.get('SELECT server_state, error_code FROM EphemeralState WHERE PeerId = ?', peer_id, function(err, row2) {
+                db.get('SELECT ServerState, ErrorCode FROM EphemeralState WHERE PeerId = ?', peer_id, function(err, row2) {
                     db.get('SELECT count(*) as rowCount FROM EphemeralNoob WHERE PeerId = ?', peer_id, function(err, row3) {
                         if (!row2 || row3.rowCount != 0){req.flash('profileMessage','Some Error contact admin!');res.redirect('/profile');console.log("Internal Error");}
                         else if(row2.error_code) {req.flash('profileMessage','Error: ' + error_info[parseInt(row2.errorCode)] +'!!');res.redirect('/profile');console.log("Error" + row2.errorCode);}
-                        else if(parseInt(row2.server_state) != 1) {req.flash('profileMessage','Error: state mismatch. Reset device');res.redirect('/profile');console.log("state mismatch");}
+                        else if(parseInt(row2.ServerState) != 1) {req.flash('profileMessage','Error: state mismatch. Reset device');res.redirect('/profile');console.log("state mismatch");}
                         else {
                             var parseJ;
                             var err_p;
@@ -753,7 +766,7 @@ app.get('/sendOOB/',isLoggedIn, function (req, res) {
                                             stmt.finalize();
                                         });
                                         db.serialize(function() {
-                                            var stmt = db.prepare("UPDATE EphemeralState SET server_state = ? WHERE PeerId = ?");
+                                            var stmt = db.prepare("UPDATE EphemeralState SET ServerState= ? WHERE PeerId = ?");
                                             stmt.run(2, peer_id);
                                             stmt.finalize();
                                         });
