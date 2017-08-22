@@ -193,10 +193,11 @@
     "CREATE TABLE IF NOT EXISTS PersistentState(    \
     Ssid TEXT NOT NULL PRIMARY KEY,                 \
     PeerId TEXT NOT NULL,                           \
-    Vers TEXT NOT NULL CHECK (Vers=1),              \
+    Vers TEXT NOT NULL,                             \
     Cryptosuites TEXT NOT NULL,                     \
     Realm TEXT,                                     \
     Kz BLOB NOT NULL,                               \
+    PeerState INT,                                  \
     creation_time BIGINT,                           \
     last_used_time BIGINT                           \
     );"
@@ -237,10 +238,9 @@ enum {NONE, EAP_NOOB_TYPE_1, EAP_NOOB_TYPE_2, EAP_NOOB_TYPE_3, EAP_NOOB_TYPE_4, 
 enum eap_noob_err_code {NO_ERROR, E1001, E1002, E1003, E1004, E1005, E1006, E1007, E2001, E2002,
                         E3001, E3002, E3003, E4001, E5001, E5002, E5003};
 
-enum {HOOB_TYPE, MACS_TYPE, MACP_TYPE};
+enum {MACS_TYPE, MACP_TYPE};
 
-enum {UPDATE_ALL, UPDATE_STATE, UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_STATE, UPDATE_STATE_ERROR,
-      UPDATE_OOB, DELETE_EXPIRED_NOOB, DELETE_SSID, UPDATE_INITIAL_EXCHANGE_INFO};
+enum {UPDATE_PERSISTENT_STATE, UPDATE_STATE_ERROR, DELETE_SSID};
 
 enum sql_datatypes {TEXT, INT, UNSIGNED_BIG_INT, BLOB};
 
@@ -353,7 +353,7 @@ struct eap_noob_peer_data {
     u32 config_params;
 
     char * PeerId;
-    char * peer_info;
+    json_t * PeerInfo;
     char * MAC;
     char * Realm;
 

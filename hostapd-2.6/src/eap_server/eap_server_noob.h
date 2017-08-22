@@ -129,41 +129,6 @@
 #define DEVICE_TABLE            "devices"
 #define PEER_TABLE              "peers_connected"
 
-/*SQL query to create peer connection database
- * TODO:check Vers, Cryptosuites - datatypes
- **/
-#define CREATE_CONNECTION_TABLE                     \
-    "CREATE TABLE IF NOT EXISTS peers_connected(    \
-    PeerId TEXT PRIMARY KEY,                        \
-    Vers INTEGER,                                   \
-    Verp INTEGER,                                   \
-    Cryptosuites INTEGER,                           \
-    Cryptosuitep INTEGER,                           \
-    Dirs INTEGER,                                   \
-    Dirp INTEGER,                                   \
-    Realm TEXT,                                     \
-    Ns TEXT,                                        \
-    Np TEXT,                                        \
-    PKs TEXT,                                       \
-    PKp TEXT,                                       \
-    ServerInfo TEXT,                                \
-    PeerInfo TEXT,                                  \
-    NoobId TEXT,                                    \
-    Noob TEXT,                                      \
-    Hoob TEXT,                                      \
-    ErrorCode INTEGER,                              \
-    Z TEXT,                                         \
-    Kz TEXT,                                        \
-    Kms TEXT,                                       \
-    Kmp TEXT,                                       \
-    server_state INTEGER,                           \
-    oob_received_flag INTEGER,                      \
-    last_used_time UNSIGNED BIG INT,                \
-    sleep_count INTEGER,                            \
-    mac_input TEXT)"
-
-
-/* TA: draft for a new data model with 3 tables */
 #define CREATE_TABLES_EPHEMERALSTATE                \
     "CREATE TABLE IF NOT EXISTS EphemeralState(     \
     PeerId TEXT PRIMARY KEY,                        \
@@ -177,7 +142,7 @@
     Z BLOB,                                         \
     MacInput TEXT,                                  \
     creation_time  BIGINT,                          \
-    error_code INTEGER,                             \
+    ErrorCode INTEGER,                              \
     sleep_count INTEGER,                            \
     server_state INTEGER);                          \
                                                     \
@@ -195,6 +160,7 @@
     Cryptosuitep INTEGER NOT NULL,                  \
     Realm TEXT,                                     \
     Kz BLOB NOT NULL,                               \
+    ServerState INT,                                \
     creation_time BIGINT,                           \
     last_used_time BIGINT                           \
     );"
@@ -236,13 +202,6 @@
     (_D)=os_malloc(_l)
 
 
-#define EAP_NOOB_CB_GET_B64(_D64,_D,_l)             \
-    EAP_NOOB_FREE(_D64)                             \
-    EAP_NOOB_FREE(_D)                               \
-    _D64 = os_strdup(fieldValue[i]);                \
-    _l = eap_noob_Base64Decode(_D64,&_D)
-
-
  /* Flag used during KDF and MAC generation */
 enum {COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW};
 
@@ -253,8 +212,8 @@ enum {NONE, EAP_NOOB_TYPE_1, EAP_NOOB_TYPE_2, EAP_NOOB_TYPE_3,
       EAP_NOOB_TYPE_4, EAP_NOOB_TYPE_5, EAP_NOOB_TYPE_6,
       EAP_NOOB_TYPE_7, EAP_NOOB_TYPE_8};
 
-enum {UPDATE_STATE, UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,
-    UPDATE_STATE_ERROR, UPDATE_OOB, UPDATE_INITIALEXCHANGE_INFO, GET_NOOBID};
+enum {UPDATE_PERSISTENT_STATE, UPDATE_STATE_MINSLP, UPDATE_PERSISTENT_KEYS_SECRET,
+    UPDATE_STATE_ERROR, UPDATE_INITIALEXCHANGE_INFO, GET_NOOBID};
 
 enum eap_noob_err_code{NO_ERROR, E1001, E1002, E1003, E1004, E1005,
      E1006, E1007, E2001, E2002, E3001, E3002, E3003, E4001};
@@ -274,22 +233,15 @@ struct eap_noob_global_conf {
 struct eap_noob_ecdh_kdf_out {
 
     u8 * msk;
-    //char * msk_b64;
     u8 * emsk;
-    //char * emsk_b64;
     u8 * amsk;
-    //char * amsk_b64;
     u8 * Kms;
-    //char * kms_b64;
     u8 * Kmp;
-    //char * kmp_b64;
     u8 * Kz;
-    //char * kz_b64;
 };
 
 struct eap_noob_ecdh_kdf_nonce {
     u8 * Ns;
-    //char * nonce_server_b64;
     u8 * Np;
     char * nonce_peer_b64; //Can be removed
 };

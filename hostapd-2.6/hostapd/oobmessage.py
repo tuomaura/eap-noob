@@ -94,7 +94,7 @@ def exe_db_query(query, path, args=None):
 def print_log(val):
 
 	f1=open('./logfile', 'a+')
-	f1.write(val)
+	f1.write(val); f1.write("\n");
 	f1.close()
 
 def get_hoob(PeerId, Noob, path):
@@ -115,6 +115,7 @@ def get_hoob(PeerId, Noob, path):
     print_log(hoob_str.decode('utf-8'));
     hoob = hashlib.sha256(hoob_str).hexdigest()[0:16];
     hoob = base64.urlsafe_b64encode(hoob.encode('utf-8')).decode('ascii').strip('=');
+    print_log("Hoob " + hoob);
     return ret_obj(Noob,hoob,None);
 
 """
