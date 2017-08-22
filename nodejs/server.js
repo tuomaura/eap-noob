@@ -154,7 +154,7 @@ require('./app/routes.js')(app, passport); // load our routes and pass in our ap
 	db.run('CREATE TABLE IF NOT EXISTS radius (called_st_id TEXT, calling_st_id  TEXT, NAS_id TEXT, user_name TEXT PRIMARY KEY);');	
   	db.run('CREATE TABLE  IF NOT EXISTS users ( id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, role INTEGER DEFAULT 1, isAdmin BOOLEAN DEFAULT FALSE,  FOREIGN KEY(role) REFERENCES roles(role_id) );');
   	db.run('CREATE TABLE  IF NOT EXISTS devices (PeerID TEXT, serv_state INTEGER, PeerInfo TEXT, Noob TEXT, Hoob TEXT, Hint TEXT,errorCode INTEGER ,UserName TEXT, PRIMARY KEY (PeerID, UserName));');
-    db.run('CREATE TABLE IF NOT EXISTS UserDevices (Username TEXT PRIMARY KEY, PeerId TEXT);');
+    db.run('CREATE TABLE IF NOT EXISTS UserDevices (Username TEXT,  PeerId TEXT);');
   	db.close();
   });
 

@@ -141,10 +141,10 @@
     Np BLOB,                                        \
     Z BLOB,                                         \
     MacInput TEXT,                                  \
-    creation_time  BIGINT,                          \
+    CreationTime BIGINT,                            \
     ErrorCode INTEGER,                              \
-    sleep_count INTEGER,                            \
-    server_state INTEGER);                          \
+    SleepCount INTEGER,                             \
+    ServerState INTEGER);                           \
                                                     \
     CREATE TABLE IF NOT EXISTS EphemeralNoob(       \
     PeerId TEXT NOT NULL REFERENCES EphemeralState(PeerId), \
@@ -161,9 +161,9 @@
     Realm TEXT,                                     \
     Kz BLOB NOT NULL,                               \
     ServerState INT,                                \
-    creation_time BIGINT,                           \
-    last_used_time BIGINT                           \
-    );"
+    PeerInfo TEXT,                                  \
+    CreationTime BIGINT,                            \
+    last_used_time BIGINT);"
 
 #define DELETE_EPHEMERAL_FOR_PEERID                 \
     "DELETE FROM EphemeralNoob WHERE PeerId=?;      \
