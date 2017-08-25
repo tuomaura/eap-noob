@@ -228,7 +228,7 @@ EXIT:
         if (sql_error != NULL)
             wpa_printf(MSG_DEBUG,"EAP-NOOB: SQL error : %s", sql_error);
     }
-    if (stmt) sqlite3_finalize(stmt);
+    /* if (stmt) */ sqlite3_finalize(stmt);
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Exiting %s, ret %d",__func__, ret);
     return ret;
 }
@@ -391,7 +391,7 @@ static int eap_noob_db_functions(struct eap_noob_server_context * data, u8 type)
                     "ServerState, PeerInfo) VALUES(?, ?, ?, ?, ?, ?, ?)");
             ret = eap_noob_exec_query(data, query, NULL, 14, TEXT, data->peer_attr->PeerId, INT, data->peer_attr->version,
                   INT, data->peer_attr->cryptosuite, TEXT, server_conf.realm, BLOB, KZ_LEN, data->peer_attr->kdf_out->Kz, INT,
-                  data->peer_attr->server_state, data->peer_attr->peerinfo);
+                  data->peer_attr->server_state, TEXT, data->peer_attr->peerinfo);
             break;
         case UPDATE_INITIALEXCHANGE_INFO:
             dump_str = json_dumps(data->peer_attr->mac_input, JSON_COMPACT|JSON_PRESERVE_ORDER);
@@ -1318,8 +1318,8 @@ static struct wpabuf * eap_noob_req_type_six(struct eap_noob_server_context * da
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
         return NULL;
     }
-    rc = RAND_bytes(data->peer_attr->kdf_nonce_data->Ns, NONCE_LEN);
-    error = ERR_get_error();
+    data->peer_attr->kdf_nonce_data->Ns = os_malloc(NONCE_LEN);
+    rc = RAND_bytes(data->peer_attr->kdf_nonce_data->Ns, NONCE_LEN); error = ERR_get_error();
     if (rc != 1) wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to generate nonce Error Code = %lu", error);
 
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Nonce", data->peer_attr->kdf_nonce_data->Ns, NONCE_LEN);
@@ -1600,13 +1600,12 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_noob_server_context *dat
     char * req_json = NULL, * base64_nonce = NULL;
     size_t len = 0; int rc, err = 0;
     unsigned long error;
-
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Request 2/Initial Exchange");
     if (NULL == data || NULL == data->peer_attr) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input arguments NULL for function %s",__func__);
         return NULL;
     }
-
+    data->peer_attr->kdf_nonce_data->Ns = os_malloc(NONCE_LEN);
     rc = RAND_bytes(data->peer_attr->kdf_nonce_data->Ns, NONCE_LEN); error = ERR_get_error();
     if (rc != 1) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to generate nonce. Error Code = %lu", error);
@@ -2214,7 +2213,7 @@ static void eap_noob_rsp_type_five(struct eap_noob_server_context * data,
     err -= (NULL == (PeerInfo = json_loads(data->peer_attr->peerinfo, JSON_COMPACT|JSON_PRESERVE_ORDER, &error)));
     err += json_array_set_new(data->peer_attr->mac_input, 2, json_integer(data->peer_attr->version));
     err += json_array_set_new(data->peer_attr->mac_input, 7, json_integer(data->peer_attr->cryptosuite));
-    err += json_array_set_new(data->peer_attr->mac_input, 10, PeerInfo);
+    //err += json_array_set_new(data->peer_attr->mac_input, 10, PeerInfo);
     if (err < 0) wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected JSON error in MAC input");
 }
 
@@ -2379,7 +2378,7 @@ static void eap_noob_rsp_type_one(struct eap_sm * sm, struct eap_noob_server_con
     err += json_array_set_new(data->peer_attr->mac_input, 2, json_integer(data->peer_attr->version));
     err += json_array_set_new(data->peer_attr->mac_input, 7, json_integer(data->peer_attr->cryptosuite));
     err += json_array_set_new(data->peer_attr->mac_input, 8, json_integer(data->peer_attr->dir));
-    err += json_array_set_new(data->peer_attr->mac_input, 10, PeerInfo);
+    //err += json_array_set_new(data->peer_attr->mac_input, 10, PeerInfo);
     if (err < 0) wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected JSON error in MAC input");
 }
 

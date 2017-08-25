@@ -1233,8 +1233,9 @@ static struct wpabuf * eap_noob_rsp_type_four(const struct eap_noob_peer_context
     err -= (NULL == (resp_json = json_dumps(rsp_obj,JSON_COMPACT)));
     if (err < 0) goto EXIT;
 
-    len = strlen(resp_json)+1; resp = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB, len, EAP_CODE_RESPONSE, id);
-    if (resp == NULL) {
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Response %s = %d", resp_json, (int)strlen(resp_json));
+    len = strlen(resp_json)+1;
+    if (NULL == (resp = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB, len, EAP_CODE_RESPONSE, id))) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to allocate memory for Response/NOOB-IE"); goto EXIT;
     }
     wpabuf_put_data(resp,resp_json,len);
@@ -1374,7 +1375,7 @@ static struct wpabuf * eap_noob_rsp_type_two(struct eap_noob_peer_context * data
     /* Update MAC */
     eap_noob_Base64Encode(data->server_attr->kdf_nonce_data->Ns, NONCE_LEN, &Ns_b64);
     err -= (NULL == Ns_b64);
-    err += json_array_set(data->server_attr->mac_input, 10, data->peer_attr->PeerInfo);
+    //err += json_array_set(data->server_attr->mac_input, 10, data->peer_attr->PeerInfo);
     err += json_array_set(data->server_attr->mac_input, 11, data->server_attr->ecdh_exchange_data->jwk_serv);
     err += json_array_set_new(data->server_attr->mac_input, 12, json_string(Ns_b64));
     err += json_array_set(data->server_attr->mac_input, 13, data->server_attr->ecdh_exchange_data->jwk_peer);
@@ -2234,12 +2235,13 @@ static void eap_noob_free_ctx(struct eap_noob_peer_context * data)
 
     /* Close DB */
     /* TODO check again */
-#if 0
     if (data->peer_db)
     if (SQLITE_OK != sqlite3_close(data->peer_db)) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB:Error closing DB");
+        const char * sql_error = sqlite3_errmsg(data->peer_db);
+        if (sql_error != NULL)
+            wpa_printf(MSG_DEBUG,"EAP-NOOB: SQL error : %s", sql_error);
     }
-#endif
     EAP_NOOB_FREE(data->db_name);
     EAP_NOOB_FREE(data->db_table_name);
     os_free(data); data = NULL;
@@ -2474,6 +2476,7 @@ static int eap_noob_read_config(struct eap_sm *sm,struct eap_noob_peer_context *
             }
     }
     wpa_printf(MSG_DEBUG, "EAP-NOOB: PEER INFO = %s", PeerInfo_str);
+    os_free(PeerInfo_str);
     return SUCCESS;
 }
 
