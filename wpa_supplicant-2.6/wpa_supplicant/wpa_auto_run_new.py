@@ -37,6 +37,43 @@ noob_conf_file = "eapoob.conf";
 keyword = "OobDirs";
 timeout_threads = [];
 
+class Client(WebSocketClient):
+    def __init__(self, url, peer_id, protocols=None, extensions=None, heartbeat_freq=None,
+        ssl_options=None, headers=None):
+        super(Client, self).__init__(url, protocols, extensions, heartbeat_freq, ssl_options, headers)
+        self.peer_id = peer_id;
+
+    def opened(self):
+        print_log("Client is up");
+        conf = ET.parse('conf.xml')
+        root = conf.getroot()
+
+        device_info = {child.tag: child.text for child in root};
+        device_str = json.dumps(device_info)
+        self.send(device_str)
+        print_log("Client is up")
+
+    def closed(self, code, reason=None):
+        print_log("Closed" + str(code) + str(reason));
+
+    def received_message(self, m):
+        try:
+            recv_str = m.data.decode('utf-8')
+            msg = json.loads(recv_str)
+            if self.validate_msg(msg):
+                print_log(msg)
+            if msg['type'] == 'softwareUpdate':
+                print_log("Software Update Received!!");
+                resp = {}
+                resp['type'] = 'softwareUpdated';
+                resp['peerId'] = self.peer_id
+                self.send(json.dumps(resp))
+        except BaseException as e:
+            print_log(e);
+
+    def validate_msg(self, msg):
+        return True;
+
 def print_log(val):
     f1=open('./logfile_supplicant', 'a+');
     f1.write(val); f1.write("\n");
@@ -127,7 +164,7 @@ def prepare(iface):
     print_log("Starting wpa_supplicant");
     runbash('rm -f '+config_file+' touch '+config_file+' ; rm -f '+db_name+' ; rm -f '+oob_file);
     conf_file = open(config_file,'w')
-    conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=1200\n\n")
+    conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=60\n\n")
     conf_file.close();
     cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant -d"
     subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
@@ -184,6 +221,32 @@ def set_max_oob_tries():
                 parts = parts.split("#",1)[0]
                 parts = parts.split("=",1)[1]
                 webSocket = int (parts) if int(parts) == 0 else 1
+def web_socket():
+    query = 'select PeerId, ServerInfo from PersistentState where state = 4'
+    out = exe_db_query(query)
+    peer_id = out[0]
+    info = json.loads(out[1])
+    parts = info ['Url']
+    parts = parts.split("://",1)[1]
+    ip_addr = parts.split(":",1)[0]
+    print(ip_addr)
+    print("Web Socket Called")
+    url = 'wss://' + ip_addr + ':9000/' + peer_id
+    try:
+        ws = Client(url, peer_id, protocols=['http-only', 'chat'])
+        ws.connect();
+        print_log("logged in");
+        ws.run_forever();
+
+    except KeyboardInterrupt:
+        print_log("User exits the program.");
+
+    except socket_error as serr:
+        if serr.errno != errno.ECONNREFUSED:
+            raise serr
+        print_log(serr);
+    except BaseException as e:
+        ws.close();
 
 def exe_db_query(query, args=None):
     res = os.path.isfile(db_name)
@@ -350,7 +413,22 @@ def main():
         time.sleep(5)
 
     print_log("EAP AUTH SUCCESSFUL");
-    terminate_threads();
+    if directions is '1':
+        terminate_threads();
+
+    runbash('sudo ifconfig '+interface+' 0.0.0.0 up ; dhclient '+interface);
+    if direction is '1':
+        driver.close()
+
+    url = "https://www.youtube.com/watch?v=YlHHTmIkdis"
+    capabilities = webdriver.DesiredCapabilities().FIREFOX;
+    capabilities["marionette"] = False
+    driver = webdriver.Firefox(capabilities=capabilities);
+    driver.get(url)
+    fullscreen = driver.find_elements_by_class_name('ytp-fullscreen-button')[0]
+    fullscreen.click();
+    if webSocket == 1:
+        web_socket();
 
 if __name__=='__main__':
     main();

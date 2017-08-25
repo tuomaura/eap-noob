@@ -127,43 +127,6 @@
 #define CONF_PARAMS                 (DIRS_RCVD|CRYPTOSUITES_RCVD|VERSION_RCVD|PEER_TYPE_RCVD|PEER_ID_NUM_RCVD|PEER_TYPE_RCVD)
 
 
-/* SQL query to create peer connection database
- * TODO check crytposuites type */
-#define CREATE_CONNECTION_TABLE                         \
-    "CREATE TABLE connections(                          \
-    ssid TEXT PRIMARY KEY,                              \
-    PeerID TEXT,                                        \
-    Vers INTEGER,                                       \
-    Verp INTEGER,                                       \
-    state INTEGER,                                      \
-    Csuites INTEGER,                                    \
-    Csuitep INTEGER,                                    \
-    Dirs INTEGER,                                       \
-    Dirp INTEGER,                                       \
-    Np TEXT,                                            \
-    Ns TEXT,                                            \
-    minsleep INTEGER,                                   \
-    ServInfo TEXT,                                      \
-    PeerInfo TEXT,                                      \
-    SharedSecret TEXT,                                  \
-    Noob TEXT,                                          \
-    Hoob TEXT,                                          \
-    OOB_RECEIVED_FLAG INTEGER,                          \
-    Kms TEXt,                                           \
-    Kmp TEXT,                                           \
-    Kz TEXT,                                            \
-    pub_key_serv TEXT,                                  \
-    pub_key_peer TEXT,                                  \
-    err_code INTEGER,                                   \
-    show_OOB INTEGER,                                   \
-    gen_OOB INTEGER,                                    \
-    hint_server TEXT,                                   \
-    OobRetries INTEGER DEFAULT 0,                       \
-    Realm TEXT)                                         \
-    "
-/* SQL query to check number of rows */
-#define CHECK_NUMBER_OF_ROWS  "SELECT COUNT(*) FROM connections;"
-
 #define CREATE_TABLES_EPHEMERALSTATE                \
     "CREATE TABLE IF NOT EXISTS EphemeralState(     \
     Ssid TEXT PRIMARY KEY,                          \
@@ -191,7 +154,7 @@
 
 #define CREATE_TABLES_PERSISTENTSTATE               \
     "CREATE TABLE IF NOT EXISTS PersistentState(    \
-    Ssid TEXT NOT NULL PRIMARY KEY,                 \
+    Ssid TEXT NOT NULL,                             \
     PeerId TEXT NOT NULL,                           \
     Vers TEXT NOT NULL,                             \
     Cryptosuites TEXT NOT NULL,                     \
@@ -199,8 +162,7 @@
     Kz BLOB NOT NULL,                               \
     PeerState INT,                                  \
     creation_time BIGINT,                           \
-    last_used_time BIGINT                           \
-    );"
+    last_used_time BIGINT)"
 
 #define DELETE_EPHEMERAL_FOR_SSID                   \
     "DELETE FROM EphemeralNoob WHERE Ssid=?;        \

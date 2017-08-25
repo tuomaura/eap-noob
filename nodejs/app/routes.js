@@ -335,10 +335,8 @@ app.get('/profile', isLoggedIn, function(req, res) {
     i = 0; j = 0;
     db = new sqlite3.Database(conn_str);
     db.all('SELECT PeerId From UserDevices WHERE Username=?', req.user.username, function(err, rows0) {
-        if(!err){
+        if(!err) {
             rows0.forEach(function(row0) {
-                deviceDetails[j] = new Object();
-                deviceDetails[j].peer_id = row0.PeerId;
                 db.all('SELECT PeerInfo From EphemeralState WHERE PeerId=?', row0.PeerId, function(err, rows1) {
                     if (!err && rows1.length == 0) {
                         db.all('SELECT PeerInfo From PersistentState WHERE PeerId=?', row0.PeerId, function(err, rows2) {
@@ -348,26 +346,23 @@ app.get('/profile', isLoggedIn, function(req, res) {
                                     user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage')
                                 });
                             } else if (rows2.length > 0) {
+                                deviceDetails[j] = new Object();
+                                deviceDetails[j].peer_id = row0.PeerId;
                                 PeerInfo_row = rows2;
                                 PeerInfo_j= JSON.parse(PeerInfo_row[0]['PeerInfo']);
                                 deviceDetails[j].peer_name = PeerInfo_j['Make'];
                                 deviceDetails[j].peer_num = PeerInfo_j['Serial'];
                                 j++;
-                                res.render('profile.ejs', {
-                                    user : req.user, userInfo : ''/* userDetails*/, deviceInfo : deviceDetails,  url : configDB.url, message: req.flash('profileMessage')
-                                });
                             }
                         });
                     } else if (rows1.length > 0 ) {
-                        PeerInfo_row = rows1;
+                        deviceDetails[j] = new Object();
                         deviceDetails[j].peer_id = row0.PeerId;
+                        PeerInfo_row = rows1;
                         PeerInfo_j= JSON.parse(PeerInfo_row[0]['PeerInfo']);
                         deviceDetails[j].peer_name = PeerInfo_j['Make'];
                         deviceDetails[j].peer_num = PeerInfo_j['Serial'];
                         j++;
-                        res.render('profile.ejs', {
-                            user : req.user, userInfo : ''/* userDetails*/, deviceInfo : deviceDetails,  url : configDB.url, message: req.flash('profileMessage')
-                        });
                     }
                 });
             });
@@ -377,6 +372,10 @@ app.get('/profile', isLoggedIn, function(req, res) {
                 user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage')
             });
         }
+    });
+    console.log(deviceDetails);
+    res.render('profile.ejs', {
+        user : req.user, userInfo :'', deviceInfo : deviceDetails, url : configDB.url,  message: req.flash('profileMessage')
     });
 });
                 //db.all('SELECT * from EphemeralState WHERE PeerId=?', row0.PeerId, function(err, rows1) {
