@@ -165,6 +165,13 @@
     CreationTime BIGINT,                            \
     last_used_time BIGINT);"
 
+#define CREATE_TABLES_RADIUS                        \
+    "CREATE TABLE IF NOT EXISTS radius(             \
+    called_st_id TEXT,                              \
+    calling_st_id  TEXT,                            \
+    NAS_id TEXT,                                    \
+    user_name TEXT PRIMARY KEY)"
+
 #define DELETE_EPHEMERAL_FOR_PEERID                 \
     "DELETE FROM EphemeralNoob WHERE PeerId=?;      \
     DELETE FROM EphemeralState WHERE PeerId=?;"
@@ -183,24 +190,11 @@
 #define QUERY_PERSISTENTSTATE                       \
     "SELECT * FROM PersistentState WHERE PeerId=?;"
 
-
-#define CREATE_RADIUS_TABLE                         \
-    "CREATE TABLE IF NOT EXISTS radius(             \
-    called_st_id TEXT,                              \
-    calling_st_id  TEXT,                            \
-    NAS_id TEXT,                                    \
-    user_name TEXT PRIMARY KEY)"
-
 #define EAP_NOOB_FREE(_D)                           \
     if (_D) {                                       \
         os_free(_D);                                \
         (_D) = NULL;                                \
     }
-
-#define EAP_NOOB_FREE_MALLOC(_D,_l)                 \
-    EAP_NOOB_FREE(_D)                               \
-    (_D)=os_malloc(_l)
-
 
  /* Flag used during KDF and MAC generation */
 enum {COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW};

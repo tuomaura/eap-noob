@@ -325,7 +325,7 @@ res.json({"status":"Success"});
 // =====================================
 app.get('/profile', isLoggedIn, function(req, res) {
     var userDetails = new Array();
-    var deviceDetails = new Array();
+    deviceDetails = new Array();
     var PeerInfo_row, PeerInfo_j;
     var i,j;
     var d = new Date();
@@ -346,22 +346,22 @@ app.get('/profile', isLoggedIn, function(req, res) {
                                     user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage')
                                 });
                             } else if (rows2.length > 0) {
-                                deviceDetails[j] = new Object();
+                                global.deviceDetails[j] = new Object();
                                 deviceDetails[j].peer_id = row0.PeerId;
                                 PeerInfo_row = rows2;
                                 PeerInfo_j= JSON.parse(PeerInfo_row[0]['PeerInfo']);
-                                deviceDetails[j].peer_name = PeerInfo_j['Make'];
-                                deviceDetails[j].peer_num = PeerInfo_j['Serial'];
+                                global.deviceDetails[j].peer_name = PeerInfo_j['Make'];
+                                global.deviceDetails[j].peer_num = PeerInfo_j['Serial'];
                                 j++;
                             }
                         });
                     } else if (rows1.length > 0 ) {
-                        deviceDetails[j] = new Object();
-                        deviceDetails[j].peer_id = row0.PeerId;
+                        global.deviceDetails[j] = new Object();
+                        global.deviceDetails[j].peer_id = row0.PeerId;
                         PeerInfo_row = rows1;
                         PeerInfo_j= JSON.parse(PeerInfo_row[0]['PeerInfo']);
-                        deviceDetails[j].peer_name = PeerInfo_j['Make'];
-                        deviceDetails[j].peer_num = PeerInfo_j['Serial'];
+                        global.deviceDetails[j].peer_name = PeerInfo_j['Make'];
+                        global.deviceDetails[j].peer_num = PeerInfo_j['Serial'];
                         j++;
                     }
                 });
@@ -373,7 +373,7 @@ app.get('/profile', isLoggedIn, function(req, res) {
             });
         }
     });
-    console.log(deviceDetails);
+    console.log(global.deviceDetails);
     res.render('profile.ejs', {
         user : req.user, userInfo :'', deviceInfo : deviceDetails, url : configDB.url,  message: req.flash('profileMessage')
     });
