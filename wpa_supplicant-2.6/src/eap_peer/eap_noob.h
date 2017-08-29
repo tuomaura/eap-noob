@@ -7,14 +7,10 @@
 
 /* All the pre-processors of EAP-NOOB */
 
-#define MAX_PATH_LEN                256
 #define MAX_QUERY_LEN               2048
-#define SHORT_QUERY_LEN             500
-#define DOMAIN                      "@eap-noob.net"
 #define DEFAULT_REALM               "eap-noob.net"
 #define VERSION_ONE                 1
 #define SUITE_ONE                   1
-#define TABLE_NAME                  "connections"
 #define DB_NAME                     "peer_connection_db"
 #define NOOB_LEN                    16
 #define NOOBID_LEN                  16
@@ -26,13 +22,12 @@
 #define ALGORITHM_ID_LEN            8
 #define FORMAT_BASE64URL            1
 
-/*MAX values for the fields*/
+/* MAX values for the fields */
 #define MAX_SUP_VER             1
 #define MAX_SUP_CSUITES         1
 #define MAX_PEER_ID_LEN         22
 #define MAX_CONF_LEN            500
 #define MAX_INFO_LEN            500
-#define MAX_LINE_SIZE           1000
 
 #define KDF_LEN                 288
 #define MSK_LEN                 64
@@ -42,10 +37,8 @@
 #define KMS_LEN                 32
 #define KMP_LEN                 32
 #define MAC_LEN                 16
-#define FIXED_LENGTH            6
 #define MAX_X25519_LEN          48
 
-#define HASH_LEN                16
 #define NUM_OF_STATES           5
 #define MAX_MSG_TYPES           8
 
@@ -141,6 +134,7 @@
     Z BLOB,                                         \
     MacInput TEXT,                                  \
     creation_time  BIGINT,                          \
+    ErrorCode INT,                                  \
     PeerState INTEGER);                             \
                                                     \
     CREATE TABLE IF NOT EXISTS EphemeralNoob(       \
@@ -164,9 +158,11 @@
     creation_time BIGINT,                           \
     last_used_time BIGINT)"
 
+/*
 #define DELETE_EPHEMERAL_FOR_SSID                   \
     "DELETE FROM EphemeralNoob WHERE Ssid=?;        \
     DELETE FROM EphemeralState WHERE Ssid=?;"
+*/
 
 #define DELETE_EPHEMERAL_FOR_ALL                    \
     "DELETE FROM EphemeralNoob;                     \
@@ -188,8 +184,7 @@
         (_D) = NULL;                                \
     }
 
-enum {UNREGISTERED_STATE, WAITING_FOR_OOB_STATE, OOB_RECEIVED_STATE,
-      RECONNECTING_STATE, REGISTERED_STATE};
+enum {UNREGISTERED_STATE, WAITING_FOR_OOB_STATE, OOB_RECEIVED_STATE, RECONNECTING_STATE, REGISTERED_STATE};
 
 /* Flag used during KDF and MAC generation */
 enum {COMPLETION_EXCHANGE, RECONNECT_EXCHANGE, RECONNECT_EXCHANGE_NEW};
