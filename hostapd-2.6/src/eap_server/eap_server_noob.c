@@ -1461,7 +1461,7 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_noob_server_context * d
     json_t * req_obj = NULL;
     struct wpabuf * req = NULL;
     char * mac_b64 = NULL, * req_json = NULL;
-    u8 * mac = NULL; size_t len = 0 ;
+    u8 * mac = NULL; size_t len = 0; int err = 0;
 
     if (NULL == data) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Server context NULL in %s", __func__);
@@ -1506,7 +1506,7 @@ static struct wpabuf * eap_noob_req_type_three(struct eap_noob_server_context * 
     json_t * req_obj = NULL;
     struct wpabuf *req = NULL;
     char * req_json = NULL;
-    size_t len = 0;
+    size_t len = 0; int err = 0;
     struct timespec time;
 
     if (NULL == data) {
