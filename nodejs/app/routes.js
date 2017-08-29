@@ -325,14 +325,23 @@ res.json({"status":"Success"});
 // =====================================
 app.get('/profile', isLoggedIn, function(req, res) {
     var userDetails = new Array();
-    deviceDetails = new Array();
-    var PeerInfo_row, PeerInfo_j;
-    var i,j;
+    var PeerInfo_row, PeerInfo_j, PeerCount = 0;
     var d = new Date();
     var seconds = Math.ceil(d.getTime() / 1000);
     var val = 0;
     var dev_status = ['Up to date','Update required','Obsolete', 'Update available!']
-    i = 0; j = 0;
+    var deviceDetails = new Array();
+    var db;
+
+    function callback(dDetails, Peers) {
+        deviceDetails.push(dDetails);
+        if (deviceDetails.length == Peers) {
+            db.close();
+            res.render('profile.ejs', {
+                user : req.user, userInfo :'', deviceInfo : deviceDetails, url : configDB.url,  message: req.flash('profileMessage')
+            });
+        }
+    }
     db = new sqlite3.Database(conn_str);
     db.all('SELECT PeerId From UserDevices WHERE Username=?', req.user.username, function(err, rows0) {
         if(!err) {
@@ -346,23 +355,23 @@ app.get('/profile', isLoggedIn, function(req, res) {
                                     user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage')
                                 });
                             } else if (rows2.length > 0) {
-                                global.deviceDetails[j] = new Object();
-                                deviceDetails[j].peer_id = row0.PeerId;
+                                deviceInfo = new Object();
+                                deviceInfo.peer_id = row0.PeerId;
                                 PeerInfo_row = rows2;
                                 PeerInfo_j= JSON.parse(PeerInfo_row[0]['PeerInfo']);
-                                global.deviceDetails[j].peer_name = PeerInfo_j['Make'];
-                                global.deviceDetails[j].peer_num = PeerInfo_j['Serial'];
-                                j++;
+                                deviceInfo.peer_name = PeerInfo_j['Make'];
+                                deviceInfo.peer_num = PeerInfo_j['Serial'];
+                                callback(deviceInfo, rows0.length);
                             }
                         });
                     } else if (rows1.length > 0 ) {
-                        global.deviceDetails[j] = new Object();
-                        global.deviceDetails[j].peer_id = row0.PeerId;
+                        deviceInfo = new Object();
+                        deviceInfo.peer_id = row0.PeerId;
                         PeerInfo_row = rows1;
                         PeerInfo_j= JSON.parse(PeerInfo_row[0]['PeerInfo']);
-                        global.deviceDetails[j].peer_name = PeerInfo_j['Make'];
-                        global.deviceDetails[j].peer_num = PeerInfo_j['Serial'];
-                        j++;
+                        deviceInfo.peer_name = PeerInfo_j['Make'];
+                        deviceInfo.peer_num = PeerInfo_j['Serial'];
+                        callback(deviceInfo, rows0.length);
                     }
                 });
             });
@@ -373,10 +382,9 @@ app.get('/profile', isLoggedIn, function(req, res) {
             });
         }
     });
-    console.log(global.deviceDetails);
-    res.render('profile.ejs', {
-        user : req.user, userInfo :'', deviceInfo : deviceDetails, url : configDB.url,  message: req.flash('profileMessage')
-    });
+    /* res.render('profile.ejs', {
+        user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage')
+    }); */
 });
                 //db.all('SELECT * from EphemeralState WHERE PeerId=?', row0.PeerId, function(err, rows1) {
                 /* if(!err1){
@@ -804,8 +812,8 @@ app.get('/stateUpdate',isLoggedIn, function(req, res) {
         console.log('req received');
         db = new sqlite3.Database(conn_str);
         db.get('SELECT serv_state,errorCode FROM peers_connected WHERE PeerID = ?', peer_id, function(err, row) {
-
             db.close();
+
             if (!row){res.json({"state": "No record found.","state_num":"0"});}
             else if(row.errorCode) { res.json({"state":error_info[parseInt(row.errorCode)], "state_num":"0"}); console.log(row.errorCode) }
             else if(parseInt(row.serv_state) == parseInt(state)) {res.json({"state":""});}
