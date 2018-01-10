@@ -66,8 +66,8 @@ var server = ws.createServer(property, function (conn) {
 	if(msg['type'] == "softwareUpdated"){
 		console.log("Updated received");
     		var serverDB = new sqlite3.Database(conn_str);
-		query = 'UPDATE peers_connected set DevUpdate = 0 where PeerId = ?';
-                serverDB.run(query, msg['peerId']);
+		//query = 'UPDATE peers_connected set DevUpdate = 0 where PeerId = ?';
+        //        serverDB.run(query, msg['peerId']);
 	}
     });
 
@@ -86,8 +86,8 @@ var server = ws.createServer(property, function (conn) {
 			console.log("error" + err1);
 		}else{
 			serverDB.get('select deviceId from devicesSocket where peerId = ?', peer_id, function (err2,data1){
-				query = 'UPDATE peers_connected set DevUpdate = 3 where PeerId = "' + peer_id + '"';
-                		serverDB.run(query);
+				//query = 'UPDATE peers_connected set DevUpdate = 3 where PeerId = "' + peer_id + '"';
+               // 		serverDB.run(query);
                         	if (data1 != undefined) {
                         		console.log("inserted: " + data1.deviceId);
                         		connMap[data1.deviceId] = conn;
@@ -134,39 +134,27 @@ require('./app/routes.js')(app, passport); // load our routes and pass in our ap
         db.run('DROP TABLE IF EXISTS devicesSocket');
         //db.run('DROP TABLE IF EXISTS logs');
         //db.run('DROP TABLE IF EXISTS users');
-  	db.run('UPDATE OR IGNORE peers_connected set DevUpdate = 0');	
+  	//db.run('UPDATE OR IGNORE peers_connected set DevUpdate = 0');	
   	db.run('CREATE TABLE  IF NOT EXISTS devicesSocket ( deviceId INTEGER PRIMARY KEY AUTOINCREMENT, peerId TEXT, userName TEXT, UNIQUE(peerId));');	
-
-	
   	db.run('CREATE TABLE  IF NOT EXISTS logs ( id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT, srcMAC TEXT, src TEXT, dst TEXT, UNIQUE(srcMAC,dst));');	
-
   	db.run('CREATE TABLE  IF NOT EXISTS roles ( role_id INTEGER PRIMARY KEY, roleDesc TEXT);');	
 	db.run('INSERT INTO roles VALUES (1,"Student")');
 	db.run('INSERT INTO roles VALUES (2, "Professor")');
 	db.run('INSERT INTO roles VALUES (3, "Admin")');
-
   	db.run('CREATE TABLE  IF NOT EXISTS roleAccessLevel ( id INTEGER PRIMARY KEY AUTOINCREMENT, role INTEGER, accessLevel INTEGER, FOREIGN KEY(role) REFERENCES roles(role_id));');
 	db.run('INSERT INTO roleAccessLevel(role,accessLevel) VALUES (1, 1)');
 	db.run('INSERT INTO roleAccessLevel(role,accessLevel) VALUES (2, 2)');
 	db.run('INSERT INTO roleAccessLevel(role,accessLevel) VALUES (3, 4)');
-
 	db.run('CREATE TABLE IF NOT EXISTS fqdnACLevel (id INTEGER PRIMARY KEY AUTOINCREMENT, fqdn TEXT, accessLevel INTEGER, FOREIGN KEY(accessLevel) REFERENCES roleAccessLevel(accessLevel))');
 	db.run('INSERT INTO fqdnACLevel(fqdn,accessLevel) VALUES ("iot.aalto.fi", 2)');
 	db.run('INSERT INTO fqdnACLevel(fqdn,accessLevel) VALUES ("guest.aalto.fi", 1)');
-
   	db.run('CREATE TABLE  IF NOT EXISTS roleBasedAC ( id INTEGER PRIMARY KEY AUTOINCREMENT, calledSID TEXT, fqdn TEXT, FOREIGN KEY (fqdn) REFERENCES fqdnACLevel(fqdn));');
 	db.run('INSERT INTO roleBasedAC(calledSID,fqdn) VALUES ("6C-19-8F-83-C2-90:Noob2","iot.aalto.fi")');
 	db.run('INSERT INTO roleBasedAC(calledSID,fqdn) VALUES ("6C-19-8F-83-C2-80:Noob1","guest.aalto.fi")');
-  	
 	db.run('CREATE TABLE IF NOT EXISTS radius (called_st_id TEXT, calling_st_id  TEXT, NAS_id TEXT, user_name TEXT PRIMARY KEY);');	
-
-
   	db.run('CREATE TABLE  IF NOT EXISTS users ( id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, role INTEGER DEFAULT 1, isAdmin BOOLEAN DEFAULT FALSE,  FOREIGN KEY(role) REFERENCES roles(role_id) );');
   	db.run('CREATE TABLE  IF NOT EXISTS devices (PeerID TEXT, serv_state INTEGER, PeerInfo TEXT, Noob TEXT, Hoob TEXT, Hint TEXT,errorCode INTEGER ,UserName TEXT, PRIMARY KEY (PeerID, UserName));');
-
-
-
-
+    db.run('CREATE TABLE IF NOT EXISTS UserDevices (Username TEXT,  PeerId TEXT);');
   	db.close();
   });
 
