@@ -4,20 +4,20 @@
 About
 -------- 
 
-This repository is an implementation of new EAP method named EAP_NOOB. The new method is for secure bootstrapping of IOT appliances. The specification for EAP_NOOB can be found in [this](https://datatracker.ietf.org/doc/draft-aura-eap-noob/?include_text=1) IETF draft.
+This repository is an implementation of EAP-NOOB. EAP-NOOB is an EAP method is for secure bootstrapping of IoT appliances. The specification for EAP-NOOB can be found at: https://datatracker.ietf.org/doc/draft-aura-eap-noob/?include_text=1.
 
-The implimentation consists of three separate applications.
+The implementation consists of three separate applications:
 
-Hostapd : Contains EAP_NOOB server side implementation and acts as an authenticator for the requesting IOT appliances.
+1. hostapd : Contains EAP-NOOB server side implementation (AAA server).
 
-WPA_Supplicant:  Contains EAP_NOOB peer side implementation and contacts an EAP server through an AP to get authenticated. 
+2. wpa_supplicant:  Contains EAP-NOOB peer/supplicant implementation. 
 
-Webserver:  It Is for maintaining the account information of all the users under a realm. The out of band message is sent from or gets delivered to this web server. This server is vital for associating the  authenticating device with a user account.
+3. NodeJS webserver:  Maintains users accounts and provides a front end for the database tracking the IoT appliances being bootstrapped. Out-of-band (OOB) messages encoded as URLs are sent to, or received from this web server. This server is vital for associating the appliance being bootstrapped with a registered user account.
 
 Licensing
 ------------       
- Copyright (c) 2017, Aalto University 
- All rights reserved. 
+Copyright (c) 2018, Aalto University 
+All rights reserved. 
  
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: 
 
@@ -29,117 +29,113 @@ Neither the name of the Aalto University nor the names of its contributors may b
  
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL AALTO UNIVERSITY BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  
- See CONTRIBUTORS for more information. 
+See CONTRIBUTORS for more information. 
 
 Setup
 -------
 
-	 -------                                --------------				       ---------
+	 -------                                --------------				                   ---------
 	| WPA_S | ---------------------------- | Access Point | ----------------------------- | Hostapd |
 	 -------                                --------------                                 ---------
 	   |                                                                                      |
 	   |                                                                                      | 
 	   |                                                                                      |
 	   |                                                                                      |
-	   |			                   ----------                                 ------------
+	   |			                           ----------                                 ------------
 	   |----–---------------------------------|OOB device| ------------------------------| Web server |
-		                                   ----------                                 ------------
+		                                       ----------                                 ------------
 
 
-	1) Access point is a wifi access point configured in WAP2-enterprise mode and OOB device is a device used by the user for delivering out of band message. An example OOB device is user's mobile phone.
-	
-	2) Webserver and hostapd should run on the same machine.
+The Access point is a Wi-Fi access point supporting WAP2-enterprise (IEEE 802.1x) authentication. OOB device is a helper device that may be used for delivering the out-of-band (OOB) message. An example OOB device is user's mobile phone.
 
 Dependencies
 -----------------  
 
-Following packages have to be installed before compiling any applications from  eapnoobimplimentation.
+Following packages have to be installed before compiling the EAP-NOOB code:
 
-Openssl-dev (OpenSSL dev library version 1.1.0e).
-libsqlite3-dev (Sqlite3 dev library).
-[Jansson](http://jansson.readthedocs.io/en/2.7/index.html).
-nodejs-legacy (NodeJS package).
-npm (node package manager)
+1. libssl-dev (minimum version 1.1.0e for elliptic curve X25519). 
+
+2. libsqlite3-dev (sqlite3). 
+
+3. Jansson (Package for JSON encoding/decoding http://jansson.readthedocs.io/en/2.7/index.html). 
+
+4. nodejs-legacy (NodeJS package). 
+
+5. npm (node package manager). 
 
 Compiling 
 --------------
  
 hostapd:
 
-1) Move to directory  hostapd-2.5/hostapd.	
+1) Move to directory  hostapd-2.6/hostapd.	
 2) Open build configuration file .config and set CONFIG_DRIVER_WIRED=y and CONFIG_EAP_OOB=y.	
-3) Now execute  		
-  	$ make
+3) Run $ make
 
 
 wpa_supplicant:
 
-1) Move to directory  wpa_supplicant-2.5/wpa_supplicant.	
+1) Move to directory  wpa_supplicant-2.6/wpa_supplicant.	
 2) Open build configuration file .config and set CONFIG_DRIVER_NL80211=y and CONFIG_EAP_OOB=Y. 	
-3) Now execute		
-	 $ make
+3) Run $ make
 
 
-Webserver: 
+webserver: 
 
 1) Move to folder nodejs	
-2) execute 	
-    $ npm install	
+2) Run	$ npm install	
     
 Configuration
 ---------------  
 
-Hostapd:
+The hostapd (AAA server) and the webserver interact with each other through a shared transactional database. For this interaction to correctly work, they both need to read and write to the same database file peer_connection_db.
 
-At location hostapd-2.5/hostapd edit file eapoob.conf to fill in relevant data like server URL, Server name etc...
+hostapd:
 
-Webserver: 
+At location hostapd-2.6/hostapd edit file eapoob.conf to configure parameters such server URL, Server name etc. For more information on configurable parameters, see Appendix B. Application-specific parameters in the Internet draft. 
 
-At location nodejs/config edit file "database.js" to fill in the relevant data like server URL and the path to database i.e. absolutes path to database file "peer_connection_db" inside hostapd-2.5/hostapd.
+webserver: 
 
-WPA_Supplicant:
+At location nodejs/config edit file "database.js" to fill in the relevant data like server URL and the path to the shared database i.e. absolutes path to database file "peer_connection_db" inside hostapd-2.6/hostapd. 
 
-At location wpa_supplicant-2.5/wpa_supplicant edit file eapoob.conf to fill in relevant data like peerinfo etc...
+wpa_Supplicant:
+
+At location wpa_supplicant-2.6/wpa_supplicant edit file eapoob.conf to fill in relevant configuration information such as peerinfo etc. For more information on configurable parameters, see Appendix B. Application-specific parameters in the Internet draft. 
 
 Execution
 ------------  
 
 Hostapd:
 
-At location hostapd-2.5/hostapd  execute
+At location hostapd-2.6/hostapd run the command:
 $  ./hostapd  hostapd.conf	
 
 Webserver: 
 
-At location nodejs execute	
+At location nodejs run the command:
 $ node server.js	
 
-WPA_Supplicant:
+wpa_supplicant:
 
-At location wpa_supplicant-2.5/wpa_supplicant execute	
+At location wpa_supplicant-2.6/wpa_supplicant run the command:
 $ ./wpa_auto_run.py	
 
-Note: 
-Before executing wpa_supplicant, the network manager of the host machine must be stopped. To stop network-manger execute,
-  $ sudo stop network-manger.	
+Note: Before executing wpa_supplicant, the network manager of the host machine must be stopped. To stop network-manger run the command $ sudo stop network-manger.	
 
-Alternatively a local AAA server can also be used between the Access point and the authenticator (hostapd). The local AAA server will relay the relevant radius message to the authenticator.  	
+Alternatively a local AAA server can also be used between the Access Point (AP) and the AAA server (hostapd). The local AAA server will relay the relevant radius message to the authenticator.  	
 
 Source Files
 -------------
-Files related to EAP-NOOB can be found at the following locations.
+Most of the source code for EAP-NOOB can be found at the following files:
 
-Hostapd:
+hostapd:
 
-1) eap-noob/hostapd-2.5/src/eap_server/eap_server_noob.c
+1) eap-noob/hostapd-2.6/src/eap_server/eap_server_noob.c
 
-2) eap-noob/hostapd-2.5/src/eap_server/eap_server_noob.h
+2) eap-noob/hostapd-2.6/src/eap_server/eap_server_noob.h
  
-WPA_supplicant:
+wpa_supplicant:
 
-1) eap-noob/wpa_supplicant-2.5/src/eap_peer/eap_noob.c
+1) eap-noob/wpa_supplicant-2.6/src/eap_peer/eap_noob.c
 
-2) eap-noob/wpa_supplicant-2.5/src/eap_peer/eap_noob.h
-
-
-
+2) eap-noob/wpa_supplicant-2.6/src/eap_peer/eap_noob.h
