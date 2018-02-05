@@ -4,9 +4,9 @@
 About
 -------- 
 
-This repository is an implementation of EAP-NOOB. EAP-NOOB is an EAP method is for secure bootstrapping of IoT appliances. The specification for EAP-NOOB can be found at: https://datatracker.ietf.org/doc/draft-aura-eap-noob/?include_text=1.
+This repository is an implementation of EAP-NOOB. It is an EAP method for secure bootstrapping of IoT appliances. The specification for EAP-NOOB can be found at: https://datatracker.ietf.org/doc/draft-aura-eap-noob/?include_text=1.
 
-The implementation consists of three separate applications:
+This implementation consists of three separate applications:
 
 1. hostapd : Contains EAP-NOOB server side implementation (AAA server).
 
@@ -57,7 +57,7 @@ Following packages have to be installed before compiling the EAP-NOOB code:
 
 2. libsqlite3-dev (sqlite3). 
 
-3. Jansson (Package for JSON encoding/decoding http://jansson.readthedocs.io/en/2.7/index.html). 
+3. libjansson-dev (Package for JSON encoding/decoding http://jansson.readthedocs.io/en/2.7/index.html). 
 
 4. nodejs-legacy (NodeJS package). 
 
@@ -105,24 +105,21 @@ At location wpa_supplicant-2.6/wpa_supplicant edit file eapoob.conf to fill in r
 Execution
 ------------  
 
-Hostapd:
+1. hostapd: At location hostapd-2.6/hostapd run the command:
 
-At location hostapd-2.6/hostapd run the command:
-$  ./hostapd  hostapd.conf	
+	$  ./hostapd  hostapd.conf	
 
-Webserver: 
+2. webserver: At location nodejs run the command:
 
-At location nodejs run the command:
-$ node server.js	
+	$ node server.js	
 
-wpa_supplicant:
+3. wpa_supplicant: At location wpa_supplicant-2.6/wpa_supplicant run the command:
 
-At location wpa_supplicant-2.6/wpa_supplicant run the command:
-$ ./wpa_auto_run.py	
+	$ ./wpa_auto_run.py	
 
 Note: Before executing wpa_supplicant, the network manager of the host machine must be stopped. To stop network-manger run the command $ sudo stop network-manger.	
 
-Alternatively a local AAA server can also be used between the Access Point (AP) and the AAA server (hostapd). The local AAA server will relay the relevant radius message to the authenticator.  	
+A local AAA server can also be used between the Access Point (AP) and the AAA server (hostapd). This would typically happen in enterprise deployments. The local AAA server should be configured to forward all authentication requests containing the Network Access Identifier (NAI) of the form (eap-noob.net) to the hostapd server.  	
 
 Source Files
 -------------
