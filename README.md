@@ -43,7 +43,7 @@ Setup
 	   |                                                                                      |
 	   |                                       ----------                                 ------------
 	   |----–---------------------------------|OOB device| ------------------------------| Web server |
-		                                       ----------                                 ------------
+                                               ----------                                 ------------
 
 
 The Access point is a Wi-Fi access point supporting WAP2-enterprise (IEEE 802.1x) authentication. OOB device is a helper device that may be used for delivering the out-of-band (OOB) message. An example OOB device is user's mobile phone.
