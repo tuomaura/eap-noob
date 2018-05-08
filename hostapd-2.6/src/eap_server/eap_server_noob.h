@@ -8,7 +8,7 @@
 #include <time.h>
 
 /* Configuration file */
-#define CONF_FILE               "eapoob.conf"
+#define CONF_FILE               "eapnoob.conf"
 
 /**
  * All the pre-processors of EAP-NOOB
@@ -313,8 +313,9 @@ struct eap_noob_peer_data {
 };
 
 struct eap_noob_server_config_params {
-    char * Serv_name;
-    char * Serv_URL;
+    char * ServerId;
+    char * ServerName;
+    char * ServerURL;
 };
 
 struct eap_noob_server_data {
