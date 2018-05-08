@@ -345,8 +345,8 @@ else
 OBJS += ../src/l2_packet/l2_packet_none.o
 endif
 
-ifdef CONFIG_EAP_OOB
-CFLAGS += -DEAP_SERVER_OOB
+ifdef CONFIG_EAP_NOOB
+CFLAGS += -DEAP_SERVER_NOOB
 OBJS += ../src/eap_server/eap_server_noob.o
 LIBS += -lsqlite3
 LIBS += -ljansson
