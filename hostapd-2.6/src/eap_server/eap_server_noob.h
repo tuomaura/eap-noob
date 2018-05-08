@@ -98,22 +98,23 @@
 
 #define ECDH_KDF_MAX            (1 << 30)
 
-#define PEERID_RCVD             0x0001
-#define DIRP_RCVD               0x0002
-#define CRYPTOSUITEP_RCVD       0x0004
-#define VERSION_RCVD            0x0008
-#define NONCE_RCVD              0x0010
-#define MAC_RCVD                0x0020
-#define PKEY_RCVD               0x0040
-#define INFO_RCVD               0x0080
-#define STATE_RCVD              0x0100
-#define MINSLP_RCVD             0x0200
-#define SERV_NAME_RCVD          0x0400
-#define SERV_URL_RCVD           0x0800
-#define NOOBID_RCVD             0x1000
-#define WE_COUNT_RCVD           0x2000
-#define REALM_RCVD              0x4000
-#define ENCODE_RCVD             0x8000
+#define PEERID_RCVD             0x000001
+#define DIRP_RCVD               0x000002
+#define CRYPTOSUITEP_RCVD       0x000004
+#define VERSION_RCVD            0x000008
+#define NONCE_RCVD              0x000010
+#define MAC_RCVD                0x000020
+#define PKEY_RCVD               0x000040
+#define INFO_RCVD               0x000080
+#define STATE_RCVD              0x000100
+#define MINSLP_RCVD             0x000200
+#define SERVER_ID_RCVD		0x000400
+#define SERVER_NAME_RCVD        0x000800
+#define SERVER_URL_RCVD         0x001000
+#define NOOBID_RCVD             0x002000
+#define WE_COUNT_RCVD           0x004000
+#define REALM_RCVD              0x008000
+#define ENCODE_RCVD             0x010000
 
 #define TYPE_ONE_PARAMS         (PEERID_RCVD|VERSION_RCVD|CRYPTOSUITEP_RCVD|DIRP_RCVD|INFO_RCVD)
 #define TYPE_TWO_PARAMS         (PEERID_RCVD|NONCE_RCVD|PKEY_RCVD)
@@ -124,7 +125,7 @@
 #define TYPE_SEVEN_PARAMS       (PEERID_RCVD|MAC_RCVD)
 #define TYPE_EIGHT_PARAMS       (PEERID_RCVD|NOOBID_RCVD)
 
-#define CONF_PARAMS             (DIRP_RCVD|CRYPTOSUITEP_RCVD|VERSION_RCVD|SERV_NAME_RCVD|SERV_URL_RCVD|WE_COUNT_RCVD|REALM_RCVD|ENCODE_RCVD)
+#define CONF_PARAMS             (DIRP_RCVD|CRYPTOSUITEP_RCVD|VERSION_RCVD|SERVER_ID_RCVD|SERVER_NAME_RCVD|SERVER_URL_RCVD|WE_COUNT_RCVD|REALM_RCVD|ENCODE_RCVD)
 #define DB_NAME                 "peer_connection_db"
 #define DEVICE_TABLE            "devices"
 #define PEER_TABLE              "peers_connected"
