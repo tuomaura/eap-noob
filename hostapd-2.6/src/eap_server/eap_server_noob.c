@@ -621,13 +621,17 @@ static void eap_noob_assign_config(char * conf_name, char * conf_value, struct e
         data->dir = (int) strtol(conf_value, NULL, 10); data->config_params |= DIRP_RCVD;
         wpa_printf(MSG_DEBUG, "EAP-NOOB: FILE  READ= %d", data->dir);
     }
-    else if (0 == strcmp("ServName", conf_name)) {
-        data->server_config_params->Serv_name = os_strdup(conf_value); data->config_params |= SERV_NAME_RCVD;
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: FILE  READ= %s\n", data->server_config_params->Serv_name);
+    else if (0 == strcmp("ServerId", conf_name)) {
+        data->server_config_params->ServerId = os_strdup(conf_value); data->config_params |= SERV_URL_RCVD;
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: FILE  READ= %s", data->server_config_params->ServerId);
     }
-    else if (0 == strcmp("ServUrl", conf_name)) {
-        data->server_config_params->Serv_URL = os_strdup(conf_value); data->config_params |= SERV_URL_RCVD;
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: FILE  READ= %s", data->server_config_params->Serv_URL);
+    else if (0 == strcmp("ServerName", conf_name)) {
+        data->server_config_params->ServerName = os_strdup(conf_value); data->config_params |= SERV_NAME_RCVD;
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: FILE  READ= %s\n", data->server_config_params->ServerName);
+    }
+    else if (0 == strcmp("ServerUrl", conf_name)) {
+        data->server_config_params->ServerURL = os_strdup(conf_value); data->config_params |= SERV_URL_RCVD;
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: FILE  READ= %s", data->server_config_params->ServerURL);
     }
     else if (0 == strcmp("Max_WE", conf_name)) {
         server_conf.max_we_count = (int) strtol(conf_value, NULL, 10);
@@ -743,8 +747,9 @@ static json_t * eap_noob_serverinfo(struct eap_noob_server_config_params * data)
         return NULL;
     }
     err -= (NULL == (info_obj = json_object()));
-    err -= (NULL == (namejson = json_string(data->Serv_name)));
-    err -= (NULL == (urljson = json_string(data->Serv_URL)));
+    err -= (NULL == (namejson = json_string(data->ServerId)));
+    err -= (NULL == (namejson = json_string(data->ServerName)));
+    err -= (NULL == (urljson = json_string(data->ServerURL)));
     err += json_object_set_new(info_obj, SERVERINFO_NAME, namejson);
     err += json_object_set_new(info_obj, SERVERINFO_URL, urljson);
     err -= (NULL == (serverinfo = json_dumps(info_obj, JSON_COMPACT|JSON_PRESERVE_ORDER)));
@@ -2716,8 +2721,9 @@ static void eap_noob_free_ctx(struct eap_noob_server_context * data)
     if (serv) {
         EAP_NOOB_FREE(serv->serverinfo);
         if (serv->server_config_params) {
-            EAP_NOOB_FREE(serv->server_config_params->Serv_name);
-            EAP_NOOB_FREE(serv->server_config_params->Serv_URL);
+            EAP_NOOB_FREE(serv->server_config_params->ServerId);
+            EAP_NOOB_FREE(serv->server_config_params->ServerName);
+            EAP_NOOB_FREE(serv->server_config_params->ServerURL);
             os_free(serv->server_config_params);
             serv->server_config_params = NULL;
         }
