@@ -998,6 +998,7 @@ static void eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
         data->peer_attr->kdf_out->Kms = os_zalloc(KMS_LEN);
         data->peer_attr->kdf_out->Kmp = os_zalloc(KMP_LEN);
         data->peer_attr->kdf_out->Kz = os_zalloc(KZ_LEN);
+        data->peer_attr->kdf_out->MethodId = os_zalloc(METHOD_ID_LEN);
 
         memcpy(data->peer_attr->kdf_out->msk, out, MSK_LEN);
         counter += MSK_LEN;
@@ -1011,6 +1012,8 @@ static void eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
         counter += KMP_LEN;
         memcpy(data->peer_attr->kdf_out->Kz, out + counter, KZ_LEN);
         counter += KZ_LEN;
+        memcpy(data->peer_attr->kdf_out->MethodId, out + counter, METHOD_ID_LEN);
+        counter += METHOD_ID_LEN;
         os_free(out);
     } else {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Error in allocating memory, %s", __func__);
@@ -2559,6 +2562,35 @@ static u8 * eap_noob_getKey(struct eap_sm * sm, void * priv, size_t * len)
     return key;
 }
 
+
+/**
+ * eap_noob_get_session_id : gets the session id if available
+ * @sm : eap statemachine context
+ * @priv : eap noob data
+ * @len : session id len
+ * Returns Session Id or NULL
+**/
+static u8 * eap_noob_get_session_id(struct eap_sm *sm, void *priv, size_t *len)
+{
+    struct eap_noob_server_context *data = NULL;
+    u8 *session_id = NULL;
+    wpa_printf(MSG_DEBUG, "EAP-NOOB:Get Session ID called");
+
+    if ((data->peer_attr->server_state != REGISTERED_STATE) || (!data->peer_attr->kdf_out->MethodId))
+        return NULL;
+    
+    *len = 1 + METHOD_ID_LEN;
+    session_id = os_malloc(*len);
+    if (session_id == NULL)
+	return NULL;
+
+    session_id[0] = EAP_TYPE_NOOB;
+    os_memcpy(session_id + 1, data->peer_attr->kdf_out->MethodId, METHOD_ID_LEN);
+    wpa_hexdump(MSG_DEBUG, "EAP-NOOB: Derived Session-Id", session_id, *len);
+
+    return session_id;
+}
+
 /**
  * eap_noob_get_emsk : gets the msk if available
  * @sm : eap statemachine context
@@ -2770,6 +2802,7 @@ static void eap_noob_free_ctx(struct eap_noob_server_context * data)
             EAP_NOOB_FREE(peer->kdf_out->Kms);
             EAP_NOOB_FREE(peer->kdf_out->Kmp);
             EAP_NOOB_FREE(peer->kdf_out->Kz);
+            EAP_NOOB_FREE(peer->kdf_out->MethodId);
             os_free(peer->kdf_out); peer->kdf_out = NULL;
         }
         os_free(peer); peer = NULL;
@@ -2848,6 +2881,7 @@ int eap_server_noob_register(void)
     eap->getKey = eap_noob_getKey;
     eap->get_emsk = eap_noob_get_emsk;
     eap->isSuccess = eap_noob_isSuccess;
+    eap->getSessionId = eap_noob_get_session_id;
     eap->getTimeout = eap_noob_getTimeout;
 
     return eap_server_method_register(eap);

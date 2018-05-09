@@ -42,6 +42,7 @@
 #define MAC_LEN                 16
 #define MAX_X25519_LEN          48
 #define HASH_LEN                16
+#define METHOD_ID_LEN		32
 
 /* Valid or Invalid states */
 #define INVALID                 0
@@ -231,6 +232,7 @@ struct eap_noob_ecdh_kdf_out {
     u8 * Kms;
     u8 * Kmp;
     u8 * Kz;
+    u8 * MethodId;
 };
 
 struct eap_noob_ecdh_kdf_nonce {
