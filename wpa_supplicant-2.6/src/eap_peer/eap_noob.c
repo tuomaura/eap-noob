@@ -2601,7 +2601,7 @@ static u8 * eap_noob_get_session_id(struct eap_sm *sm, void *priv, size_t *len)
 
     session_id[0] = EAP_TYPE_NOOB;
 
-    os_memcpy(session_id + 1, data->server_attr->kdf_out->MethodId, 1 + METHOD_ID_LEN);
+    os_memcpy(session_id + 1, data->server_attr->kdf_out->MethodId, METHOD_ID_LEN);
     *len = 1 + METHOD_ID_LEN;
 
     return session_id;
