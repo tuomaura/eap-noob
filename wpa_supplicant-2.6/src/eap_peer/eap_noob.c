@@ -198,6 +198,7 @@ static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state)
         data->server_attr->kdf_out->msk = os_zalloc(MSK_LEN);
         data->server_attr->kdf_out->emsk = os_zalloc(EMSK_LEN);
         data->server_attr->kdf_out->amsk = os_zalloc(AMSK_LEN);
+        data->server_attr->kdf_out->MethodId = os_zalloc(METHOD_ID_LEN);        
         data->server_attr->kdf_out->Kms = os_zalloc(KMS_LEN);
         data->server_attr->kdf_out->Kmp = os_zalloc(KMP_LEN);
         data->server_attr->kdf_out->Kz = os_zalloc(KZ_LEN);
@@ -208,6 +209,8 @@ static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state)
         counter += EMSK_LEN;
         memcpy(data->server_attr->kdf_out->amsk, out + counter, AMSK_LEN);
         counter += AMSK_LEN;
+        memcpy(data->server_attr->kdf_out->MethodId, out + counter, METHOD_ID_LEN);
+        counter += METHOD_ID_LEN;        
         memcpy(data->server_attr->kdf_out->Kms, out + counter, KMS_LEN);
         counter += KMS_LEN;
         memcpy(data->server_attr->kdf_out->Kmp, out + counter, KMP_LEN);
@@ -2165,6 +2168,7 @@ static void eap_noob_free_ctx(struct eap_noob_peer_context * data)
             EAP_NOOB_FREE(serv->kdf_out->msk);
             EAP_NOOB_FREE(serv->kdf_out->emsk);
             EAP_NOOB_FREE(serv->kdf_out->amsk);
+            EAP_NOOB_FREE(serv->kdf_out->MethodId);            
             EAP_NOOB_FREE(serv->kdf_out->Kms);
             EAP_NOOB_FREE(serv->kdf_out->Kmp);
             EAP_NOOB_FREE(serv->kdf_out->Kz);
@@ -2574,6 +2578,37 @@ static u8 * eap_noob_get_emsk(struct eap_sm *sm, void *priv, size_t *len)
     return key;
 }
 
+
+/**
+ * eap_noob_get_session_id : gets the session id if available
+ * @sm : eap statemachine context
+ * @priv : eap noob data
+ * @len : session id len
+ * Returns Session Id or NULL
+**/
+static u8 * eap_noob_get_session_id(struct eap_sm *sm, void *priv, size_t *len)
+{
+    struct eap_noob_peer_context *data = priv;
+    u8 *session_id=NULL;
+    wpa_printf(MSG_DEBUG,"EAP-NOOB:Get Session ID Called");
+    if ((data->server_attr->state != REGISTERED_STATE) || (!data->server_attr->kdf_out->MethodId))
+        return NULL;
+
+    *len = 1 + METHOD_ID_LEN;
+    session_id = os_malloc(*len);
+    if (session_id == NULL)
+    return NULL;
+
+    session_id[0] = EAP_TYPE_NOOB;
+
+    os_memcpy(session_id + 1, data->server_attr->kdf_out->MethodId, 1 + METHOD_ID_LEN);
+    *len = 1 + METHOD_ID_LEN;
+
+    return session_id;
+}
+
+
+
 /**
  * eap_noob_deinit_for_reauth : deinitialise the reauth context
  * @sm : eap statemachine context
@@ -2638,6 +2673,7 @@ int eap_peer_noob_register(void)
     eap->isKeyAvailable = eap_noob_isKeyAvailable;
     eap->getKey = eap_noob_getKey;
     eap->get_emsk = eap_noob_get_emsk;
+    eap->getSessionId = eap_noob_get_session_id;
     eap->has_reauth_data = eap_noob_has_reauth_data;
     eap->init_for_reauth = eap_noob_init_for_reauth;
     eap->deinit_for_reauth = eap_noob_deinit_for_reauth;

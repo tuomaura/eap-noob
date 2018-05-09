@@ -33,6 +33,7 @@
 #define MSK_LEN                 64
 #define EMSK_LEN                64
 #define AMSK_LEN                64
+#define METHOD_ID_LEN           32
 #define KZ_LEN                  32
 #define KMS_LEN                 32
 #define KMP_LEN                 32
@@ -223,6 +224,7 @@ struct eap_noob_ecdh_kdf_out {
     u8 * msk;
     u8 * emsk;
     u8 * amsk;
+    u8 * MethodId;    
     u8 * Kms;
     u8 * Kmp;
     u8 * Kz;

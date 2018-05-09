@@ -42,7 +42,7 @@
 #define MAC_LEN                 16
 #define MAX_X25519_LEN          48
 #define HASH_LEN                16
-#define METHOD_ID_LEN		32
+#define METHOD_ID_LEN		    32
 
 /* Valid or Invalid states */
 #define INVALID                 0
