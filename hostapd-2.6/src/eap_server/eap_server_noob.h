@@ -228,10 +228,10 @@ struct eap_noob_ecdh_kdf_out {
     u8 * msk;
     u8 * emsk;
     u8 * amsk;
+    u8 * MethodId;
     u8 * Kms;
     u8 * Kmp;
     u8 * Kz;
-    u8 * MethodId;
 };
 
 struct eap_noob_ecdh_kdf_nonce {
