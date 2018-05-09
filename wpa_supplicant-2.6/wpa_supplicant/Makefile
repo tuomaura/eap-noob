@@ -584,14 +584,14 @@ NEED_AES_CBC=y
 endif
 
 
-ifdef CONFIG_EAP_OOB
-# EAP-OOB
-ifeq ($(CONFIG_EAP_OOB), dyn)
-CFLAGS += -DEAP_OOB_DYNAMIC
+ifdef CONFIG_EAP_EOOB
+# EAP-NOOB
+ifeq ($(CONFIG_EAP_NOOB), dyn)
+CFLAGS += -DEAP_NOOB_DYNAMIC
 CFLAGS += -DINT_DISP="\"eth0\""
 EAPDYN += ../src/eap_peer/eap_noob.so
 else
-CFLAGS += -DEAP_OOB
+CFLAGS += -DEAP_NOOB
 CFLAGS += -DINT_DISP="\"eth0\""
 OBJS += ../src/eap_peer/eap_noob.o
 endif
