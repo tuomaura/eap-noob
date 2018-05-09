@@ -990,10 +990,10 @@ static void eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
         data->peer_attr->kdf_out->msk = os_zalloc(MSK_LEN);
         data->peer_attr->kdf_out->emsk = os_zalloc(EMSK_LEN);
         data->peer_attr->kdf_out->amsk = os_zalloc(AMSK_LEN);
+        data->peer_attr->kdf_out->MethodId = os_zalloc(METHOD_ID_LEN);
         data->peer_attr->kdf_out->Kms = os_zalloc(KMS_LEN);
         data->peer_attr->kdf_out->Kmp = os_zalloc(KMP_LEN);
         data->peer_attr->kdf_out->Kz = os_zalloc(KZ_LEN);
-        data->peer_attr->kdf_out->MethodId = os_zalloc(METHOD_ID_LEN);
 
         memcpy(data->peer_attr->kdf_out->msk, out, MSK_LEN);
         counter += MSK_LEN;
@@ -1001,14 +1001,14 @@ static void eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
         counter += EMSK_LEN;
         memcpy(data->peer_attr->kdf_out->amsk, out + counter, AMSK_LEN);
         counter += AMSK_LEN;
+        memcpy(data->peer_attr->kdf_out->MethodId, out + counter, METHOD_ID_LEN);
+        counter += METHOD_ID_LEN;
         memcpy(data->peer_attr->kdf_out->Kms, out + counter, KMS_LEN);
         counter += KMS_LEN;
         memcpy(data->peer_attr->kdf_out->Kmp, out + counter, KMP_LEN);
         counter += KMP_LEN;
         memcpy(data->peer_attr->kdf_out->Kz, out + counter, KZ_LEN);
         counter += KZ_LEN;
-        memcpy(data->peer_attr->kdf_out->MethodId, out + counter, METHOD_ID_LEN);
-        counter += METHOD_ID_LEN;
         os_free(out);
     } else {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Error in allocating memory, %s", __func__);
@@ -2793,10 +2793,10 @@ static void eap_noob_free_ctx(struct eap_noob_server_context * data)
             EAP_NOOB_FREE(peer->kdf_out->msk);
             EAP_NOOB_FREE(peer->kdf_out->emsk);
             EAP_NOOB_FREE(peer->kdf_out->amsk);
+            EAP_NOOB_FREE(peer->kdf_out->MethodId);
             EAP_NOOB_FREE(peer->kdf_out->Kms);
             EAP_NOOB_FREE(peer->kdf_out->Kmp);
             EAP_NOOB_FREE(peer->kdf_out->Kz);
-            EAP_NOOB_FREE(peer->kdf_out->MethodId);
             os_free(peer->kdf_out); peer->kdf_out = NULL;
         }
         os_free(peer); peer = NULL;
