@@ -584,7 +584,7 @@ NEED_AES_CBC=y
 endif
 
 
-ifdef CONFIG_EAP_EOOB
+ifdef CONFIG_EAP_NOOB
 # EAP-NOOB
 ifeq ($(CONFIG_EAP_NOOB), dyn)
 CFLAGS += -DEAP_NOOB_DYNAMIC
@@ -597,7 +597,6 @@ OBJS += ../src/eap_peer/eap_noob.o
 endif
 LIBS += -lsqlite3
 LIBS += -ljansson
-CHAP=y
 CONFIG_IEEE8021X_EAPOL=y
 endif
 
