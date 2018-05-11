@@ -1,0 +1,2 @@
+forall n:Pos . val(n <= 1)
+    => <true* . SERV_STATE(n, s2) . PEER_STATE(n, s2)> true

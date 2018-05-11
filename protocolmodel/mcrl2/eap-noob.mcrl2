@@ -1,0 +1,1199 @@
+sort
+    % === Data types of communication and cryptographic functions === %
+
+    % States 0 to 4, no state, error state (user action required)
+    State_t = struct s0 | s1 | s2 | s3 | s4 | no_state | error ? is_error;
+
+    % Types 0 to 8, no type, failure, success
+    Type_t = struct t0 | t1 | t2 | t3 | t4 | t5 | t6 | t7 | t8 | no_type | failure | success;
+
+    % Data types
+    Ver_t         = Nat;                 % Version
+    Ver_l         = List(Ver_t);         % List of versions
+    PeerId_t      = Nat;                 % Peer ID
+  % Realm_t       = Nat;                 % Realm
+    PK_t          = Nat;                 % Public key
+    Cryptosuite_t = Nat;                 % Cryptosuite
+    Cryptosuite_l = List(Cryptosuite_t); % List of cryptosuites
+    Dir_t         = Nat;                 % Direction
+    N_t           = Nat;                 % Nonce
+  % SleepTime_t   = Nat;                 % Sleep time
+    Noob_t        = Nat;                 % Noob
+    NoobId_t      = Nat;                 % Noob ID
+
+    % Server or Peer information
+    Info_t = struct no_info ? is_noinfo
+        | info        ? is_validinfo    % Valid server information
+        | invalidinfo ? is_invalidinfo  % Invalid server information
+    ;
+
+    % Error codes
+    Error_t = struct dropped_msg % Message dropped in the channel
+      % | E1001  % Invalid NAI or peer state
+      % | E1002  % Invalid message structure
+        | E1003  % Invalid data
+        | E1004  % Unexpected message type
+        | E1005  % Unexpected peer identifier
+        | E1006  % Unrecognised OOB message identifier
+      % | E1007  % Invalid ECDH key
+      % | E2001  % Unwanted peer
+        | E2002  % State mismatch, user action required
+        | E3001  % No mutually supported protocol version
+        | E3002  % No mutually supported cryptosuite
+        | E3003  % No mutually supported OOB direction
+        | E4001  % MAC verification failure
+      % | E5001  % Application-specific error
+        | E5002  % Invalid server info
+      % | E5003  % Invalid server URL
+        | E5004  % Invalid peer info
+    ;
+
+    % Cryptographic hash Hoob
+    Hoob_t = struct H(
+        Dir:Nat, Vers:Ver_l, Verp:Nat, PeerId:Nat, Cryptosuites:Cryptosuite_l, Dirs:Nat, ServerInfo:Info_t,
+        Cryptosuitep:Nat, Dirp:Nat, PeerInfo:Info_t, PKs:Nat, Ns:Nat, PKp:Nat, Np:Nat, Noob:Nat)
+    ;
+
+    % Cryptographic MAC
+    MAC_t = struct HMAC(K:K_t,
+        Dir:Nat, Vers:Ver_l, Verp:Nat, PeerId:Nat, Cryptosuites:Cryptosuite_l, Dirs:Nat, ServerInfo:Info_t,
+        Cryptosuitep:Nat, Dirp:Nat, PeerInfo:Info_t, PKs:Nat, Ns:Nat, PKp:Nat, Np:Nat, Noob:Nat)
+    ;
+
+    % ECDH key derivation (commutative)
+    ECDH_t = struct ECDH(PK1:Nat, PK2:Nat);
+
+    % Derived keys (see Table 3)
+    K_t = struct no_key
+        | Completion(slice:Nat, Z:ECDH_t, Np:Nat, Ns:Nat, Noob:Nat)
+        | RekeyingECDH(slice:Nat, Z:ECDH_t, Np2:Nat, Ns2:Nat, Kz:K_t)
+        | Rekeying(slice:Nat, Kz:K_t, Np2:Nat, Ns2:Nat)
+    ;
+
+    % Data sent between peer and server
+    Data_t = struct empty_d ? is_empty
+        % Type 1-8 requests and responses
+        | req1(Vers:Ver_l, Cryptosuites:Cryptosuite_l, Dirs:Nat, ServerInfo:Info_t) ? is_req1
+        | res1(Verp:Nat, Cryptosuitep:Nat, Dirp:Nat, PeerInfo:Info_t) ? is_res1
+        | req2(PKs:Nat, Ns:Nat) ? is_req2
+        | res2(PKp:Nat, Np:Nat) ? is_res2
+        | req3 ? is_req3
+        | res3 ? is_res3
+        | req4(NoobId:Nat, MACs:MAC_t) ? is_req4
+        | res4(MACp: MAC_t) ? is_res4
+        | req5(Cryptosuites:Cryptosuite_l) ? is_req5
+        | res5(Cryptosuitep:Nat) ? is_res5
+        | req6(PKs2:Nat, Ns2:Nat) ? is_req6
+        | res6(PKp2:Nat, Np2:Nat) ? is_res6
+        | req7(MACs2:MAC_t) ? is_req7
+        | res7(MACp2:MAC_t) ? is_res7
+        | req8 ? is_req8
+        | res8(NoobId:Nat) ? is_res8
+        % Error message
+        | err(ErrorCode:Error_t) ? is_error_msg
+        % Invalid data
+        | invalid ? is_invalid
+    ;
+
+    % === Internal data types for peer and server implementation === %
+
+    % Initialization data for peer
+    StaticPeerData_t = struct empty_sp
+        | static_peer_data(Vers:Ver_l, Cryptosuites:Cryptosuite_l, Dirs:Nat, PeerInfo:Info_t, PK:Nat, PK2:Nat)
+    ;
+
+    % Initialization data for server
+    StaticServerData_t = struct empty_s
+        | static_server_data(Vers:Ver_l, Cryptosuites:Cryptosuite_l, Dirs:Nat, ServerInfo:Info_t, PK:Nat, PK2:Nat)
+    ;
+
+    % Association database interface at server, updating fields and querying peer entries
+    DBInterface_t = struct empty_dbi
+        | Noob(Noob:Nat) ? is_noob
+        | NoobId(NoobId:Nat) ? is_noobid
+        | Nonce(N:Nat) ? is_nonce
+        | Type(Type:Type_t) ? is_type
+        | Keys(Kms:K_t, Kmp:K_t) ? is_key
+        | DBEntry(Verp:Nat, Cryptosuitep:Nat, Dirp:Nat, PeerInfo:Info_t, PKp:Nat, Np:Nat, Ns:Nat, Noob:Nat,
+            Type:Type_t, Kms:K_t, Kmp:K_t) ? is_dbentry
+    ;
+
+    % Association database entries at server (keyed by PeerId:Nat)
+    State_e        = Nat -> State_t;
+    Verp_e         = Nat -> Nat;
+    Cryptosuitep_e = Nat -> Nat;
+    Dirp_e         = Nat -> Nat;
+    PeerInfo_e     = Nat -> Info_t;
+    PKp_e          = Nat -> Nat;
+    Np_e           = Nat -> Nat;
+    Ns_e           = Nat -> Nat;
+    Noob_e         = Nat -> Nat;
+    Type_e         = Nat -> Type_t;
+    Kms_e          = Nat -> K_t;
+    Kmp_e          = Nat -> K_t;
+
+act
+    % SEND_xxx    = send to channel multiaction
+    % SEND_xxx_O  = send to channel, action on sender side
+    % SEND_xxx_I  = send to channel, action on channel side
+    % RECV_xxx    = receive from channel multiaction
+    % RECV_xxx_O  = receive from channel, action on sender side
+    % RECV_xxx_I  = receive from channel, action on channel side
+
+    % == EAP-Response/Identity == %
+    SEND_EAP_RES_ID,
+    RECV_EAP_RES_ID,
+    SEND_EAP_RES_ID_O,
+    SEND_EAP_RES_ID_I,
+    RECV_EAP_RES_ID_O,
+    RECV_EAP_RES_ID_I: PeerId_t # State_t;
+
+    % == EAP-Request/EAP-NOOB == %
+    SEND_EAP_REQ,
+    RECV_EAP_REQ,
+    SEND_EAP_REQ_O,
+    SEND_EAP_REQ_I,
+    RECV_EAP_REQ_O,
+    RECV_EAP_REQ_I: Type_t # PeerId_t # Data_t;
+
+    % == EAP-Response/EAP-NOOB == %
+    SEND_EAP_RES,
+    RECV_EAP_RES,
+    SEND_EAP_RES_O,
+    SEND_EAP_RES_I,
+    RECV_EAP_RES_O,
+    RECV_EAP_RES_I: Type_t # PeerId_t # Data_t;
+
+    % == EAP-Failure == %
+    SEND_EAP_FAIL;
+    RECV_EAP_FAIL;
+    SEND_EAP_FAIL_O;
+    SEND_EAP_FAIL_I;
+    RECV_EAP_FAIL_O;
+    RECV_EAP_FAIL_I;
+
+    % == EAP-Success == %
+    SEND_EAP_SUCC;
+    RECV_EAP_SUCC;
+    SEND_EAP_SUCC_O;
+    SEND_EAP_SUCC_I;
+    RECV_EAP_SUCC_O;
+    RECV_EAP_SUCC_I;
+
+    % == OOB message in peer-to-server (P2S) and server-to-peer (S2P) direction == %
+    SEND_OOB_P2S,
+    RECV_OOB_P2S,
+    SEND_OOB_S2P,
+    RECV_OOB_S2P,
+    SEND_OOB_P2S_O,
+    SEND_OOB_P2S_I,
+    SEND_OOB_S2P_O,
+    SEND_OOB_S2P_I,
+    RECV_OOB_P2S_O,
+    RECV_OOB_P2S_I,
+    RECV_OOB_S2P_O,
+    RECV_OOB_S2P_I: PeerId_t # Noob_t # Hoob_t;
+
+    % == Mobility/Timeout/Failure == %
+    MOBILITY_TIMEOUT_FAILURE;
+
+    % == User Reset == %
+    USER_RESET;
+
+    % == Query server and peer state, error status during testing and verification == %
+    SERV_STATE,
+    PEER_STATE: PeerId_t # State_t;
+    ERROR_MSG:  Error_t;
+
+    % == Generate random PeerId, Noob, nonces == %
+    % Multiaction for any random number generation
+    RNG_MA: Nat;
+    % Generator and server/peer actions
+    NEW_PEERID_RNG,
+    NEW_PEERID:    PeerId_t;
+    NEW_NOOB_RNG,
+    NEW_NOOB:      Noob_t;
+    NEW_NONCE_RNG,
+    NEW_NONCE:     N_t;
+    % Can't generate more values
+    MAX_PEERIDS_REACHED;
+    MAX_NOOBS_REACHED;
+    MAX_NONCES_REACHED;
+
+    % == Query and update the association database at server == %
+    % _MA = multiaction, _DB = action at database, no _x = action at server
+    QUERY_STATE_MA,
+    QUERY_STATE_DB,
+    QUERY_STATE:     PeerId_t # State_t # Type_t;
+    UPDATE_STATE_MA,
+    UPDATE_STATE_DB,
+    UPDATE_STATE:    PeerId_t # State_t;
+    UPDATE_DATA_MA,
+    UPDATE_DATA_DB,
+    UPDATE_DATA:     PeerId_t # Data_t;
+    QUERY_DATA_MA,
+    QUERY_DATA_DB,
+    QUERY_DATA,
+    UPDATE_NONCE_MA,
+    UPDATE_NONCE_DB,
+    UPDATE_NONCE,
+    UPDATE_TYPE_MA,
+    UPDATE_TYPE_DB,
+    UPDATE_TYPE,
+    UPDATE_KEY_MA,
+    UPDATE_KEY_DB,
+    UPDATE_KEY:      PeerId_t # DBInterface_t;
+
+map
+    % Static data structures
+    static_peer_data: StaticPeerData_t;   % Peer data
+    static_serv_data: StaticServerData_t; % Server data
+
+    % Constants
+    max_peers:  Nat; % Max PeerIds generated
+    max_noobs:  Nat; % Max Noob values generated
+    max_nonces: Nat; % Max nonces generated
+
+    % Database entry at the server: db contains one of each field per peer
+    state:        State_e;
+    verp:         Verp_e;
+    cryptosuitep: Cryptosuitep_e;
+    dirp:         Dirp_e;
+    peerinfo:     PeerInfo_e;
+    pkp:          PKp_e;
+    np:           Np_e;
+    ns:           Ns_e;
+    noob:         Noob_e;
+    type:         Type_e;
+    kms:          Kms_e;
+    kmp:          Kmp_e;
+
+var
+    a, a',
+    b, b' ,
+    n, n': Nat;
+    l, l': List(Nat);
+
+eqn
+    % Initialize static data structures at peer and server
+    %   Version(s), Cryptosuite(s), Dir, PeerInfo, PK, PK2
+    static_peer_data = static_peer_data([1], [1], 1, info, 1, 2);
+    %   Version(s), Cryptosuite(s), Dir, ServInfo, PK, PK2
+    static_serv_data = static_server_data([1], [1], 1, info, 3, 4);
+
+    % Maximum number of PeerIds, Noob values, nonce values in the model
+    max_peers = 1;
+    max_noobs = 2;
+    max_nonces = 4;
+
+    % Default values for database at the server
+    state(n)        = no_state;
+    verp(n)         = 0;
+    cryptosuitep(n) = 0;
+    dirp(n)         = 0;
+    peerinfo(n)     = no_info;
+    pkp(n)          = 0;
+    np(n)           = 0;
+    ns(n)           = 0;
+    noob(n)         = 0;
+    type(n)         = no_type;
+    kms(n)          = no_key;
+    kmp(n)          = no_key;
+
+    % ECDH is commutative
+    ECDH(a, b) == ECDH(a', b') = (a == a' && b == b') || (a == b' && b == a');
+
+proc
+    % In-band channel: Peer to Server
+    %   compromised : true, if the channel is controlled by an attacker, false otherwise
+    PeerToServerChannel(compromised:Bool) =
+        sum PeerId:PeerId_t, State:State_t . (
+            SEND_EAP_RES_ID_I(PeerId, State)
+            . (RECV_EAP_RES_ID_O(PeerId, State) + ERROR_MSG(dropped_msg))
+            . PeerToServerChannel(compromised)
+        )
+        + sum PeerId:PeerId_t, data:Data_t, type:Type_t . (
+            SEND_EAP_RES_I(type, PeerId, data)
+            % Modify values if the channel is compromised
+            . (compromised) -> (
+                (type == t8) -> (
+                    % Spoof Noob
+                    RECV_EAP_RES_O(type, PeerId, res8(NoobId(data) + 20))
+                    . PeerToServerChannel(false)
+                )
+                <> (RECV_EAP_RES_O(type, PeerId, data) + ERROR_MSG(dropped_msg))
+                . PeerToServerChannel(compromised)
+            )
+            <> (RECV_EAP_RES_O(type, PeerId, data) + ERROR_MSG(dropped_msg))
+            . PeerToServerChannel(compromised)
+        )
+    ;
+
+    % In-band channel: Server to Peer
+    %   compromised : true, if the channel is controlled by an attacker, false otherwise
+    ServerToPeerChannel(compromised:Bool) =
+        sum PeerId:PeerId_t, data:Data_t, type:Type_t . (
+            SEND_EAP_REQ_I(type, PeerId, data)
+            % Modify values if the channel is compromised
+            . (compromised) -> (
+                (type == t4) -> (
+                    % Spoof Noob
+                    RECV_EAP_REQ_O(type, PeerId, req4(NoobId(data) + 10, MACs(data)))
+                    . ServerToPeerChannel(false)
+                )
+                <> (RECV_EAP_REQ_O(type, PeerId, data) + ERROR_MSG(dropped_msg))
+                . ServerToPeerChannel(compromised)
+            )
+            <> (RECV_EAP_REQ_O(type, PeerId, data) + ERROR_MSG(dropped_msg))
+            . ServerToPeerChannel(compromised)
+        )
+        + SEND_EAP_SUCC_I
+        . (RECV_EAP_SUCC_O + ERROR_MSG(dropped_msg))
+        . ServerToPeerChannel(compromised)
+        + SEND_EAP_FAIL_I
+        . (RECV_EAP_FAIL_O + ERROR_MSG(dropped_msg))
+        . ServerToPeerChannel(compromised)
+    ;
+
+    % OOB Channel: Peer to Server
+    PeerToServerOOBChannel =
+        sum PeerId:PeerId_t, Noob:Noob_t, Hoob:Hoob_t . (
+            SEND_OOB_P2S_I(PeerId, Noob, Hoob)
+            . RECV_OOB_P2S_O(PeerId, Noob, Hoob)
+            . PeerToServerOOBChannel
+        )
+    ;
+
+    % OOB Channel: Server to Peer
+    ServerToPeerOOBChannel =
+        sum PeerId:PeerId_t, Noob:Noob_t, Hoob:Hoob_t . (
+            SEND_OOB_S2P_I(PeerId, Noob, Hoob)
+            . RECV_OOB_S2P_O(PeerId, Noob, Hoob)
+            . ServerToPeerOOBChannel
+        )
+    ;
+
+    % Random number generator
+    %   PeerId :   Next PeerId to generate
+    %   Noob   :   Next Noob to generate
+    %   N      :   Next nonce to generate
+    Rng(PeerId:PeerId_t, Noob:Noob_t, N:N_t) =
+        (PeerId <= max_peers) -> (
+            NEW_PEERID_RNG(PeerId) . Rng(PeerId+1, Noob, N)
+        ) <> MAX_PEERIDS_REACHED . Rng(PeerId, Noob, N)
+        + (Noob <= max_noobs) -> (
+            NEW_NOOB_RNG(Noob) . Rng(PeerId, Noob+1, N)
+        ) <> MAX_NOOBS_REACHED . Rng(PeerId, Noob, N)
+        + (N <= max_nonces) -> (
+            NEW_NONCE_RNG(N) . Rng(PeerId, Noob, N+1)
+        ) <> MAX_NONCES_REACHED . Rng(PeerId, Noob, N)
+    ;
+
+    % Server database
+    Database(state:State_e, verp:Verp_e, cryptosuitep:Cryptosuitep_e, dirp:Dirp_e, peerinfo:PeerInfo_e, pkp:PKp_e,
+        np:Np_e, ns:Ns_e, noob:Noob_e, type:Type_e, kms:Kms_e, kmp:Kmp_e) =
+        sum PeerId:PeerId_t . (
+            sum State:State_t . (
+                QUERY_STATE_DB(PeerId, state(PeerId), type(PeerId))
+                . Database()
+                + UPDATE_STATE_DB(PeerId, State)
+                . SERV_STATE(PeerId, State)
+                . Database(
+                    state = state[PeerId->State]
+                )
+            )
+            + QUERY_DATA_DB(PeerId, DBEntry(
+                verp(PeerId), cryptosuitep(PeerId), dirp(PeerId), peerinfo(PeerId), pkp(PeerId), np(PeerId),
+                ns(PeerId), noob(PeerId), type(PeerId), kms(PeerId), kmp(PeerId)
+            ))
+            . Database()
+            + sum data:Data_t . (
+                UPDATE_DATA_DB(PeerId, data) . (
+                % Type 1 response
+                (is_res1(data)) -> (
+                    Database(
+                        verp = verp[PeerId->Verp(data)],
+                        cryptosuitep = cryptosuitep[ PeerId->Cryptosuitep(data)],
+                        dirp = dirp[PeerId->Dirp(data)],
+                        peerinfo = peerinfo[PeerId->PeerInfo(data)]
+                    )
+                )
+                % Type 2 response
+                <> (is_res2(data)) -> (
+                    Database(
+                        pkp = pkp[PeerId->PKp(data)],
+                        np = np[PeerId->Np(data)]
+                    )
+                )
+                % Type 5 response
+                <> (is_res5(data)) -> (
+                    Database(
+                        cryptosuitep = cryptosuitep[PeerId->Cryptosuitep(data)]
+                    )
+                )
+                <> (is_res6(data)) -> (
+                    % Type 6 response (w/ PKp2)
+                    (PKp2(data) != 0) -> (
+                        Database(
+                            pkp = pkp[PeerId->PKp2(data)],
+                            np = np[PeerId->Np2(data)]
+                        )
+                    )
+                    % Type 6 response (w/o PKp2)
+                    <> (PKp2(data) == 0) -> (
+                        Database(
+                            np = np[PeerId->Np2(data)]
+                        )
+                    )
+                )
+            ))
+            + sum data:DBInterface_t . (
+                UPDATE_NONCE_DB(PeerId, data) . (
+                    % Server nonce update
+                    (is_nonce(data)) -> (
+                        Database(
+                            ns = ns[PeerId->N(data)]
+                        )
+                    )
+                    % Server noob update
+                    <> (is_noob(data)) -> (
+                        Database(
+                            noob = noob[PeerId->Noob(data)]
+                        )
+                    )
+                )
+                % Ongoing exchange update
+                + UPDATE_TYPE_DB(PeerId, data)
+                . (is_type(data)) -> (
+                    Database(
+                        type = type[PeerId->Type(data)]
+                    )
+                )
+                % Key update
+                + UPDATE_KEY_DB(PeerId, data)
+                . (is_key(data)) -> (
+                    Database(
+                        kms = kms[PeerId->Kms(data)],
+                        kmp = kmp[PeerId->Kmp(data)]
+                    )
+                )
+            )
+            % Allow Mobility/Timeout/Failure to happen for the server
+            + (state(PeerId) == s4 && type(PeerId) == no_type) -> (
+                SERV_STATE(PeerId, s4)
+                . Database()
+                + MOBILITY_TIMEOUT_FAILURE
+                . SERV_STATE(PeerId, s3)
+                . Database(
+                    state = state[PeerId->s3]
+                )
+            )
+        )
+    ;
+
+    % EAP Server
+    %   sd    : Server data
+    %   noobs : Generated Noob values
+    Server(sd:StaticServerData_t, noobs:List(Nat)) =
+        sum PeerId:PeerId_t, Peer_State:State_t . (
+            RECV_EAP_RES_ID_I(PeerId, Peer_State) . (
+                % Initial Exchange
+                (PeerId == 0) -> (
+                    sum PeerId:PeerId_t . (
+                        NEW_PEERID(PeerId)
+                        . SEND_EAP_REQ_O(t1, PeerId, req1(Vers(sd), Cryptosuites(sd), Dirs(sd), ServerInfo(sd)))
+                        . UPDATE_TYPE(PeerId, Type(t1))
+                    )
+                )
+                % Other exchanges
+                + (PeerId != 0) ->
+                    sum Server_State:State_t, Type:Type_t . (
+                        QUERY_STATE(PeerId, Server_State, Type) . (
+                            (Server_State != no_state) -> (
+                                % Waiting Exchange
+                                (Peer_State == s1 && Server_State == s1) -> (
+                                    SEND_EAP_REQ_O(t3, PeerId, req3)
+                                    . UPDATE_TYPE(PeerId, Type(t3))
+                                )
+                                % Completion Exchange (peer-to-server)
+                                <> (Peer_State == s1 && Server_State == s2) -> (
+                                    sum pd:DBInterface_t . (
+                                        QUERY_DATA(PeerId, pd)
+                                        . UPDATE_KEY(PeerId, Keys(
+                                            Completion(192, ECDH(PK(sd), PKp(pd)), Np(pd), Ns(pd), Noob(pd)),
+                                            Completion(224, ECDH(PK(sd), PKp(pd)), Np(pd), Ns(pd), Noob(pd))
+                                        ))
+                                    )
+                                    . sum pd:DBInterface_t . (
+                                        QUERY_DATA(PeerId, pd)
+                                        . SEND_EAP_REQ_O(t4, PeerId,  req4(
+                                            Noob(pd), HMAC(Kms(pd), 2, Vers(sd), Verp(pd), PeerId, Cryptosuites(sd),
+                                            Dirs(sd), ServerInfo(sd), Cryptosuitep(pd), Dirp(pd), PeerInfo(pd), PK(sd),
+                                            Ns(pd), PKp(pd), Np(pd), Noob(pd))
+                                        ))
+                                    )
+                                    . UPDATE_TYPE(PeerId, Type(t4))
+                                )
+                                % Completion Exchange (server-to-peer)
+                                <> (Peer_State == s2 && (Server_State == s1 || Server_State == s2)) -> (
+                                    SEND_EAP_REQ_O(t8, PeerId, req8)
+                                    . UPDATE_TYPE(PeerId, Type(t8))
+                                )
+                                % Reconnect Exchange
+                                <> (Peer_State == s3 && (Server_State == s3 || Server_State == s4)) -> (
+                                    SEND_EAP_REQ_O(t5, PeerId, req5(Cryptosuites(sd)))
+                                    . UPDATE_TYPE(PeerId, Type(t5))
+                                )
+                                % Drop old messages
+                                <> (Server_State == s4) -> (
+                                    ERROR_MSG(dropped_msg)
+                                )
+                                % Check for state mismatch
+                                <> ((Server_State == s1 && (Peer_State == s3 || Peer_State == s4)) ||
+                                    (Server_State == s2 && (Peer_State == s3 || Peer_State == s4)) ||
+                                    (Server_State == s3 && (Peer_State == s1 || Peer_State == s2)) ) -> (
+                                       % Send error E2002
+                                       SEND_EAP_REQ_O(t0, PeerId, err(E2002))
+                                       . Serv_Error(no_type, PeerId, E2002)
+                                   )
+                            )
+                        % Received unknown PeerId
+                        <> (Server_State == no_state) -> (
+                            % Send error E1005
+                            SEND_EAP_REQ_O(t0, PeerId, err(E1005))
+                            . ERROR_MSG(E1005)
+                            . Server(sd, noobs)
+                        )
+                    )
+                )
+            ) . Server(sd, noobs)
+            + sum PeerId:PeerId_t, type:Type_t, data:Data_t . (
+                RECV_EAP_RES_I(type, PeerId, data) . (
+                    % Receive error message
+                    (type == t0) -> (
+                        sum pd:DBInterface_t . (
+                            QUERY_DATA(PeerId, pd)
+                            . Serv_Error(Type(pd), PeerId, ErrorCode(data))
+                            . Server(sd, noobs)
+                        )
+                    )
+                    % Invalid data
+                    <> (is_invalid(data)) -> (
+                        sum pd:DBInterface_t . (
+                            QUERY_DATA(PeerId, pd)
+                            . SEND_EAP_REQ_O(t0, PeerId, err(E1003))
+                            . Serv_Error(Type(pd), PeerId, E1003)
+                            . Server(sd, noobs)
+                        )
+                    )
+                    <> sum Type:Type_t, State:State_t . (
+                        QUERY_STATE(PeerId, State, Type)
+                        % Unexpected message type
+                        . (Type != type) -> (
+                            SEND_EAP_REQ_O(t0, PeerId, err(E1004))
+                            . ERROR_MSG(E1004)
+                            . Server(sd, noobs)
+                        )
+                        % Initial Exchange
+                        <> (type == t1) -> (
+                            % Invalid peer info
+                            (is_invalidinfo(PeerInfo(data))) -> (
+                                sum pd:DBInterface_t . (
+                                    QUERY_DATA(PeerId, pd)
+                                    . SEND_EAP_REQ_O(t0, PeerId, err(E5004))
+                                    . Serv_Error(Type(pd), PeerId, E5004)
+                                )
+                            )
+                            <> sum Ns:N_t . (
+                                NEW_NONCE(Ns)
+                                . SEND_EAP_REQ_O(t2, PeerId, req2(PK(sd), Ns))
+                                . UPDATE_NONCE(PeerId, Nonce(Ns))
+                            )
+                            . UPDATE_DATA(PeerId, data)
+                            . UPDATE_TYPE(PeerId, Type(t2))
+                        )
+                        <> (type == t2) -> (
+                            SEND_EAP_FAIL_O
+                            . UPDATE_DATA(PeerId, data)
+                            . UPDATE_STATE(PeerId, s1)
+                            . UPDATE_TYPE(PeerId, Type(no_type))
+                        )
+                        % Waiting Exchange
+                        <> (type == t3) -> (
+                            SEND_EAP_FAIL_O
+                            . UPDATE_STATE(PeerId, s1)
+                            . UPDATE_TYPE(PeerId, Type(no_type))
+                        )
+                        % Completion Exchange
+                        <> (type == t4) -> (
+                            sum pd:DBInterface_t . (
+                                QUERY_DATA(PeerId, pd)
+                                . (MACp(data) != HMAC(
+                                    Kmp(pd), 1, Vers(sd), Verp(pd), PeerId, Cryptosuites(sd), Dirs(sd), ServerInfo(sd),
+                                    Cryptosuitep(pd), Dirp(pd), PeerInfo(pd), PK(sd), Ns(pd), PKp(pd),
+                                    Np(pd), Noob(pd))) -> (
+                                        SEND_EAP_REQ_O(t0, PeerId, err(E4001))
+                                        . Serv_Error(Type(pd), PeerId, E4001)
+                                )
+                                <> SEND_EAP_SUCC_O
+                                . UPDATE_STATE(PeerId, s4)
+                                . UPDATE_TYPE(PeerId, Type(no_type))
+                            )
+                        )
+                        % Reconnect Exchange
+                        <> (type == t5) -> (
+                            sum Ns:N_t . (
+                                NEW_NONCE(Ns)
+                                . UPDATE_NONCE(PeerId, Nonce(Ns))
+                                . sum pd:DBInterface_t . (
+                                    QUERY_DATA(PeerId, pd)
+                                    . (Cryptosuitep(data) == Cryptosuitep(pd)) -> (
+                                        SEND_EAP_REQ_O(t6, PeerId, req6(0, Ns))
+                                    )
+                                    <> SEND_EAP_REQ_O(t6, PeerId, req6(PK2(sd), Ns))
+                                )
+                            )
+                            . UPDATE_DATA(PeerId, data)
+                            . UPDATE_TYPE(PeerId, Type(t6))
+                        )
+                        <> (type == t6) -> (
+                            ((PKp2(data) != 0) -> (
+                                sum pd:DBInterface_t . (
+                                    QUERY_DATA(PeerId, pd)
+                                    . UPDATE_KEY(PeerId, Keys(
+                                        RekeyingECDH(192, ECDH(PK2(sd), PKp2(data)), Np2(data), Ns(pd), Kms(pd)),
+                                        RekeyingECDH(224, ECDH(PK2(sd), PKp2(data)), Np2(data), Ns(pd), Kmp(pd))
+                                    ))
+                                )
+                                . sum pd:DBInterface_t . (
+                                    QUERY_DATA(PeerId, pd)
+                                    . SEND_EAP_REQ_O(t7, PeerId, req7(
+                                        HMAC(Kms(pd), 2, Vers(sd), Verp(pd), PeerId, Cryptosuites(sd), 0,
+                                        ServerInfo(sd), Cryptosuitep(pd), 0, PeerInfo(pd), PK2(sd), Ns(pd), PKp2(data),
+                                        Np2(data), 0)
+                                    ))
+                                    .UPDATE_TYPE(PeerId, Type(t7))
+                                )
+                            )
+                            <> (PKp2(data) == 0) -> (
+                                sum pd:DBInterface_t . (
+                                    QUERY_DATA(PeerId, pd)
+                                    . UPDATE_KEY(PeerId, Keys(
+                                        Rekeying(192, Kms(pd), Np2(data), Ns(pd)),
+                                        Rekeying(224, Kmp(pd), Np2(data), Ns(pd))
+                                    ))
+                                )
+                                . sum pd:DBInterface_t . (
+                                    QUERY_DATA(PeerId, pd)
+                                    . SEND_EAP_REQ_O(t7, PeerId, req7(
+                                        HMAC(Kms(pd), 2, Vers(sd), Verp(pd), PeerId, Cryptosuites(sd), 0,
+                                        ServerInfo(sd), Cryptosuitep(pd), 0, PeerInfo(pd), 0, Ns(pd), 0, Np2(data), 0)
+                                    ))
+                                    . UPDATE_TYPE(PeerId, Type(t7))
+                                )
+                            ))
+                            . UPDATE_DATA(PeerId, data)
+                        )
+                        <> (type == t7) -> (
+                            sum pd:DBInterface_t . (
+                                QUERY_DATA(PeerId, pd)
+                                . (
+                                    MACp2(data) != HMAC(
+                                        Kmp(pd), 1, Vers(sd), Verp(pd), PeerId, Cryptosuites(sd), 0, ServerInfo(sd),
+                                        Cryptosuitep(pd), 0, PeerInfo(pd), PK2(sd), Ns(pd), PKp(pd), Np(pd), 0)
+                                    &&
+                                    MACp2(data) != HMAC(
+                                        Kmp(pd), 1, Vers(sd), Verp(pd), PeerId, Cryptosuites(sd), 0, ServerInfo(sd),
+                                        Cryptosuitep(pd), 0, PeerInfo(pd), 0, Ns(pd), 0, Np(pd), 0)
+                                ) -> (
+                                    SEND_EAP_REQ_O(t0, PeerId, err(E4001))
+                                    . Serv_Error(Type(pd), PeerId, E4001)
+                                )
+                            )
+                            . SEND_EAP_SUCC_O
+                            . UPDATE_STATE(PeerId, s4)
+                            . UPDATE_TYPE(PeerId, Type(no_type))
+                        )
+                        % Completion Exchange
+                        <> (type == t8) -> (
+                            % Invalid OOB message identifier
+                            (!(NoobId(data) in noobs)) -> (
+                                sum pd:DBInterface_t . (
+                                    QUERY_DATA(PeerId, pd)
+                                    . SEND_EAP_REQ_O(t0, PeerId, err(E1006))
+                                    . Serv_Error(Type(pd), PeerId, E1006)
+                                )
+                            )
+                            <> sum pd:DBInterface_t . (
+                                QUERY_DATA(PeerId, pd)
+                                . UPDATE_KEY(PeerId, Keys(
+                                    Completion(192, ECDH(PK(sd), PKp(pd)), Np(pd), Ns(pd), NoobId(data)),
+                                    Completion(224, ECDH(PK(sd), PKp(pd)), Np(pd), Ns(pd), NoobId(data))
+                                ))
+                            )
+                            . sum pd:DBInterface_t . (
+                                QUERY_DATA(PeerId, pd)
+                                . SEND_EAP_REQ_O(t4, PeerId, req4(
+                                    NoobId(data), HMAC(Kms(pd), 2, Vers(sd), Verp(pd), PeerId, Cryptosuites(sd),
+                                    Dirs(sd), ServerInfo(sd), Cryptosuitep(pd), Dirp(pd), PeerInfo(pd), PK(sd), Ns(pd),
+                                    PKp(pd), Np(pd), NoobId(data))
+                                ))
+                            )
+                            . UPDATE_NONCE(PeerId, Noob(NoobId(data)))
+                            . UPDATE_TYPE(PeerId, Type(t4))
+                            . Server(sd, [NoobId(data)])
+                        )
+                    ) . Server(sd, noobs)
+                )
+            )
+        )
+        % Receive OOB (Peer-to-Server)
+        + (Dirs(sd) == 1 || Dirs(sd) == 3) -> (
+            sum PeerId:Pos, Server_State:State_t, Type:Type_t . (
+                (PeerId <= max_peers) -> (
+                    QUERY_STATE(PeerId, Server_State, Type)
+                    . (Server_State == s1 && Type == no_type) -> (
+                        sum Noob:Noob_t, Hoob:Hoob_t . (
+                            RECV_OOB_P2S_I(PeerId, Noob, Hoob)
+                            . sum pd:DBInterface_t . (
+                                QUERY_DATA(PeerId, pd)
+                                . (Hoob == H(
+                                    Dirp(pd), Vers(sd), Verp(pd), PeerId, Cryptosuites(sd), Dirs(sd), ServerInfo(sd),
+                                    Cryptosuitep(pd), Dirp(pd), PeerInfo(pd), PK(sd), Ns(pd), PKp(pd), Np(pd), Noob)
+                                ) -> ((Server_State == s1 || Server_State == s2) -> (
+                                        UPDATE_STATE(PeerId, s2)
+                                        . UPDATE_NONCE(PeerId, Noob(Noob))
+                                    )
+                                )
+                            )
+                        )
+                    ) <> Server(sd, noobs)
+                )
+            ) . Server(sd, noobs)
+        )
+        % Send OOB (Server-to-Peer)
+        + (Dirs(sd) == 2 || Dirs(sd) == 3) -> (
+            sum PeerId:Pos, Server_State:State_t, Type:Type_t . (
+                (PeerId <= max_peers) -> (
+                    QUERY_STATE(PeerId, Server_State, Type)
+                    . (Server_State == s1 && Type == no_type) -> (
+                        sum pd:DBInterface_t . (
+                            QUERY_DATA(PeerId, pd)
+                            . sum Noob:Noob_t . (
+                                NEW_NOOB(Noob)
+                                . SEND_OOB_S2P_O(PeerId, Noob, H(
+                                    Dirp(pd), Vers(sd), Verp(pd), PeerId, Cryptosuites(sd), Dirs(sd),
+                                    ServerInfo(sd), Cryptosuitep(pd), Dirp(pd), PeerInfo(pd), PK(sd), Ns(pd),
+                                    PKp(pd), Np(pd), Noob)
+                                )
+                                . Server(sd, noobs <| Noob)
+                            )
+                        )
+                    ) <> Server(sd, noobs)
+                )
+            ) . Server(sd, noobs)
+        )
+    ;
+
+    % Restore the state after sending or receiving an error message
+    %   Type     :   Next expected type
+    %   PeerId   :   Peer ID
+    %   Error    :   Error message
+    Serv_Error(Type:Type_t, PeerId:PeerId_t, Error:Error_t) =
+        % Alert received error message
+        ERROR_MSG(Error)
+        % Send EAP-Failure and recover from error
+        . SEND_EAP_FAIL_O . (
+            % Error 1006: transition to state 1
+            (Error == E1006) -> (
+                UPDATE_STATE(PeerId, s1)
+                . UPDATE_TYPE(PeerId, Type(no_type))
+            )
+            % Error 2002: transition to sink state
+            <> (Error == E2002) -> (
+                UPDATE_STATE(PeerId, error)
+            )
+            %% Generic error handling
+            % Initial Exchange
+            <> (Type == t1 || Type == t2) -> (
+                UPDATE_STATE(PeerId, s0)
+                . UPDATE_TYPE(PeerId, Type(no_type))
+            )
+            % Reconnect Exchange
+            <> (Type == t5 || Type == t6 || Type == t7) -> (
+                UPDATE_STATE(PeerId, s3)
+                . UPDATE_TYPE(PeerId, Type(no_type))
+            )
+            % Waiting/Completion Exchange
+            % no change of state
+        )
+    ;
+
+    % EAP Peer
+    Peer(Peer_State:State_t, PeerId:PeerId_t, Type:Type_t, spd:StaticPeerData_t, Vers:Ver_l, Verp:Ver_t,
+        Cryptosuites:Cryptosuite_l, Cryptosuitep:Cryptosuite_t, Dirs:Dir_t, ServerInfo:Info_t, PKs:PK_t, Ns:N_t,
+        Np:N_t, Noob:Noob_t, Dirp:Dir_t, Kmp:K_t, Kms:K_t, noobs:List(Nat)) =
+    (!is_error(Peer_State)) -> (
+        % Initial Exchange
+        (Peer_State <= s2) -> (
+            (Type == no_type || Type == t1) -> (
+                SEND_EAP_RES_ID_O(0, Peer_State)
+                . Peer(Type = t1)
+            )
+            + (Type == failure) -> (
+                RECV_EAP_FAIL_I
+                . PEER_STATE(PeerId, s1)
+                . Peer(Peer_State = s1, Type = no_type)
+            )
+        )
+        % Completion/Waiting Exchange
+        + (Peer_State == s1 || Peer_State == s2) -> (
+            (Type == no_type) -> (
+                SEND_EAP_RES_ID_O(PeerId, Peer_State)
+                . Peer()
+            )
+            + (Type == success) -> (
+                RECV_EAP_SUCC_I
+                . PEER_STATE(PeerId, s4)
+                . Peer(Peer_State = s4, Type = no_type)
+            )
+        )
+        % Reconnect Exchange
+        + (Peer_State == s3) -> (
+            (Type == no_type || Type == t5) -> (
+                SEND_EAP_RES_ID_O(PeerId, Peer_State)
+                . Peer(Type = t5)
+            )
+            + (Type == success) -> (
+                RECV_EAP_SUCC_I
+                . PEER_STATE(PeerId, s4)
+                . Peer(Peer_State = s4, Type = no_type)
+            )
+        )
+        + sum PeerId_RCV:PeerId_t, data:Data_t, type:Type_t . (
+            RECV_EAP_REQ_I(type, PeerId_RCV, data) . (
+                % Receive error message
+                (type == t0) -> (
+                    ERROR_MSG(ErrorCode(data))
+                    . RECV_EAP_FAIL_I . (
+                        ((Peer_State <= s2) && (Type == t2 || Type == success)) -> (
+                            PEER_STATE(PeerId, s0)
+                            . Peer(Peer_State = s0, Type = no_type)
+                        )
+                        + ((Peer_State == s3 || Peer_State == s4) &&
+                            (Type == t6 || Type == t7 || Type == success)) -> (
+                                PEER_STATE(PeerId, s3)
+                                . Peer(Peer_State = s3, Type = no_type)
+                        )
+                        + ((Peer_State <= s2 && Type == failure) ||
+                            ((Peer_State == s1 || Peer_State == s2) && (Type == t4 || Type == success))) -> (
+                                Peer(Type = no_type)
+                        )
+                    )
+                )
+                % Invalid data
+                <> (is_invalid(data)) -> (
+                    SEND_EAP_RES_O(t0, PeerId_RCV, err(E1003))
+                    . ERROR_MSG(E1003)
+                    . RECV_EAP_FAIL_I . (
+                        ((Peer_State <= s2) && (Type == t2 || Type == success)) ->(
+                            PEER_STATE(PeerId, s0)
+                            . Peer(Peer_State = s0, Type = no_type)
+                        )
+                        + ((Peer_State == s3 || Peer_State == s4) &&
+                            (Type == t6 || Type == t7 || Type == success)) -> (
+                                PEER_STATE(PeerId, s3)
+                                . Peer(Peer_State = s3, Type = no_type)
+                        )
+                        + ((Peer_State <= s2 && Type == failure) ||
+                            ((Peer_State == s1 || Peer_State == s2) && (Type == t4 || Type == success))) -> (
+                                Peer(Type = no_type)
+                        )
+                    )
+                )
+                % Unexpected message type
+                <> (Type != no_type && Type != type) -> (
+                    SEND_EAP_RES(t0, PeerId_RCV, err(E1004))
+                    . ERROR_MSG(E1004)
+                    . RECV_EAP_FAIL_I
+                    . Peer()
+                )
+                % Initial Exchange, PeerId not set
+                <> (type == t1) -> (
+                    % No mutually supported protocol version
+                    (!(exists a,b:Nat .
+                        (a < #Vers(data) && b < #Vers(spd) && (Vers(data) . a) == (Vers(spd) . b)))) -> (
+                            SEND_EAP_RES_O(t0, PeerId_RCV, err(E3001))
+                            . ERROR_MSG(E3001)
+                            . RECV_EAP_FAIL_I
+                            . PEER_STATE(PeerId, s0)
+                            . Peer(Peer_State = s0, Type = no_type)
+                    )
+                    % No mutually supported cryptosuite
+                    <> (!(exists a,b:Nat . (a < #Cryptosuites(data) && b < #Cryptosuites(spd) &&
+                        (Cryptosuites(data).a) == (Cryptosuites(spd).b)))) -> (
+                            SEND_EAP_RES_O(t0, PeerId_RCV, err(E3002))
+                            . ERROR_MSG(E3002)
+                            . RECV_EAP_FAIL_I
+                            . PEER_STATE(PeerId, s0)
+                            . Peer(Peer_State = s0, Type = no_type)
+                    )
+                    % No mutually supported OOB direction
+                    <> ((Dirs(data)) != 3 && (Dirs(data)) != Dirs(spd)) -> (
+                        SEND_EAP_RES_O(t0, PeerId_RCV, err(E3003))
+                        . ERROR_MSG(E3003)
+                        . RECV_EAP_FAIL_I
+                        . PEER_STATE(PeerId, s0)
+                        . Peer(Peer_State = s0, Type = no_type)
+                    )
+                    % Invalid server info
+                    <> (is_invalidinfo(ServerInfo(data))) -> (
+                        SEND_EAP_RES_O(t0, PeerId_RCV, err(E5002))
+                        . ERROR_MSG(E5002)
+                        . RECV_EAP_FAIL_I
+                        . PEER_STATE(PeerId, s0)
+                        . Peer(Peer_State = s0, Type = no_type)
+                    )
+                    % No conflicts, send response back
+                    <> sum Cryptosuite:Cryptosuite_t, Version:Ver_t, Direction:Dir_t . (
+                        (Cryptosuite in Cryptosuites(data) && Cryptosuite in Cryptosuites(spd) &&
+                         Version in Vers(data) && Version in Vers(spd) &&
+                         Direction > 0 && Direction == Dirs(data) && Direction == Dirs(spd)) -> (
+                            SEND_EAP_RES_O(type, PeerId_RCV, res1(Version, Cryptosuite, Direction, PeerInfo(spd)))
+                        )
+                        . Peer(PeerId = PeerId_RCV, Type = t2, Vers = Vers(data), Verp = Version,
+                            Cryptosuites = Cryptosuites(data), Cryptosuitep = Cryptosuite, Dirs = Dirs(data),
+                            Dirp = Direction, ServerInfo = ServerInfo(data)
+                        )
+                    )
+                )
+                % PeerId set
+                + (type >= t2) -> (
+                    % Initial Exchange
+                    (type == t2) -> (
+                        sum np:N_t . (
+                            NEW_NONCE(np)
+                            . SEND_EAP_RES_O(type, PeerId, res2(PK(spd), np))
+                            . Peer(Type = failure, PKs = PKs(data), Ns = Ns(data), Np = np)
+                        )
+                    )
+                    % Waiting Exchange
+                    <> (type == t3) -> (
+                        SEND_EAP_RES_O(type, PeerId, res3)
+                        . Peer(Type = failure)
+                    )
+                    % Completion Exchange
+                    <> (type == t4) -> (
+                        % Invalid OOB message identifier
+                        (!(NoobId(data) in noobs) && (NoobId(data) != Noob)) -> (
+                            SEND_EAP_RES_O(t0, PeerId, err(E1006))
+                            . ERROR_MSG(E1006)
+                            . RECV_EAP_FAIL_I
+                            . PEER_STATE(PeerId, s1)
+                            . Peer(Peer_State = s1, Type = no_type)
+                        )
+                        % MAC verification failure
+                        <> (MACs(data) != HMAC(
+                            Completion(192, ECDH(PK(spd), PKs), Np, Ns, NoobId(data)),
+                                2, Vers, Verp, PeerId, Cryptosuites, Dirs, ServerInfo,
+                                Cryptosuitep, Dirp, PeerInfo(spd), PKs, Ns, PK(spd), Np,
+                                NoobId(data)
+                        )) -> (
+                            SEND_EAP_RES_O(t0, PeerId, err(E4001))
+                            . ERROR_MSG(E4001)
+                            . RECV_EAP_FAIL_I
+                            . Peer()
+                        )
+                        <> SEND_EAP_RES_O(type, PeerId, res4(
+                            HMAC(Completion(224, ECDH(PK(spd), PKs), Np, Ns, NoobId(data)),
+                                1, Vers, Verp, PeerId, Cryptosuites, Dirs, ServerInfo,
+                                Cryptosuitep, Dirp, PeerInfo(spd), PKs, Ns, PK(spd), Np,
+                                NoobId(data))
+                        ))
+                        . Peer(Type = success,
+                            Kmp = Completion(224, ECDH(PK(spd), PKs), Np, Ns, NoobId(data)),
+                            Kms = Completion(192, ECDH(PK(spd), PKs), Np, Ns, NoobId(data))
+                        )
+                    )
+                    % Reconnect Exchange
+                    <> (type == t5) -> (
+                        % No mutually supported cryptosuite
+                        (!(exists a,b:Nat .
+                            (a <#Cryptosuites(data) && b <#Cryptosuites(spd) &&
+                                (Cryptosuites(data).a) == (Cryptosuites(spd).b))) -> (
+                                    SEND_EAP_RES_O(type, PeerId, err(E3002))
+                                    . ERROR_MSG(E3002)
+                                    . RECV_EAP_FAIL_I
+                                    . PEER_STATE(PeerId, s3)
+                                    . Peer(Peer_State = s3, Type = no_type)
+                            )
+                        )
+                        % No conflicts, send response back
+                        + sum Cryptosuite:Cryptosuite_t . (
+                            (Cryptosuite in Cryptosuites(data) && Cryptosuite in Cryptosuites(spd)) -> (
+                                SEND_EAP_RES_O(type, PeerId, res5(Cryptosuite))
+                                . Peer(Type = t6, Cryptosuitep = Cryptosuite)
+                            )
+                        )
+                    )
+                    <> (type == t6) -> (
+                        sum np2:N_t . (
+                            NEW_NONCE(np2)
+                            . (PKs2(data) == 0) -> (
+                                SEND_EAP_RES_O(type, PeerId, res6(0, np2))
+                                . Peer(Type = t7, Ns = Ns2(data), Np = np2,
+                                    Kmp = Rekeying(224, Kmp, np2, Ns2(data)),
+                                    Kms = Rekeying(192, Kms, np2, Ns2(data))
+                                )
+                            )
+                            <> (PKs2(data) != 0) -> (
+                                SEND_EAP_RES_O(type, PeerId, res6(PK2(spd), np2))
+                                . Peer(Type = t7, PKs = PKs2(data), Ns = Ns2(data), Np = np2,
+                                    Kmp = RekeyingECDH(224, ECDH(PK2(spd), PKs2(data)), np2, Ns2(data), Kmp),
+                                    Kms = RekeyingECDH(192, ECDH(PK2(spd), PKs2(data)), np2, Ns2(data), Kms)
+                                )
+                            )
+                        )
+                    )
+                    <> (type == t7) -> (
+                        (MACs2(data) == HMAC(
+                            Kms, 2, Vers, Verp, PeerId, Cryptosuites, 0, ServerInfo,
+                            Cryptosuitep, 0, PeerInfo(spd), 0, Ns, 0, Np, 0
+                        )) -> (
+                            SEND_EAP_RES_O(type, PeerId, res7(
+                                HMAC(Kmp, 1, Vers, Verp, PeerId, Cryptosuites, 0, ServerInfo,
+                                Cryptosuitep, 0, PeerInfo(spd), 0, Ns, 0, Np, 0)
+                            ))
+                            . Peer(Type = success)
+                        )
+                        <> (MACs2(data) == HMAC(
+                            Kms, 2, Vers, Verp, PeerId, Cryptosuites, 0, ServerInfo,
+                            Cryptosuitep, 0, PeerInfo(spd), PKs, Ns, PK2(spd), Np, 0
+                        )) -> (
+                            SEND_EAP_RES_O(type, PeerId, res7(
+                                HMAC(Kmp, 1, Vers, Verp, PeerId, Cryptosuites, 0, ServerInfo,
+                                Cryptosuitep, 0, PeerInfo(spd), PKs, Ns, PK2(spd), Np, 0)
+                            ))
+                            . Peer(Type = success)
+                        )
+                        <> SEND_EAP_RES_O(t0, PeerId, err(E4001))
+                        . ERROR_MSG(E4001)
+                        . RECV_EAP_FAIL_I
+                        . PEER_STATE(PeerId, s3)
+                        . Peer(Peer_State = s3, Type = no_type)
+                    )
+                    % Completion Exchange
+                    <> (type == t8) -> (
+                        SEND_EAP_RES_O(type, PeerId, res8(Noob))
+                        . Peer(Type = t4)
+                    )
+                )
+            )
+            + (Peer_State == s1 && Type == no_type) -> (
+                % Receive OOB (Server-to-Peer)
+                (Dirs(spd) == 2 || Dirs(spd) == 3) -> (
+                    sum noob:Noob_t, Hoob:Hoob_t . (
+                        RECV_OOB_S2P_I(PeerId, noob, Hoob)
+                        . (Hoob == H(
+                            Dirp, Vers, Verp, PeerId, Cryptosuites, Dirs, ServerInfo,
+                            Cryptosuitep, Dirp, PeerInfo(spd), PKs, Ns, PK(spd), Np, noob)
+                        ) -> (
+                            PEER_STATE(PeerId, s2)
+                            . Peer(Peer_State = s2, Noob = noob)
+                        ) <> Peer()
+                    )
+                )
+                % Send OOB (Peer-to-Server)
+                + (Dirs(spd) == 1 || Dirs(spd) == 3) -> (
+                    sum noob:Noob_t . (
+                        NEW_NOOB(noob)
+                        . SEND_OOB_P2S_O(PeerId, noob, H(
+                            Dirp, Vers, Verp, PeerId, Cryptosuites, Dirs, ServerInfo,
+                            Cryptosuitep, Dirp, PeerInfo(spd), PKs, Ns, PK(spd), Np, noob)
+                        )
+                        . Peer(noobs = noobs <| noob)
+                    )
+                )
+            )
+        )
+        % Mobility/Timeout/Failure
+        + (Peer_State == s4 && Type == no_type) -> (
+            PEER_STATE(PeerId, s3)
+            . MOBILITY_TIMEOUT_FAILURE
+            . Peer(Peer_State = s3)
+        )
+        % User reset
+        + USER_RESET
+        . PEER_STATE(PeerId, s0)
+        . Peer(Peer_State = s0, PeerId = 0, Type = no_type)
+    )
+    ;
+
+init
+    % Hidden (tau) actions
+    hide({
+        MAX_PEERIDS_REACHED,
+        MAX_NOOBS_REACHED,
+        MAX_NONCES_REACHED
+    },
+    % Allowed actions
+    allow({
+        SEND_EAP_RES_ID, RECV_EAP_RES_ID,
+        SEND_EAP_REQ, RECV_EAP_REQ,
+        SEND_EAP_RES, RECV_EAP_RES,
+        SEND_EAP_FAIL, RECV_EAP_FAIL,
+        SEND_EAP_SUCC, RECV_EAP_SUCC,
+        SEND_OOB_P2S, RECV_OOB_P2S,
+        SEND_OOB_S2P, RECV_OOB_S2P,
+        MOBILITY_TIMEOUT_FAILURE,
+        % USER_RESET,
+        SERV_STATE, PEER_STATE,
+        ERROR_MSG,
+        RNG_MA,
+        QUERY_STATE_MA, UPDATE_STATE_MA,
+        QUERY_DATA_MA, UPDATE_DATA_MA,
+        UPDATE_NONCE_MA, UPDATE_TYPE_MA, UPDATE_KEY_MA,
+        MAX_PEERIDS_REACHED,
+        MAX_NOOBS_REACHED,
+        MAX_NONCES_REACHED
+    },
+    comm({
+    	% Send/receive messages
+        SEND_EAP_RES_ID_O | SEND_EAP_RES_ID_I -> SEND_EAP_RES_ID,
+        RECV_EAP_RES_ID_O | RECV_EAP_RES_ID_I -> RECV_EAP_RES_ID,
+        SEND_EAP_REQ_O    | SEND_EAP_REQ_I    -> SEND_EAP_REQ,
+        RECV_EAP_REQ_O    | RECV_EAP_REQ_I    -> RECV_EAP_REQ,
+        SEND_EAP_RES_O    | SEND_EAP_RES_I    -> SEND_EAP_RES,
+        RECV_EAP_RES_O    | RECV_EAP_RES_I    -> RECV_EAP_RES,
+        SEND_EAP_FAIL_O   | SEND_EAP_FAIL_I   -> SEND_EAP_FAIL,
+        RECV_EAP_FAIL_O   | RECV_EAP_FAIL_I   -> RECV_EAP_FAIL,
+        SEND_EAP_SUCC_O   | SEND_EAP_SUCC_I   -> SEND_EAP_SUCC,
+        RECV_EAP_SUCC_O   | RECV_EAP_SUCC_I   -> RECV_EAP_SUCC,
+        SEND_OOB_P2S_O    | SEND_OOB_P2S_I    -> SEND_OOB_P2S,
+        RECV_OOB_P2S_O    | RECV_OOB_P2S_I    -> RECV_OOB_P2S,
+        SEND_OOB_S2P_O    | SEND_OOB_S2P_I    -> SEND_OOB_S2P,
+        RECV_OOB_S2P_O    | RECV_OOB_S2P_I    -> RECV_OOB_S2P,
+
+        % Database communication
+        QUERY_STATE  | QUERY_STATE_DB  -> QUERY_STATE_MA,
+        QUERY_DATA   | QUERY_DATA_DB   -> QUERY_DATA_MA,
+        UPDATE_STATE | UPDATE_STATE_DB -> UPDATE_STATE_MA,
+        UPDATE_DATA  | UPDATE_DATA_DB  -> UPDATE_DATA_MA,
+        UPDATE_NONCE | UPDATE_NONCE_DB -> UPDATE_NONCE_MA,
+        UPDATE_TYPE  | UPDATE_TYPE_DB  -> UPDATE_TYPE_MA,
+        UPDATE_KEY   | UPDATE_KEY_DB   -> UPDATE_KEY_MA,
+
+        % Random value generation
+        NEW_NONCE_RNG  | NEW_NONCE  -> RNG_MA,
+        NEW_NOOB_RNG   | NEW_NOOB   -> RNG_MA,
+        NEW_PEERID_RNG | NEW_PEERID -> RNG_MA
+    },
+
+    % Start processes
+    Server(static_serv_data, []) ||
+    Peer(s0, 0, no_type, static_peer_data, [], 0, [], 0, 0, no_info, 0, 0, 0, 0, 0, no_key, no_key, []) ||
+    Rng(1, 1, 1) ||
+    Database(state, verp, cryptosuitep, dirp, peerinfo, pkp, np, ns, noob, type, kms, kmp) ||
+    ServerToPeerChannel(true) || PeerToServerChannel(false) ||
+    ServerToPeerOOBChannel || PeerToServerOOBChannel || ServerToPeerOOBChannel || PeerToServerOOBChannel
+    )));

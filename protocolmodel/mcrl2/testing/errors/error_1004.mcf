@@ -1,0 +1,2 @@
+% E1004 - Unexpected message type
+[true* . ERROR_MSG(E1004)] false
