@@ -13,7 +13,6 @@ import _thread
 import base64
 import hashlib
 import threading
-from ws4py.client.threadedclient import WebSocketClient
 from collections import OrderedDict
 from selenium import webdriver
 import json
@@ -23,56 +22,18 @@ import errno
 
 global conf_file;
 global driver;
-global webSocket;
 
 max_oob_tries = 0
 oob_try_keyword = "OobRetries";
 noob_interval_keyword = "NoobInterval";
 noob_timeout_keyword = "NoobTimeout";
-web_socket_keyword = "EnableWebSocket";
 config_file = "wpa_supplicant.conf";
-db_name = "peer_connection_db";
+db_name = "/etc/peer_connection_db";
 oob_file = "file.txt";
-noob_conf_file = "eapoob.conf";
+noob_conf_file = "eapnoob.conf";
 keyword = "OobDirs";
 timeout_threads = [];
 
-class Client(WebSocketClient):
-    def __init__(self, url, peer_id, protocols=None, extensions=None, heartbeat_freq=None,
-        ssl_options=None, headers=None):
-        super(Client, self).__init__(url, protocols, extensions, heartbeat_freq, ssl_options, headers)
-        self.peer_id = peer_id;
-
-    def opened(self):
-        print_log("Client is up");
-        conf = ET.parse('conf.xml')
-        root = conf.getroot()
-
-        device_info = {child.tag: child.text for child in root};
-        device_str = json.dumps(device_info)
-        self.send(device_str)
-        print_log("Client is up")
-
-    def closed(self, code, reason=None):
-        print_log("Closed" + str(code) + str(reason));
-
-    def received_message(self, m):
-        try:
-            recv_str = m.data.decode('utf-8')
-            msg = json.loads(recv_str)
-            if self.validate_msg(msg):
-                print_log(msg)
-            if msg['type'] == 'softwareUpdate':
-                print_log("Software Update Received!!");
-                resp = {}
-                resp['type'] = 'softwareUpdated';
-                resp['peerId'] = self.peer_id
-                self.send(json.dumps(resp))
-        except BaseException as e:
-            print_log(e);
-
-    def validate_msg(self, msg):
-        return True;
 
 def print_log(val):
     f1=open('./logfile_supplicant', 'a+');
@@ -89,7 +50,7 @@ def launch_browser():
     url = "file:///" + os.getcwd() + "/test.html";
     #Latest Firefox and gecodriver support issues. Disable marionette
     capabilities = webdriver.DesiredCapabilities().FIREFOX;
-    capabilities["marionette"] = False
+    #capabilities["marionette"] = False
     driver = webdriver.Firefox(capabilities=capabilities);
     driver.get(url);
     driver.maximize_window();
@@ -193,7 +154,7 @@ def check_wpa():
     return os.path.isfile('wpa_supplicant')
 
 def set_max_oob_tries():
-    global max_oob_tries, noob_interval, noob_timeout, webSocket;
+    global max_oob_tries, noob_interval, noob_timeout;
     noob_conf = open(noob_conf_file, 'r')
 
     for line in noob_conf:
@@ -216,37 +177,6 @@ def set_max_oob_tries():
                 parts = parts.split("=",1)[1]
                 noob_timeout = int (parts) if int(parts) > 59 else 3600
 
-            elif web_socket_keyword in line:
-                parts = re.sub('[\s+]', '', line)
-                parts = parts.split("#",1)[0]
-                parts = parts.split("=",1)[1]
-                webSocket = int (parts) if int(parts) == 0 else 1
-def web_socket():
-    query = 'select PeerId, ServerInfo from PersistentState where state = 4'
-    out = exe_db_query(query)
-    peer_id = out[0]
-    info = json.loads(out[1])
-    parts = info ['Url']
-    parts = parts.split("://",1)[1]
-    ip_addr = parts.split(":",1)[0]
-    print(ip_addr)
-    print("Web Socket Called")
-    url = 'wss://' + ip_addr + ':9000/' + peer_id
-    try:
-        ws = Client(url, peer_id, protocols=['http-only', 'chat'])
-        ws.connect();
-        print_log("logged in");
-        ws.run_forever();
-
-    except KeyboardInterrupt:
-        print_log("User exits the program.");
-
-    except socket_error as serr:
-        if serr.errno != errno.ECONNREFUSED:
-            raise serr
-        print_log(serr);
-    except BaseException as e:
-        ws.close();
 
 def exe_db_query(query, args=None):
     res = os.path.isfile(db_name)
@@ -355,7 +285,7 @@ def gen_oob():
     return
 
 def main():
-    global driver, webSocket;
+    global driver;
     no_result=0;
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--interface', dest='interface',help='Name of the wireless interface')
@@ -427,8 +357,6 @@ def main():
     driver.get(url)
     fullscreen = driver.find_elements_by_class_name('ytp-fullscreen-button')[0]
     fullscreen.click();
-    if webSocket == 1:
-        web_socket();
 
 if __name__=='__main__':
     main();
