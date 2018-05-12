@@ -1,0 +1,2 @@
+% E3001 - No mutually supported protocol version
+[true* . ERROR_MSG(E3001)] false

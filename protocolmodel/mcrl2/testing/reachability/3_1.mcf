@@ -1,0 +1,3 @@
+% Unreachable
+forall n:Pos . val(n <= 1)
+    => <true* . SERV_STATE(n, s3) . PEER_STATE(n, s1)> true

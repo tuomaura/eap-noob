@@ -1,0 +1,2 @@
+% E1003 - Invalid data
+[true* . ERROR_MSG(E1003)] false

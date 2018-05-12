@@ -1,0 +1,2 @@
+% E5004 - Invalid peer info
+[true* . ERROR_MSG(E5004)] false
