@@ -733,7 +733,7 @@ static void  eap_noob_decode_obj(struct eap_noob_server_data * data, json_t * re
                         return;
                     }
                     data->rcvd_params |= INFO_RCVD;
-                    wpa_printf(MSG_DEBUG,"EAP-NOOB:Serv Info %s",data->server_info);
+                    wpa_printf(MSG_DEBUG,"EAP-NOOB: Serv Info %s",data->server_info);
                 }
                 eap_noob_decode_obj(data,value);
                 break;
@@ -767,7 +767,7 @@ static void  eap_noob_decode_obj(struct eap_noob_server_data * data, json_t * re
                 if (0 == os_strcmp(key, REALM)) {
                     EAP_NOOB_FREE(data->Realm);
                     data->Realm = os_strdup(retval_char);
-                    wpa_printf(MSG_DEBUG, "EAP-NOOB:Realm %s",data->Realm);
+                    wpa_printf(MSG_DEBUG, "EAP-NOOB: Realm %s",data->Realm);
                 } else if (0 == os_strcmp(key, NS)) {
                     decode_length = eap_noob_Base64Decode(retval_char, &data->kdf_nonce_data->Ns);
                     if (decode_length) data->rcvd_params |= NONCE_RCVD;
@@ -1927,7 +1927,7 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_sm * sm, json_t * req_ob
         data->peer_attr->Realm = os_strdup(DEFAULT_REALM);
         data->server_attr->Realm = os_strdup(DEFAULT_REALM);
     }
-    wpa_printf(MSG_DEBUG, "EAP-NOOB:Realm %s", data->server_attr->Realm);
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Realm %s", data->server_attr->Realm);
 
     if (SUCCESS == eap_noob_check_compatibility(data)) {
         resp = eap_noob_rsp_type_one(sm,data, id);

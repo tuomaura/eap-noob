@@ -3,7 +3,7 @@
 
 
 /* Configuration file */
-#define CONF_FILE               "eapoob.conf"
+#define CONF_FILE               "eapnoob.conf"
 
 /* All the pre-processors of EAP-NOOB */
 
@@ -11,7 +11,7 @@
 #define DEFAULT_REALM               "eap-noob.net"
 #define VERSION_ONE                 1
 #define SUITE_ONE                   1
-#define DB_NAME                     "peer_connection_db"
+#define DB_NAME                     "/etc/peer_connection_db"
 #define NOOB_LEN                    16
 #define NOOBID_LEN                  16
 #define NONCE_LEN                   32

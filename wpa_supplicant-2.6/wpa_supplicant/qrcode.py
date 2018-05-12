@@ -8,10 +8,10 @@ import re
 import _thread
 import time
 
-db_name = 'peer_connection_db'
+db_name = '/etc/peer_connection_db'
 config_file = "wpa_supplicant.conf"
 target_file = config_file+'.tmp'
-noob_conf_file='eapoob.conf'
+noob_conf_file='eapnoob.conf'
 keyword = 'Direction'
 oob_out_file = '/tmp/noob_output.txt'
 
