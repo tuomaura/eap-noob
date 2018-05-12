@@ -3,7 +3,7 @@
   "main": "server.js",
   "dependencies": {
     "express": "^4.13.3",
-    "ejs": "~0.8.5",
+    "ejs": "^2.5.9",
     "sqlite3": "~3.1.4",
     "body-parser": "~1.0.0",
     "passport": "~0.1.17",

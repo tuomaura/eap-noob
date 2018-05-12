@@ -2,7 +2,7 @@
 module.exports = {
 
     'ooblibPath' : '/home/mudugor1/x25519/hostapd-2.6/hostapd',
-    'dbPath' : '/home/mudugor1/x25519/hostapd-2.6/hostapd/peer_connection_db',
+    'dbPath' : '/etc/peer_connection_db',
     'url'    : '',
     'radCliPath' : '/home/mudugor1/x25519/hostapd-2.6/hostapd/hostapd.radius_clients',
     'enableAccessControl' : '0', //set '1' to enable
