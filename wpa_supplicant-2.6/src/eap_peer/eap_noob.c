@@ -2194,7 +2194,7 @@ static void eap_noob_free_ctx(struct eap_noob_peer_context * data)
     /* Close DB */
     /* TODO check again */
     if (data->peer_db)
-    if (SQLITE_OK != sqlite3_close(data->peer_db)) {
+    if (SQLITE_OK != sqlite3_close_v2(data->peer_db)) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB:Error closing DB");
         const char * sql_error = sqlite3_errmsg(data->peer_db);
         if (sql_error != NULL)
