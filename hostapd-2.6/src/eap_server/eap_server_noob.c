@@ -2536,7 +2536,7 @@ static Boolean eap_noob_isSuccess(struct eap_sm *sm, void *priv)
 **/
 static u8 * eap_noob_getKey(struct eap_sm * sm, void * priv, size_t * len)
 {
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: GET  KEY");
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: GET KEY");
     struct eap_noob_server_context *data = NULL;
     u8 *key = NULL;
 
@@ -2567,17 +2567,21 @@ static u8 * eap_noob_getKey(struct eap_sm * sm, void * priv, size_t * len)
 **/
 static u8 * eap_noob_get_session_id(struct eap_sm *sm, void *priv, size_t *len)
 {
+    wpa_printf(MSG_DEBUG, "EAP-NOOB:Get Session ID called");
     struct eap_noob_server_context *data = NULL;
     u8 *session_id = NULL;
-    wpa_printf(MSG_DEBUG, "EAP-NOOB:Get Session ID called");
+
+    if (!priv || !sm || !len) return NULL;
+  	data = priv;
 
     if ((data->peer_attr->server_state != REGISTERED_STATE) || (!data->peer_attr->kdf_out->MethodId))
         return NULL;
     
+    if (NULL == (session_id = os_malloc(1 + METHOD_ID_LEN)))
+        return NULL;
+
+
     *len = 1 + METHOD_ID_LEN;
-    session_id = os_malloc(*len);
-    if (session_id == NULL)
-	return NULL;
 
     session_id[0] = EAP_TYPE_NOOB;
     os_memcpy(session_id + 1, data->peer_attr->kdf_out->MethodId, METHOD_ID_LEN);
@@ -2802,8 +2806,8 @@ static void eap_noob_free_ctx(struct eap_noob_server_context * data)
         os_free(peer); peer = NULL;
     }
 
-    if (SQLITE_OK != sqlite3_close(data->server_db)) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB:Error closing DB");
+    if (SQLITE_OK != sqlite3_close_v2(data->server_db)) {
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Error closing DB");
         char * sql_error = (char *)sqlite3_errmsg(data->server_db);
         if (sql_error != NULL)
             wpa_printf(MSG_DEBUG,"EAP-NOOB: SQL error : %s\n", sql_error);

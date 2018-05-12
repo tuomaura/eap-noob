@@ -126,7 +126,7 @@
 #define TYPE_EIGHT_PARAMS       (PEERID_RCVD|NOOBID_RCVD)
 
 #define CONF_PARAMS             (DIRP_RCVD|CRYPTOSUITEP_RCVD|VERSION_RCVD|SERVER_NAME_RCVD|SERVER_URL_RCVD|WE_COUNT_RCVD|REALM_RCVD|ENCODE_RCVD)
-#define DB_NAME                 "peer_connection_db"
+#define DB_NAME                 "/etc/peer_connection_db"
 #define DEVICE_TABLE            "devices"
 #define PEER_TABLE              "peers_connected"
 

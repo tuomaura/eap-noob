@@ -23,7 +23,7 @@
                                         NAS_id TEXT,\
 					user_name TEXT PRIMARY KEY)"
 
-#define DB_NAME                 "peer_connection_db"
+#define DB_NAME                 "/etc/peer_connection_db"
 
 
 struct radius_hdr {
