@@ -1050,7 +1050,6 @@ static int eap_noob_derive_session_secret(struct eap_noob_server_context * data,
 {
     EVP_PKEY_CTX * ctx = NULL;
     EVP_PKEY * peerkey = NULL;
-    BIO * mem_pub_peer = NULL;
     unsigned char * peer_pub_key = NULL;
     size_t skeylen = 0, len = 0;
     int ret = SUCCESS;
@@ -1060,21 +1059,17 @@ static int eap_noob_derive_session_secret(struct eap_noob_server_context * data,
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Server context is NULL");
         return FAILURE;
     }
-    mem_pub_peer = BIO_new(BIO_s_mem());
-    if (NULL == mem_pub_peer) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Error allocating memory in BIO");
-        return FAILURE;
-    }
+    
     EAP_NOOB_FREE(data->peer_attr->ecdh_exchange_data->shared_key);
     len = eap_noob_Base64Decode(data->peer_attr->ecdh_exchange_data->x_peer_b64, &peer_pub_key);
     if (len == 0) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to decode");
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to decode public key of peer");
         ret = FAILURE; goto EXIT;
     }
 
-    BIO_write(mem_pub_peer, peer_pub_key, len);
-    if (NULL == d2i_PUBKEY_bio(mem_pub_peer, &peerkey)) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to get peer public key");
+    peerkey = EVP_PKEY_new_raw_public_key(EVP_PKEY_X25519, NULL, peer_pub_key, len);
+    if(peerkey == NULL) {
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to initialize public key of peer");
         ret = FAILURE; goto EXIT;
     }
 
@@ -1122,9 +1117,6 @@ EXIT:
 
     EAP_NOOB_FREE(peer_pub_key);
 
-    if (NULL != mem_pub_peer)
-        BIO_free_all(mem_pub_peer);
-
     if (ret != SUCCESS)
         EAP_NOOB_FREE(data->peer_attr->ecdh_exchange_data->shared_key);
 
@@ -1139,6 +1131,20 @@ static int eap_noob_get_key(struct eap_noob_server_context * data)
     size_t pub_key_len = 0;
     int ret = SUCCESS;
 
+/*
+    Uncomment the next 6 lines of code for using the test vectors of Curve25519 in RFC 7748.
+    Peer = Bob
+    Server = Alice
+*/
+/*
+
+    char * priv_key_test_vector = "MC4CAQAwBQYDK2VuBCIEIHcHbQpzGKV9PBbBclGyZkXfTC+H68CZKrF3+6UduSwq";
+    BIO* b641 = BIO_new(BIO_f_base64());
+    BIO* mem1 = BIO_new(BIO_s_mem());   
+    BIO_set_flags(b641,BIO_FLAGS_BASE64_NO_NL);
+    BIO_puts(mem1,priv_key_test_vector);
+    mem1 = BIO_push(b641,mem1);
+*/
     wpa_printf(MSG_DEBUG, "EAP-NOOB: entering %s", __func__);
 
     /* Initialize context to generate keys - Curve25519 */
@@ -1151,6 +1157,14 @@ static int eap_noob_get_key(struct eap_noob_server_context * data)
 
     /* Generate X25519 key pair */
     EVP_PKEY_keygen(pctx, &data->peer_attr->ecdh_exchange_data->dh_key);
+
+/*
+    If you are using the RFC 7748 test vector, you do not need to generate a key pair. Instead you use the
+    private key from the RFC. For using the test vector, comment out the line above and 
+    uncomment the following line code
+*/
+    //d2i_PrivateKey_bio(mem1,&data->peer_attr->ecdh_exchange_data->dh_key);
+
     PEM_write_PrivateKey(stdout, data->peer_attr->ecdh_exchange_data->dh_key,
                          NULL, NULL, 0, NULL, NULL);
     PEM_write_PUBKEY(stdout, data->peer_attr->ecdh_exchange_data->dh_key);
@@ -1164,8 +1178,16 @@ static int eap_noob_get_key(struct eap_noob_server_context * data)
     pub_key_char = os_zalloc(MAX_X25519_LEN);
     pub_key_len = BIO_read(mem_pub, pub_key_char, MAX_X25519_LEN);
 
+/*
+ * This code removes the openssl internal ASN encoding and only keeps the 32 bytes of curve25519 
+ * public key which is then encoded in the JWK format and sent to the other party. This code may
+ * need to be updated when openssl changes its internal format for public-key encoded in PEM.
+*/
+    unsigned char * pub_key_char_asn_removed = pub_key_char + (pub_key_len-32);
+    pub_key_len = 32;
+
     EAP_NOOB_FREE(data->peer_attr->ecdh_exchange_data->x_b64);
-    eap_noob_Base64Encode(pub_key_char, pub_key_len, &data->peer_attr->ecdh_exchange_data->x_b64);
+    eap_noob_Base64Encode(pub_key_char_asn_removed, pub_key_len, &data->peer_attr->ecdh_exchange_data->x_b64);
 
 EXIT:
     if (pctx)
