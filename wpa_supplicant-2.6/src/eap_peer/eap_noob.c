@@ -521,8 +521,7 @@ int eap_noob_Base64Encode(const unsigned char * buffer, size_t length, char ** b
 static int eap_noob_derive_secret(struct eap_noob_peer_context * data, size_t * secret_len)
 {
     EVP_PKEY_CTX * ctx = NULL;
-    EVP_PKEY * peerkey = NULL;
-    BIO * mem_pub_server = NULL;
+    EVP_PKEY * serverkey = NULL;
     unsigned char * server_pub_key  = NULL;
     size_t skeylen = 0, len = 0;
     int ret = SUCCESS;
@@ -532,11 +531,6 @@ static int eap_noob_derive_secret(struct eap_noob_peer_context * data, size_t * 
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Server context is NULL");
         return FAILURE;
     }
-    mem_pub_server = BIO_new(BIO_s_mem());
-    if (NULL == mem_pub_server) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Error allocating memory in BIO");
-        return FAILURE;
-    }
     EAP_NOOB_FREE(data->server_attr->ecdh_exchange_data->shared_key);
     len = eap_noob_Base64Decode(data->server_attr->ecdh_exchange_data->x_serv_b64, &server_pub_key);
     if (len == 0) {
@@ -544,11 +538,7 @@ static int eap_noob_derive_secret(struct eap_noob_peer_context * data, size_t * 
         ret = FAILURE; goto EXIT;
     }
 
-    BIO_write(mem_pub_server, server_pub_key, len);
-    if (NULL == d2i_PUBKEY_bio(mem_pub_server, &peerkey)) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to get peer public key");
-        ret = FAILURE; goto EXIT;
-    }
+    serverkey = EVP_PKEY_new_raw_public_key(EVP_PKEY_X25519, NULL, server_pub_key, len);
 
     ctx = EVP_PKEY_CTX_new(data->server_attr->ecdh_exchange_data->dh_key, NULL);
     if (!ctx) {
@@ -561,10 +551,10 @@ static int eap_noob_derive_secret(struct eap_noob_peer_context * data, size_t * 
         ret = FAILURE; goto EXIT;
     }
 
-    if (EVP_PKEY_derive_set_peer(ctx, peerkey) <= 0) {
+    if (EVP_PKEY_derive_set_peer(ctx, serverkey) <= 0) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to set peer key");
         ret = FAILURE; goto EXIT;
-    }
+    }	
 
     if (EVP_PKEY_derive(ctx, NULL, &skeylen) <= 0) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to get secret key len");
@@ -594,9 +584,6 @@ EXIT:
 
     EAP_NOOB_FREE(server_pub_key);
 
-    if (NULL != mem_pub_server)
-        BIO_free_all(mem_pub_server);
-
     if (ret != SUCCESS)
         EAP_NOOB_FREE(data->server_attr->ecdh_exchange_data->shared_key);
 
@@ -611,6 +598,21 @@ static int eap_noob_get_key(struct eap_noob_server_data * data)
     size_t pub_key_len = 0;
     int ret = SUCCESS;
 
+
+/*
+	Uncomment this code for using the test vectors of Curve25519 in RFC	7748. 
+	Peer = Bob
+	Server = Alice
+*/
+ /*   
+	char * priv_key_test_vector = "MC4CAQAwBQYDK2VuBCIEIF2rCH5iSopLeeF/i4OADuZvO7EpJhi2/Rwviyf/iODr";
+    BIO* b641 = BIO_new(BIO_f_base64());
+    BIO* mem1 = BIO_new(BIO_s_mem());	
+    BIO_set_flags(b641,BIO_FLAGS_BASE64_NO_NL);
+    BIO_puts(mem1,priv_key_test_vector);
+    mem1 = BIO_push(b641,mem1);
+ */   
+
     wpa_printf(MSG_DEBUG, "EAP-NOOB: entering %s", __func__);
 
     /* Initialize context to generate keys - Curve25519 */
@@ -621,8 +623,16 @@ static int eap_noob_get_key(struct eap_noob_server_data * data)
 
     EVP_PKEY_keygen_init(pctx);
 
-    /* Generate X25519 key pair */
+    /* Generate X25519 key pair */       
     EVP_PKEY_keygen(pctx, &data->ecdh_exchange_data->dh_key);
+
+/* 
+	If you are using the RFC 7748 test vector, you do not need to generate a key pair. Instead you use the
+    private key from the RFC. In this case, comment out the line above and uncomment the following line 
+    code
+*/
+    //d2i_PrivateKey_bio(mem1,&data->ecdh_exchange_data->dh_key);
+    
     PEM_write_PrivateKey(stdout, data->ecdh_exchange_data->dh_key,
                          NULL, NULL, 0, NULL, NULL);
     PEM_write_PUBKEY(stdout, data->ecdh_exchange_data->dh_key);
@@ -636,8 +646,16 @@ static int eap_noob_get_key(struct eap_noob_server_data * data)
     pub_key_char = os_zalloc(MAX_X25519_LEN);
     pub_key_len = BIO_read(mem_pub, pub_key_char, MAX_X25519_LEN);
 
+/* 
+ * This code removes the openssl internal ASN encoding and only keeps the 32 bytes of curve25519  
+ * public key which is then encoded in the JWK format and sent to the other party. This code may
+ * need to be updated when openssl changes its internal format for public-key encoded in PEM. 
+*/
+    unsigned char * pub_key_char_asn_removed = pub_key_char + (pub_key_len-32);
+    pub_key_len = 32;
+
     EAP_NOOB_FREE(data->ecdh_exchange_data->x_b64);
-    eap_noob_Base64Encode(pub_key_char, pub_key_len, &data->ecdh_exchange_data->x_b64);
+    eap_noob_Base64Encode(pub_key_char_asn_removed, pub_key_len, &data->ecdh_exchange_data->x_b64);
 
 EXIT:
     if (pctx)
