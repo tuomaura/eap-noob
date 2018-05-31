@@ -29,7 +29,7 @@
 #define MAX_CONF_LEN            500
 #define MAX_INFO_LEN            500
 
-#define KDF_LEN                 288
+#define KDF_LEN                 320
 #define MSK_LEN                 64
 #define EMSK_LEN                64
 #define AMSK_LEN                64
@@ -50,6 +50,7 @@
 
 #define SUCCESS                 1
 #define FAILURE                 0
+#define EMPTY                   2
 
 #define INVALID                 0
 #define VALID                   1
