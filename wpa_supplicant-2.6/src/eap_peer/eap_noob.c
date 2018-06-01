@@ -980,9 +980,7 @@ static int eap_noob_exec_query(struct eap_noob_peer_context * data, const char *
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s, query - (%s), Number of arguments (%d)", __func__, query, num_args);
     
-    if(strstr(query,"INSERT"))
-        query_type=0;
-    if(strstr(query,"SELECT"))
+    if(os_strstr(query,"SELECT"))
         query_type=1;
 
     if (SQLITE_OK != (ret = sqlite3_prepare_v2(data->peer_db, query, strlen(query)+1, &stmt, NULL))) {
@@ -1212,11 +1210,10 @@ static struct wpabuf * eap_noob_err_msg(struct eap_noob_peer_context * data, u8 
     if (err < 0) goto EXIT;
     wpa_printf(MSG_DEBUG, "EAP-NOOB: ERROR message = %s == %d", req_json, (int)strlen(req_json));
     len = strlen(req_json)+1;
-    if (NULL == (resp = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB, len, EAP_CODE_REQUEST, id))) {
+    if (NULL == (resp = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB, len, EAP_CODE_RESPONSE, id))) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to allocate memory for NOOB ERROR message"); goto EXIT;
     }
     wpabuf_put_data(resp, req_json, len);
-    data->server_attr->err_code = NO_ERROR;
 EXIT:
     json_decref(req_obj);
     EAP_NOOB_FREE(req_json);
@@ -1258,7 +1255,7 @@ static struct wpabuf * eap_noob_rsp_type_four(const struct eap_noob_peer_context
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
     mac = eap_noob_gen_MAC(data, MACP_TYPE, data->server_attr->kdf_out->Kmp, KMP_LEN, COMPLETION_EXCHANGE);
     if (NULL == mac) goto EXIT;
-    err -= (FAILURE == eap_noob_Base64Encode(mac+16, MAC_LEN, &mac_b64));
+    err -= (FAILURE == eap_noob_Base64Encode(mac, MAC_LEN, &mac_b64));
     err -= (NULL == (rsp_obj = json_object()));
     err += json_object_set_new(rsp_obj, TYPE, json_integer(EAP_NOOB_TYPE_4));
     err += json_object_set_new(rsp_obj, PEERID, json_string(data->server_attr->PeerId));
@@ -1613,7 +1610,7 @@ static struct wpabuf * eap_noob_rsp_type_seven(const struct eap_noob_peer_contex
     wpa_printf(MSG_DEBUG, "EAP-NOOB: OOB BUILD RESP TYPE 7");
     err -= (NULL == (rsp_obj = json_object()));
     err -= (NULL == (mac = eap_noob_gen_MAC(data,MACP_TYPE,data->server_attr->kdf_out->Kmp, KMP_LEN,RECONNECT_EXCHANGE)));
-    err -= (FAILURE == eap_noob_Base64Encode(mac+16, MAC_LEN, &mac_b64));
+    err -= (FAILURE == eap_noob_Base64Encode(mac, MAC_LEN, &mac_b64));
     err += json_object_set_new(rsp_obj,TYPE,json_integer(EAP_NOOB_TYPE_7));
     err += json_object_set_new(rsp_obj,PEERID,json_string(data->peer_attr->PeerId));
     err += json_object_set_new(rsp_obj,MACP,json_string(mac_b64));
@@ -1663,7 +1660,7 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_sm * sm, json_t * req_
     mac = eap_noob_gen_MAC(data, MACS_TYPE, data->server_attr->kdf_out->Kms, KMS_LEN, RECONNECT_EXCHANGE);
     if (NULL == mac) return NULL;
 
-    if (0 != strcmp((char *)mac+16,data->server_attr->MAC)) {
+    if (0 != strcmp((char *)mac,data->server_attr->MAC)) {
         data->server_attr->err_code = E4001;
         resp = eap_noob_err_msg(data, id); return resp;
     }
@@ -1836,7 +1833,7 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_sm * sm, json_t * req_o
 
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: MAC received ", data->server_attr->MAC, 32);
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: MAC calculated ", mac, 32);
-    if (0 != os_memcmp(mac+16, data->server_attr->MAC, MAC_LEN)) {
+    if (0 != os_memcmp(mac, data->server_attr->MAC, MAC_LEN)) {
         data->server_attr->err_code = E4001;
         resp = eap_noob_err_msg(data,id); return resp;
     }
@@ -2140,7 +2137,8 @@ static struct wpabuf * eap_noob_process(struct eap_sm * sm, void * priv, struct 
             break;
         case EAP_NOOB_TYPE_4:
             resp = eap_noob_req_type_four(sm,req_obj ,data, id);
-            ret->decision = DECISION_COND_SUCC;
+            if(data->server_attr->err_code == NO_ERROR)
+                ret->decision = DECISION_COND_SUCC;
             break;
         case EAP_NOOB_TYPE_5:
             resp = eap_noob_req_type_five(sm, req_obj, data, id);
@@ -2150,7 +2148,8 @@ static struct wpabuf * eap_noob_process(struct eap_sm * sm, void * priv, struct 
             break;
         case EAP_NOOB_TYPE_7:
             resp = eap_noob_req_type_seven(sm, req_obj, data, id);
-            ret->decision = DECISION_COND_SUCC;
+            if(data->server_attr->err_code == NO_ERROR)
+                ret->decision = DECISION_COND_SUCC;
             break;
         case EAP_NOOB_HINT:
             resp = eap_noob_req_type_eight(sm, req_obj, data, id);
@@ -2160,6 +2159,7 @@ static struct wpabuf * eap_noob_process(struct eap_sm * sm, void * priv, struct 
             break;
     }
 EXIT:
+    data->server_attr->err_code = NO_ERROR;
     if (req_type)
         json_decref(req_type);
     else if (req_obj)
@@ -2579,8 +2579,7 @@ static void * eap_noob_init(struct eap_sm * sm)
 static Boolean eap_noob_isKeyAvailable(struct eap_sm *sm, void *priv)
 {
     struct eap_noob_peer_context * data = priv;
-    Boolean retval = ((data->server_attr->state == REGISTERED_STATE) && \
-                      (data->server_attr->ecdh_exchange_data->shared_key_b64 != NULL));
+    Boolean retval = ((data->server_attr->state == REGISTERED_STATE) && (data->server_attr->ecdh_exchange_data->shared_key_b64 != NULL));
     wpa_printf(MSG_DEBUG, "EAP-NOOB: State = %d, Key Available? %d", data->server_attr->state, retval);
     return retval;
 }

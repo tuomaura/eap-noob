@@ -37,7 +37,7 @@
 #define KZ_LEN                  32
 #define KMS_LEN                 32
 #define KMP_LEN                 32
-#define MAC_LEN                 16
+#define MAC_LEN                 32
 #define MAX_X25519_LEN          48
 
 #define NUM_OF_STATES           5
