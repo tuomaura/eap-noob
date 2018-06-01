@@ -1136,9 +1136,9 @@ static int eap_noob_get_key(struct eap_noob_server_context * data)
     Peer = Bob
     Server = Alice
 */
-/*
 
-    char * priv_key_test_vector = "MC4CAQAwBQYDK2VuBCIEIHcHbQpzGKV9PBbBclGyZkXfTC+H68CZKrF3+6UduSwq";
+
+/*    char * priv_key_test_vector = "MC4CAQAwBQYDK2VuBCIEIHcHbQpzGKV9PBbBclGyZkXfTC+H68CZKrF3+6UduSwq";
     BIO* b641 = BIO_new(BIO_f_base64());
     BIO* mem1 = BIO_new(BIO_s_mem());   
     BIO_set_flags(b641,BIO_FLAGS_BASE64_NO_NL);
@@ -1156,14 +1156,14 @@ static int eap_noob_get_key(struct eap_noob_server_context * data)
     EVP_PKEY_keygen_init(pctx);
 
     /* Generate X25519 key pair */
-    EVP_PKEY_keygen(pctx, &data->peer_attr->ecdh_exchange_data->dh_key);
+   EVP_PKEY_keygen(pctx, &data->peer_attr->ecdh_exchange_data->dh_key);
 
 /*
     If you are using the RFC 7748 test vector, you do not need to generate a key pair. Instead you use the
     private key from the RFC. For using the test vector, comment out the line above and 
     uncomment the following line code
 */
-    //d2i_PrivateKey_bio(mem1,&data->peer_attr->ecdh_exchange_data->dh_key);
+   // d2i_PrivateKey_bio(mem1,&data->peer_attr->ecdh_exchange_data->dh_key);
 
     PEM_write_PrivateKey(stdout, data->peer_attr->ecdh_exchange_data->dh_key,
                          NULL, NULL, 0, NULL, NULL);
@@ -1311,7 +1311,7 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_noob_server_context * 
 
     eap_noob_gen_KDF(data, RECONNECT_EXCHANGE);
     mac = eap_noob_gen_MAC(data, MACS_TYPE, data->peer_attr->kdf_out->Kms, KMS_LEN, RECONNECT_EXCHANGE);
-    err -= (SUCCESS == eap_noob_Base64Encode(mac+16, MAC_LEN, &mac_b64));
+    err -= (SUCCESS == eap_noob_Base64Encode(mac, MAC_LEN, &mac_b64));
     err -= (NULL == (req_obj = json_object()));
     err += json_object_set_new(req_obj,TYPE, json_integer(EAP_NOOB_TYPE_7));
     err += json_object_set_new(req_obj, PEERID, json_string(data->peer_attr->PeerId));
@@ -1498,7 +1498,7 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_noob_server_context * d
                  KMS_LEN,COMPLETION_EXCHANGE))) goto EXIT;
     wpa_hexdump(MSG_DEBUG, "EAP-NOOB: MAC calculated and sending out", mac, 32);
     wpa_printf(MSG_DEBUG, "EAP-NOOB: MAC b64 sending out %s", mac_b64);
-    err -= (FAILURE == eap_noob_Base64Encode(mac+16, MAC_LEN, &mac_b64));
+    err -= (FAILURE == eap_noob_Base64Encode(mac, MAC_LEN, &mac_b64));
     err -= (NULL == (req_obj = json_object()));
     err += json_object_set_new(req_obj, TYPE, json_integer(EAP_NOOB_TYPE_4));
     err += json_object_set_new(req_obj, PEERID, json_string(data->peer_attr->PeerId));
@@ -2141,7 +2141,7 @@ static void eap_noob_rsp_type_seven(struct eap_noob_server_context * data,
     if (eap_noob_verify_peerId(data)) {
         mac = eap_noob_gen_MAC(data, MACP_TYPE, data->peer_attr->kdf_out->Kmp, KMP_LEN, RECONNECT_EXCHANGE);
         eap_noob_Base64Encode(mac, MAC_LEN, &mac_b64);
-        if (0 != strcmp(data->peer_attr->mac, (char *)mac+16)) {
+        if (0 != strcmp(data->peer_attr->mac, (char *)mac)) {
             eap_noob_set_error(data->peer_attr,E4001);
             eap_noob_set_done(data, NOT_DONE); goto EXIT;
         }
@@ -2256,7 +2256,7 @@ static void eap_noob_rsp_type_four(struct eap_noob_server_context * data,
     if (eap_noob_verify_peerId(data)) {
         mac = eap_noob_gen_MAC(data, MACP_TYPE, data->peer_attr->kdf_out->Kmp, KMP_LEN, COMPLETION_EXCHANGE);
         eap_noob_Base64Encode(mac, MAC_LEN, &mac_b64);
-        if (0 != strcmp(data->peer_attr->mac, (char *)mac+16)) {
+        if (0 != strcmp(data->peer_attr->mac, (char *)mac)) {
             eap_noob_set_error(data->peer_attr,E4001); eap_noob_set_done(data, NOT_DONE); goto EXIT;
         }
         eap_noob_change_state(data, REGISTERED_STATE);

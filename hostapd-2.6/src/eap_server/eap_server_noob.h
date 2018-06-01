@@ -32,14 +32,14 @@
 #define MAX_PEERID_LEN          22
 #define MAX_LINE_SIZE           1000
 
-#define KDF_LEN                 288
+#define KDF_LEN                 320
 #define MSK_LEN                 64
 #define EMSK_LEN                64
 #define AMSK_LEN                64
 #define KZ_LEN                  32
 #define KMS_LEN                 32
 #define KMP_LEN                 32
-#define MAC_LEN                 16
+#define MAC_LEN                 32
 #define MAX_X25519_LEN          48
 #define HASH_LEN                16
 #define METHOD_ID_LEN		    32
