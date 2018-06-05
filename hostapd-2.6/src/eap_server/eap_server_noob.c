@@ -266,7 +266,7 @@ static void columns_ephemeralstate(struct eap_noob_server_context * data, sqlite
 static void columns_ephemeralnoob(struct eap_noob_server_context * data, sqlite3_stmt * stmt)
 {
     data->peer_attr->oob_data->NoobId_b64 = os_strdup((char *)sqlite3_column_text(stmt, 1));
-    data->peer_attr->oob_data->noob_b64 = os_strdup((char *)sqlite3_column_text(stmt, 2));
+    data->peer_attr->oob_data->Noob_b64 = os_strdup((char *)sqlite3_column_text(stmt, 2));
     data->peer_attr->oob_data->sent_time = (uint64_t) sqlite3_column_int64(stmt, 3);
 }
 
@@ -955,11 +955,12 @@ err:
  * @state : EAP_NOOB state
  * Returns:
  **/
-static void eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
+static int eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
 {
     const EVP_MD * md = EVP_sha256();
     unsigned char * out = os_zalloc(KDF_LEN);
-    int counter = 0;
+    int counter = 0, len = 0;
+    u8 * Noob;	
 
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: ALGORITH ID:", ALGORITHM_ID, ALGORITHM_ID_LEN);
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Peer_NONCE:", data->peer_attr->kdf_nonce_data->Np, NONCE_LEN);
@@ -968,13 +969,18 @@ static void eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
                       ECDH_SHARED_SECRET_LEN);
 
     if (state == COMPLETION_EXCHANGE) {
-        wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: NOOB:", data->peer_attr->oob_data->noob, NOOB_LEN);
+        len = eap_noob_Base64Decode(data->peer_attr->oob_data->Noob_b64, &Noob);
+	if (len != NOOB_LEN) {
+		wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to decode Noob");
+		return FAILURE;
+	}
+        wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: NOOB:", Noob, NOOB_LEN);
         eap_noob_ECDH_KDF_X9_63(out, KDF_LEN,
                 data->peer_attr->ecdh_exchange_data->shared_key, ECDH_SHARED_SECRET_LEN,
                 (unsigned char *)ALGORITHM_ID, ALGORITHM_ID_LEN,
                 data->peer_attr->kdf_nonce_data->Np, NONCE_LEN,
                 data->peer_attr->kdf_nonce_data->Ns, NONCE_LEN,
-                data->peer_attr->oob_data->noob, NOOB_LEN, md);
+                Noob, NOOB_LEN, md);
     } else {
         wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Kz:", data->peer_attr->kdf_out->Kz, KZ_LEN);
         eap_noob_ECDH_KDF_X9_63(out, KDF_LEN,
@@ -992,6 +998,8 @@ static void eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
         data->peer_attr->kdf_out->amsk = os_zalloc(AMSK_LEN);
         data->peer_attr->kdf_out->MethodId = os_zalloc(METHOD_ID_LEN);
         data->peer_attr->kdf_out->Kms = os_zalloc(KMS_LEN);
+        
+
         data->peer_attr->kdf_out->Kmp = os_zalloc(KMP_LEN);
         data->peer_attr->kdf_out->Kz = os_zalloc(KZ_LEN);
 
@@ -1012,7 +1020,9 @@ static void eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
         os_free(out);
     } else {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Error in allocating memory, %s", __func__);
+	return FAILURE;
     }
+    return SUCCESS;
 }
 
 
@@ -1138,13 +1148,13 @@ static int eap_noob_get_key(struct eap_noob_server_context * data)
 */
 
 
-/*    char * priv_key_test_vector = "MC4CAQAwBQYDK2VuBCIEIHcHbQpzGKV9PBbBclGyZkXfTC+H68CZKrF3+6UduSwq";
+    char * priv_key_test_vector = "MC4CAQAwBQYDK2VuBCIEIHcHbQpzGKV9PBbBclGyZkXfTC+H68CZKrF3+6UduSwq";
     BIO* b641 = BIO_new(BIO_f_base64());
     BIO* mem1 = BIO_new(BIO_s_mem());   
     BIO_set_flags(b641,BIO_FLAGS_BASE64_NO_NL);
     BIO_puts(mem1,priv_key_test_vector);
     mem1 = BIO_push(b641,mem1);
-*/
+
     wpa_printf(MSG_DEBUG, "EAP-NOOB: entering %s", __func__);
 
     /* Initialize context to generate keys - Curve25519 */
@@ -1156,14 +1166,14 @@ static int eap_noob_get_key(struct eap_noob_server_context * data)
     EVP_PKEY_keygen_init(pctx);
 
     /* Generate X25519 key pair */
-   EVP_PKEY_keygen(pctx, &data->peer_attr->ecdh_exchange_data->dh_key);
+   //EVP_PKEY_keygen(pctx, &data->peer_attr->ecdh_exchange_data->dh_key);
 
 /*
     If you are using the RFC 7748 test vector, you do not need to generate a key pair. Instead you use the
     private key from the RFC. For using the test vector, comment out the line above and 
     uncomment the following line code
 */
-   // d2i_PrivateKey_bio(mem1,&data->peer_attr->ecdh_exchange_data->dh_key);
+    d2i_PrivateKey_bio(mem1,&data->peer_attr->ecdh_exchange_data->dh_key);
 
     PEM_write_PrivateKey(stdout, data->peer_attr->ecdh_exchange_data->dh_key,
                          NULL, NULL, 0, NULL, NULL);
@@ -1280,7 +1290,7 @@ static u8 * eap_noob_gen_MAC(struct eap_noob_server_context * data, int type, u8
         err += json_array_set_new(mac_array, 0, json_integer(2));
     else
         err += json_array_set_new(mac_array, 0, json_integer(1));
-    err += json_array_append_new(mac_array, json_string(data->peer_attr->oob_data->noob_b64));
+    err += json_array_append_new(mac_array, json_string(data->peer_attr->oob_data->Noob_b64));
     os_free(data->peer_attr->mac_input_str);
     err -= (NULL == (data->peer_attr->mac_input_str = json_dumps(mac_array, JSON_COMPACT|JSON_PRESERVE_ORDER)));
     if (err < 0) wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected error in setting MAC");
@@ -1309,7 +1319,9 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_noob_server_context * 
     json_t * req_obj = NULL;
     size_t len = 0; int err = 0;
 
-    eap_noob_gen_KDF(data, RECONNECT_EXCHANGE);
+    if (SUCCESS != eap_noob_gen_KDF(data, RECONNECT_EXCHANGE)) {
+	wpa_printf(MSG_ERROR, "EAP-NOOB: Error in KDF during Request/NOOB-FR"); goto EXIT;
+    }
     mac = eap_noob_gen_MAC(data, MACS_TYPE, data->peer_attr->kdf_out->Kms, KMS_LEN, RECONNECT_EXCHANGE);
     err -= (SUCCESS == eap_noob_Base64Encode(mac, MAC_LEN, &mac_b64));
     err -= (NULL == (req_obj = json_object()));
@@ -1493,7 +1505,9 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_noob_server_context * d
         return NULL;
     }
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
-    eap_noob_gen_KDF(data, COMPLETION_EXCHANGE);
+    if (SUCCESS != eap_noob_gen_KDF(data, COMPLETION_EXCHANGE)) {
+	wpa_printf(MSG_ERROR, "EAP-NOOB: Error in KDF during Request/NOOB-CE"); goto EXIT;
+    }
     if (NULL == (mac = eap_noob_gen_MAC(data, MACS_TYPE, data->peer_attr->kdf_out->Kms,
                  KMS_LEN,COMPLETION_EXCHANGE))) goto EXIT;
     wpa_hexdump(MSG_DEBUG, "EAP-NOOB: MAC calculated and sending out", mac, 32);
@@ -2074,19 +2088,14 @@ static void  eap_noob_decode_obj(struct eap_noob_peer_data * data, json_t * resp
                     EAP_NOOB_FREE(data->peerid_rcvd); data->peerid_rcvd = os_strdup(retval_char);
                     data->rcvd_params |= PEERID_RCVD;
                 } else if (0 == strcmp(key, NOOBID)) {
-                    EAP_NOOB_FREE(data->oob_data->NoobId_b64); EAP_NOOB_FREE(data->oob_data->NoobId);
+                    EAP_NOOB_FREE(data->oob_data->NoobId_b64); 
                     data->oob_data->NoobId_b64 = os_strdup(retval_char);
-                    data->oob_data->NoobId_len = \
-                                                 eap_noob_Base64Decode(data->oob_data->NoobId_b64, &data->oob_data->NoobId);
-                    if (0 == data->oob_data->NoobId_b64)
-                        wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to decode NoobId");
-                    else data->rcvd_params |= NOOBID_RCVD;
+                    data->rcvd_params |= NOOBID_RCVD;
                 } else if (0 == strcmp(key, PEERINFO_SERIAL)) {
                     data->peer_snum = os_strdup(retval_char);
                 } else if (0 == strcmp(key, NP)) {
                     data->kdf_nonce_data->nonce_peer_b64 = os_strdup(retval_char);
-                    decode_length = \
-                                    eap_noob_Base64Decode((char *)data->kdf_nonce_data->nonce_peer_b64, &data->kdf_nonce_data->Np);
+                    decode_length = eap_noob_Base64Decode((char *)data->kdf_nonce_data->nonce_peer_b64, &data->kdf_nonce_data->Np);
                     if (0 == decode_length)
                         wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to decode peer nonce");
                     else data->rcvd_params |= NONCE_RCVD;
@@ -2809,10 +2818,8 @@ static void eap_noob_free_ctx(struct eap_noob_server_context * data)
             peer->ecdh_exchange_data = NULL;
         }
         if (peer->oob_data) {
-            EAP_NOOB_FREE(peer->oob_data->noob);
-            EAP_NOOB_FREE(peer->oob_data->hoob);
+            EAP_NOOB_FREE(peer->oob_data->Noob_b64);
             EAP_NOOB_FREE(peer->oob_data->NoobId_b64);
-            EAP_NOOB_FREE(peer->oob_data->NoobId);
             os_free(peer->oob_data); peer->oob_data = NULL;
         }
         if (peer->kdf_out) {
