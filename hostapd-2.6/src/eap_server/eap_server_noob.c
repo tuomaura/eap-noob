@@ -1511,7 +1511,6 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_noob_server_context * d
     if (NULL == (mac = eap_noob_gen_MAC(data, MACS_TYPE, data->peer_attr->kdf_out->Kms,
                  KMS_LEN,COMPLETION_EXCHANGE))) goto EXIT;
     wpa_hexdump(MSG_DEBUG, "EAP-NOOB: MAC calculated and sending out", mac, 32);
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: MAC b64 sending out %s", mac_b64);
     err -= (FAILURE == eap_noob_Base64Encode(mac, MAC_LEN, &mac_b64));
     err -= (NULL == (req_obj = json_object()));
     err += json_object_set_new(req_obj, TYPE, json_integer(EAP_NOOB_TYPE_4));
