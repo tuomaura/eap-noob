@@ -49,8 +49,8 @@
 #define BOTH_DIR                3
 
 #define SUCCESS                 1
-#define FAILURE                 0
-#define EMPTY                   2
+#define FAILURE                 -1
+#define EMPTY                   0
 
 #define INVALID                 0
 #define VALID                   1
@@ -240,15 +240,9 @@ struct eap_noob_ecdh_kdf_nonce {
 
 struct eap_noob_oob_data {
 
-    char * noob_b64;
-    u8 * noob;
-
-    char * hoob_b64;
-    u8 * hoob;
-
+    char * Noob_b64;
+    char * Hoob_b64;
     char * NoobId_b64;
-    size_t NoobId_len;
-    u8 * NoobId;
 };
 
 struct eap_noob_ecdh_key_exchange {

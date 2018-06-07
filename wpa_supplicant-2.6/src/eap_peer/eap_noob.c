@@ -64,6 +64,124 @@ void * os_memdup(const void *src, size_t len)
     return r;
 }
 
+
+/**
+ * eap_noob_Base64Decode : Decodes a base64url string.
+ * @b64message : input base64url string
+ * @buffer : output
+ * Returns : Len of decoded string
+**/
+static int eap_noob_Base64Decode(const char * b64message, unsigned char ** buffer)
+{
+    BIO * bio = NULL, * b64 = NULL;
+    int decodeLen = 0, len = 0;
+    char * temp = NULL;
+    int i;
+
+    if (NULL == b64message || NULL == buffer) {
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
+        return 0;
+    }
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
+
+    len = os_strlen(b64message);
+
+    /* Convert base64url to base64 encoding. */
+    int b64pad = 4*((len+3)/4)-len;
+    temp = os_zalloc(len + b64pad);
+    os_memcpy(temp, b64message, len);
+    if (b64pad == 3) {
+            wpa_printf(MSG_DEBUG, "EAP-NOOB Input to %s is incorrect", __func__);
+            return 0;
+    }
+    for (i=0; i < len; i++) {
+        if (temp[i] == '-')
+            temp[i] = '+';
+        else if (temp[i] == '_')
+            temp[i] = '/';
+    }
+    for (i=0; i<b64pad; i++)
+        temp[len+i] = '=';
+
+    decodeLen = (len * 3)/4;
+    *buffer = (unsigned char*)os_zalloc(decodeLen);
+
+    bio = BIO_new_mem_buf(temp, len+b64pad);
+    b64 = BIO_new(BIO_f_base64());
+    bio = BIO_push(b64, bio);
+
+    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+    len = BIO_read(bio, *buffer, os_strlen(b64message));
+
+    wpa_printf(MSG_DEBUG, "EAP NOOB: Dumping BIO errors, if any");
+    ERR_print_errors_fp(stdout);
+
+    /* Length should equal decodeLen, else something goes horribly wrong */
+    if (len != decodeLen) {
+        wpa_printf(MSG_DEBUG, "EAP-NOOB Unexpected error decoding message. Decoded len (%d),"
+                   " expected (%d), input b64message len (%d)", len, decodeLen, (int)os_strlen(b64message));
+        decodeLen = 0;
+        os_free(*buffer);
+        *buffer = NULL;
+    }
+    os_free(temp);
+    BIO_free_all(bio);
+
+    return decodeLen;
+}
+
+/**
+ * eap_noob_Base64Encode : Encode an ascii string to base64url. Dealloc b64text
+ * as needed from the caller.
+ * @buffer : input buffer
+ * @length : input buffer length
+ * @b64text : converted base64url text
+ * Returns : SUCCESS/FAILURE
+ **/
+int eap_noob_Base64Encode(const unsigned char * buffer, size_t length, char ** b64text)
+{
+    BIO * bio = NULL, * b64 = NULL;
+    BUF_MEM * bufferPtr = NULL;
+    int i = 0;
+
+    if (NULL == buffer || NULL == b64text) {
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
+        return 0;
+    }
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering function %s", __func__);
+
+    b64 = BIO_new(BIO_f_base64());
+    bio = BIO_new(BIO_s_mem());
+    bio = BIO_push(b64, bio);
+
+    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+    BIO_write(bio, buffer, length);
+    BIO_flush(bio);
+    BIO_get_mem_ptr(bio, &bufferPtr);
+    BIO_set_close(bio, BIO_NOCLOSE);
+
+    int outlen = bufferPtr->length;
+    *b64text = (char *) os_zalloc(outlen + 1);
+    os_memcpy(*b64text, bufferPtr->data, outlen);
+    (*b64text)[outlen] = '\0';
+
+    /* Convert base64 to base64url encoding. */
+    while (outlen > 0 && (*b64text)[outlen - 1]=='=') {
+        (*b64text)[outlen - 1] = '\0';
+        outlen--;
+    }
+    for (i = 0; i < outlen; i++) {
+        if ((*b64text)[i] == '+')
+            (*b64text)[i] = '-';
+        else if ((*b64text)[i] == '/')
+            (*b64text)[i] = '_';
+    }
+
+    BIO_free_all(bio);
+    return SUCCESS;
+}
+
+
 /**
  *eap_noob_ECDH_KDF_X9_63: generates KDF
  *@out:
@@ -160,12 +278,13 @@ err:
  * @state : EAP_NOOB state
  * Returns:
 **/
-static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state)
+static int eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state)
 {
 
     const EVP_MD * md = EVP_sha256();
     unsigned char * out = os_zalloc(KDF_LEN);
-    int counter = 0;
+    int counter = 0, len = 0;
+    u8 * Noob;
 
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Algorith ID:", ALGORITHM_ID,ALGORITHM_ID_LEN);
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Nonce_Peer", data->server_attr->kdf_nonce_data->Np,
@@ -175,13 +294,18 @@ static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state)
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Nonce_Serv", data->server_attr->ecdh_exchange_data->shared_key,
                       ECDH_SHARED_SECRET_LEN);
     if (state == COMPLETION_EXCHANGE) {
-        wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Noob",data->server_attr->oob_data->noob,NOOB_LEN);
+        len = eap_noob_Base64Decode(data->server_attr->oob_data->Noob_b64, &Noob);
+        if (len != NOOB_LEN) {
+		    wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to decode Noob");
+		    return FAILURE;
+	    }
+        wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: Noob", Noob, NOOB_LEN);
         eap_noob_ECDH_KDF_X9_63(out, KDF_LEN,
                 data->server_attr->ecdh_exchange_data->shared_key, ECDH_SHARED_SECRET_LEN,
                 (unsigned char *)ALGORITHM_ID, ALGORITHM_ID_LEN,
                 data->server_attr->kdf_nonce_data->Np, NONCE_LEN,
                 data->server_attr->kdf_nonce_data->Ns, NONCE_LEN,
-                data->server_attr->oob_data->noob, NOOB_LEN, md);
+                Noob, NOOB_LEN, md);
     } else {
 
         wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: kz", data->server_attr->kdf_out->Kz,KZ_LEN);
@@ -217,7 +341,11 @@ static void eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state)
         counter += KMP_LEN;
         memcpy(data->server_attr->kdf_out->Kz, out + counter, KZ_LEN);
         counter += KZ_LEN;
-    } else wpa_printf(MSG_DEBUG, "EAP-NOOB: Error in allocating memory, %s", __func__);
+    } else { 
+    	wpa_printf(MSG_DEBUG, "EAP-NOOB: Error in allocating memory, %s", __func__);
+    	return FAILURE;
+    }
+    return SUCCESS;
 }
 
 /**
@@ -369,8 +497,8 @@ static void columns_ephemeralnoob(struct eap_noob_peer_context * data, sqlite3_s
     data->server_attr->PeerId = os_strdup((char *) sqlite3_column_text(stmt, 1));
     data->peer_attr->PeerId = os_strdup(data->server_attr->PeerId);
     data->server_attr->oob_data->NoobId_b64 = os_strdup((char *)sqlite3_column_text(stmt, 2));
-    data->server_attr->oob_data->noob_b64 = os_strdup((char *)sqlite3_column_text(stmt, 3));
-    data->server_attr->oob_data->hoob_b64 = os_strdup((char *)sqlite3_column_text(stmt, 4));
+    data->server_attr->oob_data->Noob_b64 = os_strdup((char *)sqlite3_column_text(stmt, 3));
+    data->server_attr->oob_data->Hoob_b64 = os_strdup((char *)sqlite3_column_text(stmt, 4));
     //sent time
 }
 
@@ -394,7 +522,7 @@ static u8 * eap_noob_gen_MAC(const struct eap_noob_peer_context * data, int type
         err += json_array_set_new(mac_array, 0, json_integer(2));
     else
         err += json_array_set_new(mac_array, 0, json_integer(1));
-    err += json_array_append_new(mac_array, json_string(data->server_attr->oob_data->noob_b64));
+    err += json_array_append_new(mac_array, json_string(data->server_attr->oob_data->Noob_b64));
     os_free(data->server_attr->mac_input_str);
     err -= (NULL == (data->server_attr->mac_input_str = json_dumps(mac_array, JSON_COMPACT|JSON_PRESERVE_ORDER)));
     if (err < 0) wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected error in setting MAC");
@@ -409,121 +537,6 @@ static u8 * eap_noob_gen_MAC(const struct eap_noob_peer_context * data, int type
     return mac;
 }
 
-/**
- * eap_noob_Base64Decode : Decodes a base64url string.
- * @b64message : input base64url string
- * @buffer : output
- * Returns : Len of decoded string
-**/
-static int eap_noob_Base64Decode(const char * b64message, unsigned char ** buffer)
-{
-    BIO * bio = NULL, * b64 = NULL;
-    int decodeLen = 0, len = 0;
-    char * temp = NULL;
-    int i;
-
-    if (NULL == b64message || NULL == buffer) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
-        return 0;
-    }
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
-
-    len = os_strlen(b64message);
-
-    /* Convert base64url to base64 encoding. */
-    int b64pad = 4*((len+3)/4)-len;
-    temp = os_zalloc(len + b64pad);
-    os_memcpy(temp, b64message, len);
-    if (b64pad == 3) {
-            wpa_printf(MSG_DEBUG, "EAP-NOOB Input to %s is incorrect", __func__);
-            return 0;
-    }
-    for (i=0; i < len; i++) {
-        if (temp[i] == '-')
-            temp[i] = '+';
-        else if (temp[i] == '_')
-            temp[i] = '/';
-    }
-    for (i=0; i<b64pad; i++)
-        temp[len+i] = '=';
-
-    decodeLen = (len * 3)/4;
-    *buffer = (unsigned char*)os_zalloc(decodeLen);
-
-    bio = BIO_new_mem_buf(temp, len+b64pad);
-    b64 = BIO_new(BIO_f_base64());
-    bio = BIO_push(b64, bio);
-
-    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-    len = BIO_read(bio, *buffer, os_strlen(b64message));
-
-    wpa_printf(MSG_DEBUG, "EAP NOOB: Dumping BIO errors, if any");
-    ERR_print_errors_fp(stdout);
-
-    /* Length should equal decodeLen, else something goes horribly wrong */
-    if (len != decodeLen) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB Unexpected error decoding message. Decoded len (%d),"
-                   " expected (%d), input b64message len (%d)", len, decodeLen, (int)os_strlen(b64message));
-        decodeLen = 0;
-        os_free(*buffer);
-        *buffer = NULL;
-    }
-    os_free(temp);
-    BIO_free_all(bio);
-
-    return decodeLen;
-}
-
-/**
- * eap_noob_Base64Encode : Encode an ascii string to base64url. Dealloc b64text
- * as needed from the caller.
- * @buffer : input buffer
- * @length : input buffer length
- * @b64text : converted base64url text
- * Returns : SUCCESS/FAILURE
- **/
-int eap_noob_Base64Encode(const unsigned char * buffer, size_t length, char ** b64text)
-{
-    BIO * bio = NULL, * b64 = NULL;
-    BUF_MEM * bufferPtr = NULL;
-    int i = 0;
-
-    if (NULL == buffer || NULL == b64text) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
-        return 0;
-    }
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering function %s", __func__);
-
-    b64 = BIO_new(BIO_f_base64());
-    bio = BIO_new(BIO_s_mem());
-    bio = BIO_push(b64, bio);
-
-    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-    BIO_write(bio, buffer, length);
-    BIO_flush(bio);
-    BIO_get_mem_ptr(bio, &bufferPtr);
-    BIO_set_close(bio, BIO_NOCLOSE);
-
-    int outlen = bufferPtr->length;
-    *b64text = (char *) os_zalloc(outlen + 1);
-    os_memcpy(*b64text, bufferPtr->data, outlen);
-    (*b64text)[outlen] = '\0';
-
-    /* Convert base64 to base64url encoding. */
-    while (outlen > 0 && (*b64text)[outlen - 1]=='=') {
-        (*b64text)[outlen - 1] = '\0';
-        outlen--;
-    }
-    for (i = 0; i < outlen; i++) {
-        if ((*b64text)[i] == '+')
-            (*b64text)[i] = '-';
-        else if ((*b64text)[i] == '/')
-            (*b64text)[i] = '_';
-    }
-
-    BIO_free_all(bio);
-    return SUCCESS;
-}
 
 static int eap_noob_derive_secret(struct eap_noob_peer_context * data, size_t * secret_len)
 {
@@ -612,13 +625,13 @@ static int eap_noob_get_key(struct eap_noob_server_data * data)
 	Server = Alice
 */
     
-/*	char * priv_key_test_vector = "MC4CAQAwBQYDK2VuBCIEIF2rCH5iSopLeeF/i4OADuZvO7EpJhi2/Rwviyf/iODr";
+	char * priv_key_test_vector = "MC4CAQAwBQYDK2VuBCIEIF2rCH5iSopLeeF/i4OADuZvO7EpJhi2/Rwviyf/iODr";
     BIO* b641 = BIO_new(BIO_f_base64());
     BIO* mem1 = BIO_new(BIO_s_mem());	
     BIO_set_flags(b641,BIO_FLAGS_BASE64_NO_NL);
     BIO_puts(mem1,priv_key_test_vector);
     mem1 = BIO_push(b641,mem1);
-*/    
+    
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: entering %s", __func__);
 
@@ -631,14 +644,14 @@ static int eap_noob_get_key(struct eap_noob_server_data * data)
     EVP_PKEY_keygen_init(pctx);
 
     /* Generate X25519 key pair */       
-    EVP_PKEY_keygen(pctx, &data->ecdh_exchange_data->dh_key);
+    //EVP_PKEY_keygen(pctx, &data->ecdh_exchange_data->dh_key);
 
 /* 
 	If you are using the RFC 7748 test vector, you do not need to generate a key pair. Instead you use the
     private key from the RFC. In this case, comment out the line above and uncomment the following line 
     code
 */
-    //d2i_PrivateKey_bio(mem1,&data->ecdh_exchange_data->dh_key);
+    d2i_PrivateKey_bio(mem1,&data->ecdh_exchange_data->dh_key);
     
     PEM_write_PrivateKey(stdout, data->ecdh_exchange_data->dh_key,
                          NULL, NULL, 0, NULL, NULL);
@@ -798,7 +811,6 @@ static void  eap_noob_decode_obj(struct eap_noob_server_data * data, json_t * re
                     if (decode_length) data->rcvd_params |= NONCE_RCVD;
                 } else if (0 == os_strcmp(key, HINT_SERV)) {
                     data->oob_data->NoobId_b64 = os_strdup(retval_char);
-                    data->oob_data->NoobId_len = eap_noob_Base64Decode(data->oob_data->NoobId_b64, &data->oob_data->NoobId);
                     wpa_printf(MSG_DEBUG, "EAP-NOOB: Received NoobId = %s", data->oob_data->NoobId_b64);
                     data->rcvd_params |= HINT_RCVD;
                 } else if (0 == os_strcmp(key, MACS)) {
@@ -1656,7 +1668,9 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_sm * sm, json_t * req_
     if (NULL != (resp = eap_noob_verify_PeerId(data,id))) return resp;
 
     /* Generate KDF and MAC */
-    eap_noob_gen_KDF(data,RECONNECT_EXCHANGE);
+    if (SUCCESS != eap_noob_gen_KDF(data,RECONNECT_EXCHANGE)) {
+    	wpa_printf(MSG_ERROR, "EAP-NOOB: Error in KDF during Request/NOOB-FR"); return NULL;
+    }
     mac = eap_noob_gen_MAC(data, MACS_TYPE, data->server_attr->kdf_out->Kms, KMS_LEN, RECONNECT_EXCHANGE);
     if (NULL == mac) return NULL;
 
@@ -1825,7 +1839,9 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_sm * sm, json_t * req_o
        }
     }
     /* generate Keys */
-    eap_noob_gen_KDF(data, COMPLETION_EXCHANGE);
+    if (SUCCESS != eap_noob_gen_KDF(data, COMPLETION_EXCHANGE)) {
+    	wpa_printf(MSG_ERROR, "EAP-NOOB: Error in KDF during Request/NOOB-CE"); return NULL;
+    }
     if (NULL != (resp = eap_noob_verify_PeerId(data, id))) return resp;
 
     mac = eap_noob_gen_MAC(data, MACS_TYPE, data->server_attr->kdf_out->Kms, KMS_LEN, COMPLETION_EXCHANGE);
@@ -2205,12 +2221,9 @@ static void eap_noob_free_ctx(struct eap_noob_peer_context * data)
             os_free(serv->ecdh_exchange_data);
         }
         if (serv->oob_data) {
-            EAP_NOOB_FREE(serv->oob_data->noob_b64);
-            EAP_NOOB_FREE(serv->oob_data->noob);
-            EAP_NOOB_FREE(serv->oob_data->hoob_b64);
-            EAP_NOOB_FREE(serv->oob_data->noob);
+            EAP_NOOB_FREE(serv->oob_data->Noob_b64);
+            EAP_NOOB_FREE(serv->oob_data->Hoob_b64);
             EAP_NOOB_FREE(serv->oob_data->NoobId_b64);
-            EAP_NOOB_FREE(serv->oob_data->NoobId);
             os_free(serv->oob_data);
         }
         if (serv->kdf_nonce_data) {
@@ -2579,7 +2592,7 @@ static void * eap_noob_init(struct eap_sm * sm)
 static Boolean eap_noob_isKeyAvailable(struct eap_sm *sm, void *priv)
 {
     struct eap_noob_peer_context * data = priv;
-    Boolean retval = ((data->server_attr->state == REGISTERED_STATE) && (data->server_attr->ecdh_exchange_data->shared_key_b64 != NULL));
+    Boolean retval = ((data->server_attr->state == REGISTERED_STATE) && (data->server_attr->kdf_out->msk != NULL));
     wpa_printf(MSG_DEBUG, "EAP-NOOB: State = %d, Key Available? %d", data->server_attr->state, retval);
     return retval;
 }
@@ -2669,7 +2682,7 @@ static u8 * eap_noob_get_session_id(struct eap_sm *sm, void *priv, size_t *len)
  */
 static void eap_noob_deinit_for_reauth(struct eap_sm *sm, void *priv)
 {
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: DE-INIT reauth called");
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
 }
 
 /**
@@ -2695,7 +2708,6 @@ static Boolean eap_noob_has_reauth_data(struct eap_sm * sm, void * priv)
 {
     struct eap_noob_peer_context * data = priv;
     struct wpa_supplicant * wpa_s = (struct wpa_supplicant *) sm->msg_ctx;
-
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s, Current SSID = %s, Stored SSID = %s", __func__,
                wpa_s->current_ssid->ssid, data->server_attr->ssid);
     if (data->server_attr->state == REGISTERED_STATE &&
