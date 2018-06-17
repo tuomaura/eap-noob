@@ -912,9 +912,9 @@ int eap_noob_ECDH_KDF_X9_63(unsigned char *out, size_t outlen,
         ctr[2] = (i >> 8) & 0xFF;
         ctr[1] = (i >> 16) & 0xFF;
         ctr[0] = (i >> 24) & 0xFF;
-        if (!EVP_DigestUpdate(mctx, Z, Zlen))
+       if (!EVP_DigestUpdate(mctx, ctr, sizeof(ctr)))
             goto err;
-        if (!EVP_DigestUpdate(mctx, ctr, sizeof(ctr)))
+        if (!EVP_DigestUpdate(mctx, Z, Zlen))
             goto err;
         if (!EVP_DigestUpdate(mctx, algorithm_id, algorithm_id_len))
             goto err;
@@ -991,6 +991,10 @@ static int eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
                 NULL, 0, md);
     }
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: KDF", out, KDF_LEN);
+
+        char * kdf_out_b64 = NULL;
+	int b64_kdfout_len = eap_noob_Base64Encode(out,KDF_LEN,&kdf_out_b64);
+	wpa_printf(MSG_DEBUG,"KDF in base 64 %s",kdf_out_b64);
 
     if (out != NULL) {
         data->peer_attr->kdf_out->msk = os_zalloc(MSK_LEN);

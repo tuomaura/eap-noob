@@ -222,11 +222,11 @@ module.exports = function(app, passport) {
                                     var noob = parseJ['noob'];
                                     var hoob = parseJ['hoob'];
                                     var hash = crypto.createHash('sha256');
-                                    var hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
-                                        hash.update(hash_str,'utf8');
-                                    var digest_hex = new Buffer(hash.digest('hex'));
-                                    digest_hex = digest_hex.slice(0,16);
-                                    var hint =  base64url.encode(digest_hex);
+                                    var hash_str = 'NoobId'+noob;
+                                    hash.update(hash_str,'utf8');
+                                    var digest = new Buffer(hash.digest());
+                                    digest = digest.slice(0,16);
+                                    var hint =  base64url.encode(digest);
                                     db.get('INSERT INTO devices (PeerID, serv_state, PeerInfo, Noob, Hoob,Hint,errorCode, username) values(?,?,?,?,?,?,?,?)', peer_id, row.serv_state, row.PeerInfo, noob, hoob, hint.slice(0,32),0, req.user.username, function(err, row) {
                                         db.close();
 
@@ -332,7 +332,6 @@ app.get('/profile', isLoggedIn, function(req, res) {
     var dev_status = ['Up to date','Update required','Obsolete', 'Update available!']
     var deviceDetails = new Array();
     var db;
-
     function callback(dDetails, Peers) {
         deviceDetails.push(dDetails);
         if (deviceDetails.length == Peers) {
@@ -344,17 +343,30 @@ app.get('/profile', isLoggedIn, function(req, res) {
     }
     db = new sqlite3.Database(conn_str);
     db.all('SELECT PeerId From UserDevices WHERE Username=?', req.user.username, function(err, rows0) {
-        if(!err) {
+                        console.log('1'+rows0.length);
+if(rows0.length==0)
+{
+console.log('inside else added');
+            db.close();
+            res.render('profile.ejs', {
+                user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage')
+            });
+}
+       else if(!err ) {
             rows0.forEach(function(row0) {
                 db.all('SELECT PeerInfo From EphemeralState WHERE PeerId=?', row0.PeerId, function(err, rows1) {
                     if (!err && rows1.length == 0) {
                         db.all('SELECT PeerInfo From PersistentState WHERE PeerId=?', row0.PeerId, function(err, rows2) {
                             if (!err && rows2.length == 0) {
                                 db.close();
+                        console.log('inside2');
+
                                 res.render('profile.ejs', {
                                     user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage')
                                 });
                             } else if (rows2.length > 0) {
+                        console.log('inside 3');
+
                                 deviceInfo = new Object();
                                 deviceInfo.peer_id = row0.PeerId;
                                 PeerInfo_row = rows2;
@@ -363,9 +375,20 @@ app.get('/profile', isLoggedIn, function(req, res) {
                                 deviceInfo.peer_num = PeerInfo_j['Serial'];
                                 callback(deviceInfo, rows0.length);
                             }
+			else{
+                        console.log('inside else added');
+                        db.close();
+                        res.render('profile.ejs', {
+                        user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage')
+                            });
+
+                        }
+
                         });
                     } else if (rows1.length > 0 ) {
                         deviceInfo = new Object();
+                        console.log('inside 4');
+
                         deviceInfo.peer_id = row0.PeerId;
                         PeerInfo_row = rows1;
                         PeerInfo_j= JSON.parse(PeerInfo_row[0]['PeerInfo']);
@@ -373,9 +396,18 @@ app.get('/profile', isLoggedIn, function(req, res) {
                         deviceInfo.peer_num = PeerInfo_j['Serial'];
                         callback(deviceInfo, rows0.length);
                     }
+			else{
+			console.log('inside 5');
+			db.close();
+	        	res.render('profile.ejs', {
+        	        user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage')
+		            });
+
+			}
                 });
             });
         } else{
+            console.log('inside else added');
             db.close();
             res.render('profile.ejs', {
                 user : req.user, userInfo :'', deviceInfo : '', url : configDB.url,  message: req.flash('profileMessage')
@@ -723,11 +755,11 @@ app.get('/sendOOB/',isLoggedIn, function (req, res) {
     } else {
         //console.log(peer_id +' '+ noob +' ' + hoob);
         hash = crypto.createHash('sha256');
-        hash_str = noob+'AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING'
-            hash.update(hash_str,'utf8');
-        var digest_hex = new Buffer(hash.digest('hex'));
-        digest_hex = digest_hex.slice(0,16);
-        hint =  base64url.encode(digest_hex);
+        hash_str = 'NoobId'+noob;
+        hash.update(hash_str,'utf8');
+        var digest = new Buffer(hash.digest());
+        digest = digest.slice(0,16);
+        hint =  base64url.encode(digest);
 
         options = {
             mode: 'text',
@@ -749,6 +781,8 @@ app.get('/sendOOB/',isLoggedIn, function (req, res) {
                             var parseJ;
                             var err_p;
                             var hoob_cmp_res;
+			    console.log("HOOB="+hoob);
+			    console.log("NOOB="+noob);	
                             PythonShell.run('oobmessage.py', options, function (err_pr,results) {
                                 if (err_pr){console.log("Error in python:" + err_pr); res.json({"status": "Internal error !!"});}
                                 else{
@@ -764,7 +798,7 @@ app.get('/sendOOB/',isLoggedIn, function (req, res) {
                                         }else{
                                             req.flash('profileMessage','Wrong OOB received!');
                                             res.redirect('/profile');
-                                            console.log(" Unrecognized Hoob received Here");
+                                            console.log(" Unrecognized Hoob received Here"+hoob_cmp_res);
                                         }
                                     }else{
                                         db.serialize(function() {
