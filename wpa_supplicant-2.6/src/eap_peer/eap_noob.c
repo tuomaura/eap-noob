@@ -230,13 +230,13 @@ static int eap_noob_ECDH_KDF_X9_63(unsigned char *out, size_t outlen,
     for (i = 1;; i++) {
         unsigned char mtmp[EVP_MAX_MD_SIZE];
         EVP_DigestInit_ex(mctx, md, NULL);
-        ctr[3] = i & 0xFF;
-        ctr[2] = (i >> 8) & 0xFF;
-        ctr[1] = (i >> 16) & 0xFF;
-        ctr[0] = (i >> 24) & 0xFF;
-        if (!EVP_DigestUpdate(mctx, Z, Zlen))
-            goto err;
+        ctr[3] = (i & 0xFF);
+        ctr[2] = ((i >> 8) & 0xFF);
+        ctr[1] = ((i >> 16) & 0xFF);
+        ctr[0] = (i >> 24);
         if (!EVP_DigestUpdate(mctx, ctr, sizeof(ctr)))
+            goto err;
+        if (!EVP_DigestUpdate(mctx, Z, Zlen))
             goto err;
         if (!EVP_DigestUpdate(mctx, algorithm_id, algorithm_id_len))
             goto err;
@@ -514,26 +514,26 @@ static u8 * eap_noob_gen_MAC(const struct eap_noob_peer_context * data, int type
 {
     u8 * mac = NULL; int err = 0;
     json_t * mac_array; json_error_t error;
+    char * mac_str = os_zalloc(500);
 
     if (NULL == data || NULL == data->server_attr || NULL == data->server_attr->mac_input_str ||
         NULL == key) return NULL;
     err -= (NULL == (mac_array = json_loads(data->server_attr->mac_input_str, JSON_COMPACT|JSON_PRESERVE_ORDER, &error)));
     if (type == MACS_TYPE)
-        err += json_array_set_new(mac_array, 0, json_integer(2));
+        err += json_array_set_new(mac_array, 0, json_integer(2));    
     else
         err += json_array_set_new(mac_array, 0, json_integer(1));
     err += json_array_append_new(mac_array, json_string(data->server_attr->oob_data->Noob_b64));
-    os_free(data->server_attr->mac_input_str);
-    err -= (NULL == (data->server_attr->mac_input_str = json_dumps(mac_array, JSON_COMPACT|JSON_PRESERVE_ORDER)));
+    err -= (NULL == (mac_str = json_dumps(mac_array, JSON_COMPACT|JSON_PRESERVE_ORDER)));
     if (err < 0) wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected error in setting MAC");
 
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: Func (%s), MAC len = %d, MAC = %s", __func__, (int)os_strlen(data->server_attr->mac_input_str),
-               data->server_attr->mac_input_str);
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Func (%s), MAC len = %d, MAC = %s", __func__, (int)os_strlen(mac_str),
+               mac_str);
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Key:", key, keylen);
-    mac = HMAC(EVP_sha256(), key, keylen, (u8 *)data->server_attr->mac_input_str,
-            os_strlen(data->server_attr->mac_input_str), NULL, NULL);
+    mac = HMAC(EVP_sha256(), key, keylen, (u8 *)mac_str,
+            os_strlen(mac_str), NULL, NULL);
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: MAC",mac,32);
-
+    os_free(mac_str);
     return mac;
 }
 
@@ -2004,6 +2004,7 @@ static struct wpabuf * eap_noob_req_type_one(struct eap_sm * sm, json_t * req_ob
     err -= (NULL == (Cryptosuites = json_array()));
     for (int i = 0; i < MAX_SUP_CSUITES ; i++)
         err += json_array_append_new(Cryptosuites, json_integer(data->server_attr->cryptosuite[i]));
+    
     err -= (NULL == (macinput = json_array()));
     err += json_array_append(macinput, emptystr);
     err += json_array_append(macinput, Vers);
@@ -2676,13 +2677,15 @@ static u8 * eap_noob_get_session_id(struct eap_sm *sm, void *priv, size_t *len)
 
 
 /**
- * eap_noob_deinit_for_reauth : deinitialise the reauth context
+ * eap_noob_deinit_for_reauth : release data not needed for fast reauth
  * @sm : eap statemachine context
  * @priv : eap noob data
  */
 static void eap_noob_deinit_for_reauth(struct eap_sm *sm, void *priv)
 {
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
+        sm->decision=DECISION_FAIL;
+        sm->methodState=METHOD_MAY_CONT;
 }
 
 /**
@@ -2692,14 +2695,14 @@ static void eap_noob_deinit_for_reauth(struct eap_sm *sm, void *priv)
  */
 static void * eap_noob_init_for_reauth(struct eap_sm * sm, void * priv)
 {
-    struct eap_noob_peer_context * data = priv;
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
-    data->server_attr->state = RECONNECTING_STATE;
-    return data;
+     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
+     struct eap_noob_peer_context * data=priv;
+     data->server_attr->state = RECONNECTING_STATE;
+     return data;
 }
 
 /**
- * eap_noob_has_reauth_data : Changes the state to RECONNECT ,
+ * eap_noob_has_reauth_data : Changes the state to RECONNECT. Called by state machine to check if method has enough data to do fast reauth
  * if the current state is REGISTERED_STATE
  * @sm : eap statemachine context
  * @priv : eap noob data
@@ -2717,6 +2720,8 @@ static Boolean eap_noob_has_reauth_data(struct eap_sm * sm, void * priv)
             data->peer_attr->Realm = os_strdup(DEFAULT_REALM);
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Peer ID and Realm Reauth, %s %s", data->peer_attr->PeerId, data->peer_attr->Realm);
         eap_noob_config_change(sm, data); eap_noob_db_update(data, UPDATE_PERSISTENT_STATE);
+        data->server_attr->rcvd_params = 0;
+        data->server_attr->err_code = 0;
         return TRUE;
     }
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Returning False, %s", __func__);
