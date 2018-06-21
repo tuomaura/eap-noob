@@ -104,7 +104,7 @@ def get_hoob(PeerId, Noob, path, Dir):
     hoob_array.append(Noob);
     hoob_array[12] = Ns_b64;
     hoob_array[14] = Np_b64;
-    hoob_str = json.dumps(hoob_array).encode('utf-8');
+    hoob_str = json.dumps(hoob_array,separators=(',',':')).encode();
     print_log(hoob_str.decode('utf-8'));
     hoob = hashlib.sha256(hoob_str).digest();
     hoob = base64.urlsafe_b64encode(hoob[0:16]).decode('ascii').strip('=');
