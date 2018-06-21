@@ -912,9 +912,9 @@ int eap_noob_ECDH_KDF_X9_63(unsigned char *out, size_t outlen,
         ctr[2] = (i >> 8) & 0xFF;
         ctr[1] = (i >> 16) & 0xFF;
         ctr[0] = (i >> 24) & 0xFF;
-        if (!EVP_DigestUpdate(mctx, Z, Zlen))
+       if (!EVP_DigestUpdate(mctx, ctr, sizeof(ctr)))
             goto err;
-        if (!EVP_DigestUpdate(mctx, ctr, sizeof(ctr)))
+        if (!EVP_DigestUpdate(mctx, Z, Zlen))
             goto err;
         if (!EVP_DigestUpdate(mctx, algorithm_id, algorithm_id_len))
             goto err;
@@ -998,8 +998,6 @@ static int eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
         data->peer_attr->kdf_out->amsk = os_zalloc(AMSK_LEN);
         data->peer_attr->kdf_out->MethodId = os_zalloc(METHOD_ID_LEN);
         data->peer_attr->kdf_out->Kms = os_zalloc(KMS_LEN);
-        
-
         data->peer_attr->kdf_out->Kmp = os_zalloc(KMP_LEN);
         data->peer_attr->kdf_out->Kz = os_zalloc(KZ_LEN);
 
@@ -1281,27 +1279,28 @@ static u8 * eap_noob_gen_MAC(struct eap_noob_server_context * data, int type, u8
 {
     u8 * mac = NULL; int err = 0;
     json_t * mac_array; json_error_t error;
+    char * mac_str = os_zalloc(500);
 
     if (NULL == data || NULL == data->peer_attr || NULL == data->peer_attr->mac_input_str || NULL == key) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__); return NULL;
     }
+
     err -= (NULL == (mac_array = json_loads(data->peer_attr->mac_input_str, JSON_COMPACT|JSON_PRESERVE_ORDER, &error)));
     if (type == MACS_TYPE)
         err += json_array_set_new(mac_array, 0, json_integer(2));
     else
         err += json_array_set_new(mac_array, 0, json_integer(1));
     err += json_array_append_new(mac_array, json_string(data->peer_attr->oob_data->Noob_b64));
-    os_free(data->peer_attr->mac_input_str);
-    err -= (NULL == (data->peer_attr->mac_input_str = json_dumps(mac_array, JSON_COMPACT|JSON_PRESERVE_ORDER)));
+    err -= (NULL == (mac_str = json_dumps(mac_array, JSON_COMPACT|JSON_PRESERVE_ORDER)));
     if (err < 0) wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected error in setting MAC");
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s, MAC len = %d, MAC = %s",__func__,
-               (int)os_strlen(data->peer_attr->mac_input_str), data->peer_attr->mac_input_str);
+               (int)os_strlen(mac_str), mac_str);
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: KEY:", key, keylen);
-    mac = HMAC(EVP_sha256(), key, keylen, (u8 *)data->peer_attr->mac_input_str,
-               os_strlen(data->peer_attr->mac_input_str), NULL, NULL);
+    mac = HMAC(EVP_sha256(), key, keylen, (u8 *)mac_str,
+               os_strlen(mac_str), NULL, NULL);
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: MAC", mac, 32);
-
+    os_free(mac_str);
     return mac;
 }
 
@@ -1511,7 +1510,6 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_noob_server_context * d
     if (NULL == (mac = eap_noob_gen_MAC(data, MACS_TYPE, data->peer_attr->kdf_out->Kms,
                  KMS_LEN,COMPLETION_EXCHANGE))) goto EXIT;
     wpa_hexdump(MSG_DEBUG, "EAP-NOOB: MAC calculated and sending out", mac, 32);
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: MAC b64 sending out %s", mac_b64);
     err -= (FAILURE == eap_noob_Base64Encode(mac, MAC_LEN, &mac_b64));
     err -= (NULL == (req_obj = json_object()));
     err += json_object_set_new(req_obj, TYPE, json_integer(EAP_NOOB_TYPE_4));

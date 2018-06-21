@@ -4,13 +4,13 @@ This model is based on the latest draft of the [EAP-NOOB](https://datatracker.ie
 
 ## Getting Started
 
-These instructions describe how to compile and test the model. For a detailed description of the implementation, see [???](?).
+These instructions describe how to compile and test the model.
 
 ### Dependencies
 
 The following packages have to be installed before compiling the mCRL2 model:
 
-1. mCRL2 toolkit (available from [the publisher](https://www.mcrl2.org/web/user_manual/download.html#download))
+1. mCRL2 toolkit (available from [the publisher](https://www.mcrl2.org/web/user_manual/download.html#download)) (release version 201409.0)
 
 ### Compiling
 

@@ -10,7 +10,7 @@ import re
 from collections import OrderedDict
 
 realm = None;
-noob_conf_file = '../hostapd-2.6/hostapd/eapoob.conf';
+noob_conf_file = '../hostapd-2.6/hostapd/eapnoob.conf';
 realm_key = 'Realm';
 
 def main(argv):
@@ -39,7 +39,7 @@ def main(argv):
     elif peerId is not None and path is not None and noob is not None and recv_hoob is not None and max_tries is not None:
         print get_hoob_comp_res(peerId,noob,path,max_tries,recv_hoob)
     else:
-        print('oobmessage.py -o <peerId> -p <path> [-n <noob>]')
+        print('Missing arguments')
 
 def set_realm():
     global realm
@@ -88,8 +88,9 @@ def print_log(val):
     f1=open('./logfile', 'a+')
     f1.write(val); f1.write("\n");
     f1.close()
+    #print(val);
 
-def get_hoob(PeerId, Noob, path):
+def get_hoob(PeerId, Noob, path, Dir):
     query = 'SELECT Ns, Np, MacInput from EphemeralState where PeerId=?';
     out = exe_db_query(query, path, [PeerId]);
     if out is None:
@@ -99,19 +100,20 @@ def get_hoob(PeerId, Noob, path):
     Ns_b64 = base64.urlsafe_b64encode(out[0]).decode('ascii').strip('=');
     Np_b64 = base64.urlsafe_b64encode(out[1]).decode('ascii').strip('=');
     hoob_array = json.loads(out[2], object_pairs_hook=OrderedDict);
-    hoob_array[0] = int(1) and int(3);
+    hoob_array[0] = int(Dir);
     hoob_array.append(Noob);
     hoob_array[12] = Ns_b64;
     hoob_array[14] = Np_b64;
-    hoob_str = json.dumps(hoob_array).encode('utf-8');
+    hoob_str = json.dumps(hoob_array,separators=(',',':')).encode();
     print_log(hoob_str.decode('utf-8'));
-    hoob = hashlib.sha256(hoob_str).hexdigest()[0:16];
-    hoob = base64.urlsafe_b64encode(hoob.encode('utf-8')).decode('ascii').strip('=');
+    hoob = hashlib.sha256(hoob_str).digest();
+    hoob = base64.urlsafe_b64encode(hoob[0:16]).decode('ascii').strip('=');
     print_log("Hoob " + hoob);
     return ret_obj(Noob,hoob,None);
 
 def get_hoob_comp_res(peerId,noob,path,max_tries, recv_hoob):
-    obj = json.loads(get_hoob(peerId, noob, path))
+    #When hoob noob is received from peer, Dir should 1
+    obj = json.loads(get_hoob(peerId, noob, path,1))
     if (obj['hoob'] is not None):
         if(obj['hoob'] == recv_hoob):
             return ret_obj(None, None, None, '8001') # code for success
@@ -136,7 +138,8 @@ def get_oob_message(peer_id, path):
     #First, get noob
     noob = get_noob()
     #Now, generate and return hoob
-    return get_hoob(peer_id,noob,path)
+    #When server is generating oobs for server-to-peer, Dir=2
+    return get_hoob(peer_id,noob,path,2)
 
 def get_peer_context(peer_id):
     print peer_id
