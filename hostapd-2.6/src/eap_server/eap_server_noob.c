@@ -961,7 +961,7 @@ static int eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
     unsigned char * out = os_zalloc(KDF_LEN);
     int counter = 0, len = 0;
     u8 * Noob;	
-
+//TODO: Check that these are not null before proceeding to kdf
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: ALGORITH ID:", ALGORITHM_ID, ALGORITHM_ID_LEN);
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Peer_NONCE:", data->peer_attr->kdf_nonce_data->Np, NONCE_LEN);
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Serv_NONCE:", data->peer_attr->kdf_nonce_data->Ns, NONCE_LEN);
@@ -982,9 +982,9 @@ static int eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
                 data->peer_attr->kdf_nonce_data->Ns, NONCE_LEN,
                 Noob, NOOB_LEN, md);
     } else {
-        wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Kz:", data->peer_attr->kdf_out->Kz, KZ_LEN);
+        wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Kz:", data->peer_attr->Kz, KZ_LEN);
         eap_noob_ECDH_KDF_X9_63(out, KDF_LEN,
-                data->peer_attr->kdf_out->Kz, KZ_LEN,
+                data->peer_attr->Kz, KZ_LEN,
                 (unsigned char *)ALGORITHM_ID, ALGORITHM_ID_LEN,
                 data->peer_attr->kdf_nonce_data->Np, NONCE_LEN,
                 data->peer_attr->kdf_nonce_data->Ns, NONCE_LEN,
@@ -1014,6 +1014,10 @@ static int eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
         memcpy(data->peer_attr->kdf_out->Kmp, out + counter, KMP_LEN);
         counter += KMP_LEN;
         memcpy(data->peer_attr->kdf_out->Kz, out + counter, KZ_LEN);
+        if(state == COMPLETION_EXCHANGE) {
+	   data->peer_attr->Kz = os_zalloc(KZ_LEN);
+	   memcpy(data->peer_attr->Kz, out + counter, KZ_LEN);
+	}
         counter += KZ_LEN;
         os_free(out);
     } else {
@@ -1280,6 +1284,11 @@ static u8 * eap_noob_gen_MAC(struct eap_noob_server_context * data, int type, u8
     u8 * mac = NULL; int err = 0;
     json_t * mac_array; json_error_t error;
     char * mac_str = os_zalloc(500);
+    
+    if(state == RECONNECT_EXCHANGE) {
+	data->peer_attr->mac_input_str=json_dumps(data->peer_attr->mac_input, JSON_COMPACT|JSON_PRESERVE_ORDER);
+    }
+
 
     if (NULL == data || NULL == data->peer_attr || NULL == data->peer_attr->mac_input_str || NULL == key) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__); return NULL;
@@ -1290,7 +1299,11 @@ static u8 * eap_noob_gen_MAC(struct eap_noob_server_context * data, int type, u8
         err += json_array_set_new(mac_array, 0, json_integer(2));
     else
         err += json_array_set_new(mac_array, 0, json_integer(1));
-    err += json_array_append_new(mac_array, json_string(data->peer_attr->oob_data->Noob_b64));
+
+    if(state != RECONNECT_EXCHANGE) {
+	err += json_array_append_new(mac_array, json_string(data->peer_attr->oob_data->Noob_b64));
+    }
+
     err -= (NULL == (mac_str = json_dumps(mac_array, JSON_COMPACT|JSON_PRESERVE_ORDER)));
     if (err < 0) wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected error in setting MAC");
 
@@ -1318,17 +1331,31 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_noob_server_context * 
     json_t * req_obj = NULL;
     size_t len = 0; int err = 0;
 
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Request 3/Fast Reconnect");
+
     if (SUCCESS != eap_noob_gen_KDF(data, RECONNECT_EXCHANGE)) {
 	wpa_printf(MSG_ERROR, "EAP-NOOB: Error in KDF during Request/NOOB-FR"); goto EXIT;
     }
     mac = eap_noob_gen_MAC(data, MACS_TYPE, data->peer_attr->kdf_out->Kms, KMS_LEN, RECONNECT_EXCHANGE);
-    err -= (SUCCESS == eap_noob_Base64Encode(mac, MAC_LEN, &mac_b64));
+    wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB type 7 request",mac,MAC_LEN);    
+
+    err += (SUCCESS == eap_noob_Base64Encode(mac, MAC_LEN, &mac_b64));
     err -= (NULL == (req_obj = json_object()));
     err += json_object_set_new(req_obj,TYPE, json_integer(EAP_NOOB_TYPE_7));
+
+
     err += json_object_set_new(req_obj, PEERID, json_string(data->peer_attr->PeerId));
+
+
     err += json_object_set_new(req_obj, MACS, json_string(mac_b64));
+
     err -= (NULL == (req_json = json_dumps(req_obj, JSON_COMPACT|JSON_PRESERVE_ORDER)));
-    if (err < 0) goto EXIT;
+
+    if (err < 0) {
+       wpa_printf(MSG_ERROR, "EAP-NOOB: Error in JSON"); 
+       goto EXIT;
+     }
+
     len = strlen(req_json)+1;
     err -= (NULL == (req = eap_msg_alloc(EAP_VENDOR_IETF, EAP_TYPE_NOOB, len, EAP_CODE_REQUEST, id)));
     if (err < 0) {
@@ -1340,7 +1367,7 @@ EXIT:
     EAP_NOOB_FREE(req_json);
     EAP_NOOB_FREE(mac_b64);
     return req;
-}
+}  
 
 /**
  * eap_oob_req_type_six - Build the EAP-Request/Fast Reconnect 2.
