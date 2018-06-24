@@ -311,6 +311,8 @@ struct eap_noob_peer_data {
     char * MAC;
     char * Realm;
 
+    u8 * Kz;
+
     struct eap_noob_peer_config_params * peer_config_params;
 };
 

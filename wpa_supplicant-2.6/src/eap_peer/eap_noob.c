@@ -214,7 +214,7 @@ static int eap_noob_ECDH_KDF_X9_63(unsigned char *out, size_t outlen,
     int rv = 0;
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: KDF start");
-    wpa_hexdump_ascii(MSG_DEBUG, "EAP-OOB: Value:", Z, Zlen);
+    wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Value:", Z, Zlen);
 
     if (algorithm_id_len > ECDH_KDF_MAX || outlen > ECDH_KDF_MAX ||
         Zlen > ECDH_KDF_MAX || partyUinfo_len > ECDH_KDF_MAX ||
@@ -291,7 +291,7 @@ static int eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state)
                       NONCE_LEN);
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Nonce_Serv", data->server_attr->kdf_nonce_data->Ns,
                       NONCE_LEN);
-    wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Nonce_Serv", data->server_attr->ecdh_exchange_data->shared_key,
+    wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: Shared Key", data->server_attr->ecdh_exchange_data->shared_key,
                       ECDH_SHARED_SECRET_LEN);
     if (state == COMPLETION_EXCHANGE) {
         len = eap_noob_Base64Decode(data->server_attr->oob_data->Noob_b64, &Noob);
@@ -308,9 +308,9 @@ static int eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state)
                 Noob, NOOB_LEN, md);
     } else {
 
-        wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: kz", data->server_attr->kdf_out->Kz,KZ_LEN);
+        wpa_hexdump_ascii(MSG_DEBUG,"EAP-NOOB: kz", data->peer_attr->Kz,KZ_LEN);
         eap_noob_ECDH_KDF_X9_63(out, KDF_LEN,
-                data->server_attr->kdf_out->Kz, KZ_LEN,
+                data->peer_attr->Kz, KZ_LEN,
                 (unsigned char *)ALGORITHM_ID, ALGORITHM_ID_LEN,
                 data->server_attr->kdf_nonce_data->Np, NONCE_LEN,
                 data->server_attr->kdf_nonce_data->Ns, NONCE_LEN,
@@ -340,6 +340,12 @@ static int eap_noob_gen_KDF(struct eap_noob_peer_context * data, int state)
         memcpy(data->server_attr->kdf_out->Kmp, out + counter, KMP_LEN);
         counter += KMP_LEN;
         memcpy(data->server_attr->kdf_out->Kz, out + counter, KZ_LEN);
+
+//Copy it to the peer_context also. Kz is used reconnect exchange. 
+        if(state == COMPLETION_EXCHANGE) {
+            data->peer_attr->Kz = os_zalloc(KZ_LEN);
+            memcpy(data->peer_attr->Kz, out + counter, KZ_LEN);
+        }
         counter += KZ_LEN;
     } else { 
     	wpa_printf(MSG_DEBUG, "EAP-NOOB: Error in allocating memory, %s", __func__);
@@ -464,7 +470,7 @@ static void columns_persistentstate(struct eap_noob_peer_context * data, sqlite3
     Cryptosuites = os_strdup((char *)sqlite3_column_text(stmt, 3));
     data->server_attr->Realm = os_strdup((char *) sqlite3_column_text(stmt, 4));
     data->peer_attr->Realm = os_strdup(data->server_attr->Realm);
-    data->server_attr->kdf_out->Kz = os_memdup(sqlite3_column_blob(stmt,5), KZ_LEN);
+    data->peer_attr->Kz = os_memdup(sqlite3_column_blob(stmt,5), KZ_LEN);
     eap_noob_decode_vers_cryptosuites(data, Vers, Cryptosuites);
     data->server_attr->state = data->peer_attr->state = RECONNECTING_STATE;
 }
@@ -516,14 +522,23 @@ static u8 * eap_noob_gen_MAC(const struct eap_noob_peer_context * data, int type
     json_t * mac_array; json_error_t error;
     char * mac_str = os_zalloc(500);
 
+    if(state == RECONNECT_EXCHANGE) {
+        data->server_attr->mac_input_str = json_dumps(data->server_attr->mac_input, JSON_COMPACT|JSON_PRESERVE_ORDER);
+    }
+
     if (NULL == data || NULL == data->server_attr || NULL == data->server_attr->mac_input_str ||
         NULL == key) return NULL;
+
     err -= (NULL == (mac_array = json_loads(data->server_attr->mac_input_str, JSON_COMPACT|JSON_PRESERVE_ORDER, &error)));
     if (type == MACS_TYPE)
         err += json_array_set_new(mac_array, 0, json_integer(2));    
     else
         err += json_array_set_new(mac_array, 0, json_integer(1));
-    err += json_array_append_new(mac_array, json_string(data->server_attr->oob_data->Noob_b64));
+    
+    if(state != RECONNECT_EXCHANGE) {
+        err += json_array_append_new(mac_array, json_string(data->server_attr->oob_data->Noob_b64));
+    }
+
     err -= (NULL == (mac_str = json_dumps(mac_array, JSON_COMPACT|JSON_PRESERVE_ORDER)));
     if (err < 0) wpa_printf(MSG_DEBUG, "EAP-NOOB: Unexpected error in setting MAC");
 
@@ -1665,8 +1680,9 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_sm * sm, json_t * req_
         data->server_attr->err_code = E1002;
         resp = eap_noob_err_msg(data,id); return resp;
     }
+    data->server_attr->rcvd_params = 0;
     if (NULL != (resp = eap_noob_verify_PeerId(data,id))) return resp;
-
+    
     /* Generate KDF and MAC */
     if (SUCCESS != eap_noob_gen_KDF(data,RECONNECT_EXCHANGE)) {
     	wpa_printf(MSG_ERROR, "EAP-NOOB: Error in KDF during Request/NOOB-FR"); return NULL;
@@ -1828,6 +1844,7 @@ static struct wpabuf * eap_noob_req_type_four(struct eap_sm * sm, json_t * req_o
         data->server_attr->err_code = E1002;
         resp = eap_noob_err_msg(data,id); return resp;
     }
+    data->server_attr->rcvd_params = 0;
     /* Execute Hint query in peer to server direction */
     if (data->peer_attr->dir == PEER_TO_SERV){
        int ret = eap_noob_exec_noobid_queries(data);
@@ -2308,13 +2325,16 @@ static int eap_noob_create_db(struct eap_sm *sm, struct eap_noob_peer_context * 
         return FAILURE;
     }
     if ((wpa_s->current_ssid->ssid) || (0 == os_strcmp(wpa_s->driver->name,"wired"))) {
-        if (FAILURE == eap_noob_exec_query(data, QUERY_EPHEMERALSTATE, columns_ephemeralstate, 2,
-                       TEXT, wpa_s->current_ssid->ssid)) {
-            if (FAILURE == eap_noob_exec_query(data, QUERY_PERSISTENTSTATE, columns_persistentstate, 2,
-                       TEXT, wpa_s->current_ssid->ssid)) {
+
+        int ret = eap_noob_exec_query(data, QUERY_EPHEMERALSTATE, columns_ephemeralstate, 2,
+                       TEXT, wpa_s->current_ssid->ssid);
+        if (ret == FAILURE || ret == EMPTY ) {
+            ret = eap_noob_exec_query(data, QUERY_PERSISTENTSTATE, columns_persistentstate, 2,
+                       TEXT, wpa_s->current_ssid->ssid);
+            if (ret == FAILURE || ret == EMPTY ) {
                 wpa_printf(MSG_DEBUG, "EAP-NOOB: SSID not present in any tables");
                 return SUCCESS;
-            } /* else { data->server_attr->state = REGISTERED_STATE; } */
+            }  else { data->server_attr->state = REGISTERED_STATE; } 
         } else {
             if (FAILURE != eap_noob_exec_query(data, QUERY_EPHEMERALNOOB, columns_ephemeralnoob, 2,
                            TEXT, wpa_s->current_ssid->ssid)) {
@@ -2684,8 +2704,6 @@ static u8 * eap_noob_get_session_id(struct eap_sm *sm, void *priv, size_t *len)
 static void eap_noob_deinit_for_reauth(struct eap_sm *sm, void *priv)
 {
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
-        sm->decision=DECISION_FAIL;
-        sm->methodState=METHOD_MAY_CONT;
 }
 
 /**
@@ -2713,15 +2731,14 @@ static Boolean eap_noob_has_reauth_data(struct eap_sm * sm, void * priv)
     struct wpa_supplicant * wpa_s = (struct wpa_supplicant *) sm->msg_ctx;
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s, Current SSID = %s, Stored SSID = %s", __func__,
                wpa_s->current_ssid->ssid, data->server_attr->ssid);
-    if (data->server_attr->state == REGISTERED_STATE &&
+    if ((data->server_attr->state == REGISTERED_STATE ||  data->server_attr->state == RECONNECTING_STATE) &&
         (0 == strcmp((char *)wpa_s->current_ssid->ssid, data->server_attr->ssid))) {
         data->server_attr->state = RECONNECTING_STATE;
+        data->peer_attr->state = RECONNECTING_STATE;
         if(!data->peer_attr->Realm || os_strlen(data->peer_attr->Realm)==0)
             data->peer_attr->Realm = os_strdup(DEFAULT_REALM);
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Peer ID and Realm Reauth, %s %s", data->peer_attr->PeerId, data->peer_attr->Realm);
         eap_noob_config_change(sm, data); eap_noob_db_update(data, UPDATE_PERSISTENT_STATE);
-        data->server_attr->rcvd_params = 0;
-        data->server_attr->err_code = 0;
         return TRUE;
     }
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Returning False, %s", __func__);
