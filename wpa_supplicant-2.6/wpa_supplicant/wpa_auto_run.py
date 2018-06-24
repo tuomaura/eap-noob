@@ -39,6 +39,7 @@ def print_log(val):
     f1=open('./logfile_supplicant', 'a+');
     f1.write(val); f1.write("\n");
     f1.close();
+    #print(val);
 
 def runbash(cmd):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE);
@@ -50,7 +51,8 @@ def launch_browser():
     url = "file:///" + os.getcwd() + "/test.html";
     #Latest Firefox and gecodriver support issues. Disable marionette
     capabilities = webdriver.DesiredCapabilities().FIREFOX;
-    #capabilities["marionette"] = False
+    capabilities['binary']='/usr/local/bin/geckodriver';
+    capabilities['marionette'] = True;
     driver = webdriver.Firefox(capabilities=capabilities);
     driver.get(url);
     driver.maximize_window();
@@ -80,7 +82,7 @@ def get_result():
     conf_file = open(config_file,'a')
     token = ''; ssid_list = []; token_list = [];
 
-    for item in scan_result.decode():
+    for item in scan_result.decode():	
         if '\n' == item:
             token_list.append(token)
             if token_list[1] not in ssid_list:
@@ -125,7 +127,7 @@ def prepare(iface):
     print_log("Starting wpa_supplicant");
     runbash('rm -f '+config_file+' touch '+config_file+' ; rm -f '+db_name+' ; rm -f '+oob_file);
     conf_file = open(config_file,'w')
-    conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=60\n\n")
+    conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=360\n\n")
     conf_file.close();
     cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant -d"
     subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
@@ -219,7 +221,7 @@ def delete_noob(*args):
     if out is None:
         print_log("Deleting expired Noob failed");
 
-def get_hoob(PeerId, Noob):
+def get_hoob(PeerId, Noob, Dir):
     query = 'SELECT Ns, Np, MacInput from EphemeralState where PeerId=?';
     out = exe_db_query(query, [PeerId]);
     if out is None:
@@ -229,22 +231,23 @@ def get_hoob(PeerId, Noob):
     Ns_b64 = base64.urlsafe_b64encode(out[0]).decode('ascii').strip('=');
     Np_b64 = base64.urlsafe_b64encode(out[1]).decode('ascii').strip('=');
     hoob_array = json.loads(out[2], object_pairs_hook=OrderedDict);
-    hoob_array[0] = int(1) and int(3);
+    hoob_array[0] = int(Dir);
     hoob_array.append(Noob);
     hoob_array[12] = Ns_b64;
     hoob_array[14] = Np_b64;
-    hoob_str = json.dumps(hoob_array).encode('utf-8');
+ 
+    hoob_str = json.dumps(hoob_array,separators=(',',':')).encode();
     print_log(hoob_str.decode('utf-8'));
-    hoob = hashlib.sha256(hoob_str).hexdigest()[0:16];
-    hoob = base64.urlsafe_b64encode(hoob.encode('utf-8')).decode('ascii').strip('=');
-    return hoob;
+    hoob = hashlib.sha256(hoob_str).digest();
+    hoob_b64 = base64.urlsafe_b64encode(hoob[0:16]).decode('ascii').strip('=');
+    return hoob_b64;
 
 def get_noob_id(noob_b64):
-    noob_id_str = noob_b64+"AFARMERLIVEDUNDERTHEMOUNTAINANDGREWTURNIPSFORALIVING";
-    noob_id_enc = noob_id_str.encode('utf-8')
-    noob_id = hashlib.sha256(noob_id_enc).hexdigest()
-    noob_id_b64 = base64.urlsafe_b64encode(noob_id[0:16].encode('utf-8'))
-    noob_id_b64 = str(noob_id_b64,'utf-8').strip('=')
+    noob_id_str = "NoobId"+noob_b64;
+    noob_id_enc = noob_id_str.encode('utf-8');
+    noob_id = hashlib.sha256(noob_id_enc).digest();
+    noob_id_b64 = base64.urlsafe_b64encode(noob_id[0:16]);
+    noob_id_b64 = str(noob_id_b64,'utf-8').strip('=');
     return noob_id_b64
 
 def get_noob():
@@ -258,7 +261,7 @@ def create_oob(PeerId, Ssid):
         return;
     Noob = get_noob();
     NoobId =  get_noob_id(Noob);
-    Hoob = get_hoob(PeerId, Noob);
+    Hoob = get_hoob(PeerId, Noob, 1);
     print_log("Noob = {0}\nHoob = {1}\n".format(Noob, Hoob));
 
     query ="INSERT INTO EphemeralNoob(SSid, PeerId, NoobId, Noob, Hoob, sent_time) VALUES(?, ?, ?, ?, ?, ?)";
@@ -279,7 +282,7 @@ def gen_oob():
     query="SELECT * from EphemeralState WHERE PeerState=1";
     result = exe_db_query(query);
     if result: #TODO for all rows
-       print_log("Result of query - PeerId {0}, Ssid {1}\n".format(result[1], result[0]));
+       #print_log("Result of query - PeerId {0}, Ssid {1}\n".format(result[1], result[0]));
        create_oob(result[1], result[0]);
     update_file();
     return
@@ -326,7 +329,7 @@ def main():
         print_log("Peer to server direction")
         if args.path is None:
             gen_oob();
-            launch_browser()
+           # launch_browser()
         else:
             _thread.start_new_thread(send_via_NFC,(args.path,))
     else:
@@ -343,20 +346,22 @@ def main():
         time.sleep(5)
 
     print_log("EAP AUTH SUCCESSFUL");
-    if directions is '1':
+    if direction is '1':
         terminate_threads();
 
     runbash('sudo ifconfig '+interface+' 0.0.0.0 up ; dhclient '+interface);
-    if direction is '1':
-        driver.close()
 
-    url = "https://www.youtube.com/watch?v=YlHHTmIkdis"
-    capabilities = webdriver.DesiredCapabilities().FIREFOX;
-    capabilities["marionette"] = False
-    driver = webdriver.Firefox(capabilities=capabilities);
-    driver.get(url)
-    fullscreen = driver.find_elements_by_class_name('ytp-fullscreen-button')[0]
-    fullscreen.click();
+    #if direction is '1':
+     #   driver.close()
+
+    #url = "https://www.youtube.com/watch?v=YlHHTmIkdis"
+    #capabilities = webdriver.DesiredCapabilities().FIREFOX;
+    #capabilities['binary']='/usr/local/bin/geckodriver';
+    #capabilities['marionette'] = True;
+    #driver = webdriver.Firefox(capabilities=capabilities);
+    #driver.get(url)
+    #fullscreen = driver.find_elements_by_class_name('ytp-fullscreen-button')[0]
+    #fullscreen.click();
 
 if __name__=='__main__':
     main();
