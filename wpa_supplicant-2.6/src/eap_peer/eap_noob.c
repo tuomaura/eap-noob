@@ -519,7 +519,7 @@ static void columns_ephemeralnoob(struct eap_noob_peer_context * data, sqlite3_s
 static u8 * eap_noob_gen_MAC(const struct eap_noob_peer_context * data, int type, u8 * key, int keylen, int state)
 {
     u8 * mac = NULL; int err = 0;
-    json_t * mac_array; json_error_t error;
+    json_t * mac_array, * emptystr = json_string(""); json_error_t error;
     char * mac_str = os_zalloc(500);
 
     if(state == RECONNECT_EXCHANGE) {
@@ -535,7 +535,10 @@ static u8 * eap_noob_gen_MAC(const struct eap_noob_peer_context * data, int type
     else
         err += json_array_set_new(mac_array, 0, json_integer(1));
     
-    if(state != RECONNECT_EXCHANGE) {
+    if(state == RECONNECT_EXCHANGE) {
+        err += json_array_append_new(mac_array, emptystr);
+    }
+    else {
         err += json_array_append_new(mac_array, json_string(data->server_attr->oob_data->Noob_b64));
     }
 
@@ -821,14 +824,14 @@ static void  eap_noob_decode_obj(struct eap_noob_server_data * data, json_t * re
                     EAP_NOOB_FREE(data->Realm);
                     data->Realm = os_strdup(retval_char);
                     wpa_printf(MSG_DEBUG, "EAP-NOOB: Realm %s",data->Realm);
-                } else if (0 == os_strcmp(key, NS)) {
+                } else if ((0 == os_strcmp(key, NS)) || (0 == os_strcmp(key, NS2))) {
                     decode_length = eap_noob_Base64Decode(retval_char, &data->kdf_nonce_data->Ns);
                     if (decode_length) data->rcvd_params |= NONCE_RCVD;
                 } else if (0 == os_strcmp(key, HINT_SERV)) {
                     data->oob_data->NoobId_b64 = os_strdup(retval_char);
                     wpa_printf(MSG_DEBUG, "EAP-NOOB: Received NoobId = %s", data->oob_data->NoobId_b64);
                     data->rcvd_params |= HINT_RCVD;
-                } else if (0 == os_strcmp(key, MACS)) {
+                } else if ((0 == os_strcmp(key, MACS)) || (0 == os_strcmp(key, MACS2))) {
                     wpa_printf(MSG_DEBUG, "EAP-NOOB: Received MAC %s", retval_char);
                     decode_length = eap_noob_Base64Decode((char *)retval_char, (u8**)&data->MAC);
                     data->rcvd_params |= MAC_RCVD;
@@ -1588,7 +1591,7 @@ static struct wpabuf * eap_noob_rsp_type_six(struct eap_noob_peer_context * data
     err -= (NULL == (rsp_obj = json_object()));
     err += json_object_set_new(rsp_obj,TYPE,json_integer(EAP_NOOB_TYPE_6));
     err += json_object_set_new(rsp_obj,PEERID,json_string(data->peer_attr->PeerId));
-    err += json_object_set_new(rsp_obj,NP,json_string(Np_b64));
+    err += json_object_set_new(rsp_obj,NP2,json_string(Np_b64));
     err -= (NULL == (resp_json = json_dumps(rsp_obj, JSON_COMPACT|JSON_PRESERVE_ORDER)));
     if (err < 0 ) goto EXIT;
 
@@ -1640,7 +1643,7 @@ static struct wpabuf * eap_noob_rsp_type_seven(const struct eap_noob_peer_contex
     err -= (FAILURE == eap_noob_Base64Encode(mac, MAC_LEN, &mac_b64));
     err += json_object_set_new(rsp_obj,TYPE,json_integer(EAP_NOOB_TYPE_7));
     err += json_object_set_new(rsp_obj,PEERID,json_string(data->peer_attr->PeerId));
-    err += json_object_set_new(rsp_obj,MACP,json_string(mac_b64));
+    err += json_object_set_new(rsp_obj,MACP2,json_string(mac_b64));
     err -= (NULL == (resp_json = json_dumps(rsp_obj,JSON_COMPACT|JSON_PRESERVE_ORDER)));
     if (err < 0) goto EXIT;
     len = strlen(resp_json)+1;
