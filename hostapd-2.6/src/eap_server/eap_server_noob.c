@@ -988,7 +988,7 @@ static int eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
                 (unsigned char *)ALGORITHM_ID, ALGORITHM_ID_LEN,
                 data->peer_attr->kdf_nonce_data->Np, NONCE_LEN,
                 data->peer_attr->kdf_nonce_data->Ns, NONCE_LEN,
-                NULL, 0, md);
+                NULL,0, md);
     }
     wpa_hexdump_ascii(MSG_DEBUG, "EAP-NOOB: KDF", out, KDF_LEN);
 
@@ -1282,7 +1282,8 @@ EXIT:
 static u8 * eap_noob_gen_MAC(struct eap_noob_server_context * data, int type, u8 * key, int keylen, int state)
 {
     u8 * mac = NULL; int err = 0;
-    json_t * mac_array; json_error_t error;
+    json_t * mac_array, * emptystr = json_string(""); 
+    json_error_t error;
     char * mac_str = os_zalloc(500);
     
     if(state == RECONNECT_EXCHANGE) {
@@ -1300,7 +1301,10 @@ static u8 * eap_noob_gen_MAC(struct eap_noob_server_context * data, int type, u8
     else
         err += json_array_set_new(mac_array, 0, json_integer(1));
 
-    if(state != RECONNECT_EXCHANGE) {
+    if(state == RECONNECT_EXCHANGE) {
+        err += json_array_append_new(mac_array, emptystr);
+    }
+    else {
 	err += json_array_append_new(mac_array, json_string(data->peer_attr->oob_data->Noob_b64));
     }
 
@@ -1347,7 +1351,7 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_noob_server_context * 
     err += json_object_set_new(req_obj, PEERID, json_string(data->peer_attr->PeerId));
 
 
-    err += json_object_set_new(req_obj, MACS, json_string(mac_b64));
+    err += json_object_set_new(req_obj, MACS2, json_string(mac_b64));
 
     err -= (NULL == (req_json = json_dumps(req_obj, JSON_COMPACT|JSON_PRESERVE_ORDER)));
 
@@ -1361,6 +1365,8 @@ static struct wpabuf * eap_noob_req_type_seven(struct eap_noob_server_context * 
     if (err < 0) {
         wpa_printf(MSG_ERROR, "EAP-NOOB: Failed to allocate memory for Request/NOOB-FR"); goto EXIT;
     }
+
+    wpa_printf(MSG_DEBUG, "EAP-NOOB: Request Sending = %s = %d", req_json, (int)strlen(req_json));
     wpabuf_put_data(req, req_json, len);
 EXIT:
     json_decref(req_obj);
@@ -1402,7 +1408,7 @@ static struct wpabuf * eap_noob_req_type_six(struct eap_noob_server_context * da
     err -= (NULL == (req_obj = json_object()));
     err += json_object_set_new(req_obj, TYPE, json_integer(EAP_NOOB_TYPE_6));
     err += json_object_set_new(req_obj, PEERID, json_string(data->peer_attr->PeerId));
-    err += json_object_set_new(req_obj, NS, json_string(base64_nonce));
+    err += json_object_set_new(req_obj, NS2, json_string(base64_nonce));
     err -= (NULL == (req_json = json_dumps(req_obj, JSON_COMPACT|JSON_PRESERVE_ORDER)));
     if (err < 0) goto EXIT;
 
@@ -1521,7 +1527,7 @@ EXIT:
  **/
 static struct wpabuf * eap_noob_req_type_four(struct eap_noob_server_context * data, u8 id)
 {
-    json_t * req_obj = NULL;
+    json_t * req_obj =NULL;
     struct wpabuf * req = NULL;
     char * mac_b64 = NULL, * req_json = NULL;
     u8 * mac = NULL; size_t len = 0; int err = 0;
@@ -2118,13 +2124,13 @@ static void  eap_noob_decode_obj(struct eap_noob_peer_data * data, json_t * resp
                     data->rcvd_params |= NOOBID_RCVD;
                 } else if (0 == strcmp(key, PEERINFO_SERIAL)) {
                     data->peer_snum = os_strdup(retval_char);
-                } else if (0 == strcmp(key, NP)) {
+                } else if ((0 == strcmp(key, NP)) || (0 == strcmp(key, NP2))) {
                     data->kdf_nonce_data->nonce_peer_b64 = os_strdup(retval_char);
                     decode_length = eap_noob_Base64Decode((char *)data->kdf_nonce_data->nonce_peer_b64, &data->kdf_nonce_data->Np);
                     if (0 == decode_length)
                         wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to decode peer nonce");
                     else data->rcvd_params |= NONCE_RCVD;
-                } else if (0 == strcmp(key, MACP)) {
+                } else if ((0 == strcmp(key, MACP)) || (0 == strcmp(key, MACP2))) {
                     decode_length = eap_noob_Base64Decode((char *)retval_char, (u8**)&data->mac);
                     if (0 == decode_length) wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to decode MAC");
                     else data->rcvd_params |= MAC_RCVD;
