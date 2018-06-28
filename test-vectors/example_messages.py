@@ -31,62 +31,73 @@ Cryptosuitep = 1
 Dirs = 3
 Dirp = 1
 Dir = 1
-# Public keys
+# Hex encoded peer and server public keys
 PKp = 'de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f'
 PKs = '8520f0098930a754748b7ddcb43ef75a0dbf3a0d26381af4eba4a98eaa9b4e6a'
-PKp2 = 'de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f'
-PKs2 = '8520f0098930a754748b7ddcb43ef75a0dbf3a0d26381af4eba4a98eaa9b4e6a'
-# Secret keys
+#PKp2 = 'de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f'
+#PKs2 = '8520f0098930a754748b7ddcb43ef75a0dbf3a0d26381af4eba4a98eaa9b4e6a'
+
+# Hex encoded peer and server private keys
 SKp = '5dab087e624a8a4b79e17f8b83800ee66f3bb1292618b6fd1c2f8b27ff88e0eb'
 SKs = '77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a'
-SKp2 = '5dab087e624a8a4b79e17f8b83800ee66f3bb1292618b6fd1c2f8b27ff88e0eb'
-SKs2 = '77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a'
+#SKp2 = '5dab087e624a8a4b79e17f8b83800ee66f3bb1292618b6fd1c2f8b27ff88e0eb'
+#SKs2 = '77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a'
+
 # Info
 ServerInfo = '{"Name":"Example","Url":"https://noob.example.com/sendOOB"}'
 PeerInfo = '{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"Noob1","BSSID":"6c:19:8f:83:c2:80"}'
+
 # SleepTime
 SleepTime = 60
+
+
 ################################################################################
 ############################## CALCULATED  VALUES ##############################
-## Public keys
+## Load peer and server public keys
 PK_peer = PublicKey(bytes.fromhex(PKp))
 PK_server = PublicKey(bytes.fromhex(PKs))
-PK2_peer = PublicKey(bytes.fromhex(PKp))
-PK2_server = PublicKey(bytes.fromhex(PKs))
-# Public keys - base64 encoded
+#PK2_peer = PublicKey(bytes.fromhex(PKp))
+#PK2_server = PublicKey(bytes.fromhex(PKs))
+
+# Peer and server public keys - base64 encoded
 PKp_b64 = base64url_encode(bytes.fromhex(PKp)).decode().strip('=')
 PKs_b64 = base64url_encode(bytes.fromhex(PKs)).decode().strip('=')
-PKp2_b64 = base64url_encode(bytes.fromhex(PKp2)).decode().strip('=')
-PKs2_b64 = base64url_encode(bytes.fromhex(PKs2)).decode().strip('=')
-# Public keys - jwk formatted
-PKs_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}')
-PKp_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}')
-PKs2_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}')
-PKp2_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}')
-PKs_full['x'] = PKs_b64
-PKp_full['x'] = PKp_b64
-PKs2_full['x'] = PKs2_b64
-PKp2_full['x'] = PKp2_b64
+#PKp2_b64 = base64url_encode(bytes.fromhex(PKp2)).decode().strip('=')
+#PKs2_b64 = base64url_encode(bytes.fromhex(PKs2)).decode().strip('=')
 
-## Private keys
+# Peer and server public keys - jwk formatted
+PKp_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}')
+PKs_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}')
+#PKs2_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}')
+#PKp2_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}')
+
+PKp_full['x'] = PKp_b64
+PKs_full['x'] = PKs_b64
+#PKs2_full['x'] = PKs2_b64
+#PKp2_full['x'] = PKp2_b64
+
+## Load peer and server private keys
 SK_peer = PrivateKey(bytes.fromhex(SKp))
 SK_server = PrivateKey(bytes.fromhex(SKs))
-SK2_peer = PrivateKey(bytes.fromhex(SKp2))
-SK2_server = PrivateKey(bytes.fromhex(SKs2))
+#SK2_peer = PrivateKey(bytes.fromhex(SKp2))
+#SK2_server = PrivateKey(bytes.fromhex(SKs2))
 
-## Shared secret
+## Derive shared secret
 Z = scalarmult(SK_peer.encode(), PK_server.encode())
 assert(Z == scalarmult(SK_server.encode(), PK_peer.encode()))
-Z2 = scalarmult(SK2_peer.encode(), PK2_server.encode())
-assert(Z2 == scalarmult(SK2_server.encode(), PK2_peer.encode()))
+#Z2 = scalarmult(SK2_peer.encode(), PK2_server.encode())
+#assert(Z2 == scalarmult(SK2_server.encode(), PK2_peer.encode()))
 
-## KDF - Completion
+## KDF for completion exchange. Uses NIST Concat KDF.
 KDF_input = b'EAP-NOOB' + base64url_decode(Np_b64) + base64url_decode(Ns_b64) + base64url_decode(Noob_b64)
 KDF_out = KDF(algorithm=SHA256(), length=320, otherinfo=KDF_input, backend=default_backend()).derive(Z)
 Kms = KDF_out[224:256]
 Kmp = KDF_out[256:288]
 Kz = KDF_out[288:320]
-# KDF - Rekeying
+
+# KDF - for reconnect exchange. Uses NIST Concat KDF. This sample script does not exchange new keys in the reconnect
+# exchange and uses the Kz from the previous KDF. The script can be modified for using new keys during the reconnect
+# exchange by uncommenting the appropriate lines above and using the new Z2 instead of Kz in the KDF 
 KDF2_input = b'EAP-NOOB' + base64url_decode(Np2_b64) + base64url_decode(Ns2_b64)
 KDF2_out = KDF(algorithm=SHA256(), length=288, otherinfo=KDF2_input, backend=default_backend()).derive(Kz)
 Kms2 = KDF2_out[224:256]
@@ -122,16 +133,19 @@ MACs_values = loads('{"MACs":[]}', object_pairs_hook=OrderedDict)
 MACs_values['MACs'] = [2, Vers, Verp, PeerId, Cryptosuites, Dirs, loads(ServerInfo), Cryptosuitep, Dirp, Realm, loads(PeerInfo), PKs_full, Ns_b64, PKp_full, Np_b64, Noob_b64]
 MACs_input = HMAC(Kms, SHA256(), backend=default_backend())
 MACs_input.update(dumps(MACs_values['MACs'], separators=(',', ':')).encode())
+
 # MACp
 MACp_values = loads('{"MACp":[]}', object_pairs_hook=OrderedDict)
 MACp_values['MACp'] = [1, Vers, Verp, PeerId, Cryptosuites, Dirs, loads(ServerInfo), Cryptosuitep, Dirp, Realm, loads(PeerInfo), PKs_full, Ns_b64, PKp_full, Np_b64, Noob_b64]
 MACp_input = HMAC(Kmp, SHA256(), backend=default_backend())
 MACp_input.update(dumps(MACp_values['MACp'], separators=(',', ':')).encode())
+
 # MACs2
 MACs2_values = loads('{"MACs2":[]}', object_pairs_hook=OrderedDict)
 MACs2_values['MACs2'] = [2, Vers, Verp, PeerId, Cryptosuites, "", loads(ServerInfo), Cryptosuitep, "", Realm, loads(PeerInfo), "", Ns2_b64, "", Np2_b64, ""]
 MACs2_input = HMAC(Kms2, SHA256(), backend=default_backend())
 MACs2_input.update(dumps(MACs2_values['MACs2'], separators=(',', ':')).encode())
+
 # MACp2
 MACp2_values = loads('{"MACp2":[]}', object_pairs_hook=OrderedDict)
 MACp2_values['MACp2'] = [1, Vers, Verp, PeerId, Cryptosuites, "", loads(ServerInfo), Cryptosuitep, "", Realm, loads(PeerInfo), "", Ns2_b64, "", Np2_b64, ""]
@@ -142,6 +156,7 @@ MACs = base64url_encode(MACs_input.finalize()[:32]).decode().strip('=')
 MACp = base64url_encode(MACp_input.finalize()[:32]).decode().strip('=')
 MACs2 = base64url_encode(MACs2_input.finalize()[:32]).decode().strip('=')
 MACp2 = base64url_encode(MACp2_input.finalize()[:32]).decode().strip('=')
+
 ################################################################################
 ############################## CREATE JSON ARRAYS ##############################
 # REQUEST/RESPONSE 1
@@ -194,15 +209,26 @@ res5 = loads(
     , object_pairs_hook = OrderedDict
 )
 
-# REQUEST/RESPONSE 6
+# REQUEST/RESPONSE 6 no new ECDH keys exchanged
 req6 = loads(
-    '{"Type":6, "PeerId":"", "PKs2":{"kty":"EC", "crv":"Curve25519", "x":""}, "Ns2":""}'
+    '{"Type":6, "PeerId":"", "Ns2":""}'
     , object_pairs_hook = OrderedDict
 )
 res6 = loads(
-    '{"Type":6, "PeerId":"", "PKp2":{"kty":"EC", "crv":"Curve25519", "x":""}, "Np2":""}'
+    '{"Type":6, "PeerId":"", "Np2":""}'
     , object_pairs_hook = OrderedDict
 )
+
+# REQUEST/RESPONSE 6 new ECDH keys exchanged
+#req6 = loads(
+#    '{"Type":6, "PeerId":"", "PKs2":{"kty":"EC", "crv":"Curve25519", "x":""}, "Ns2":""}'
+#    , object_pairs_hook = OrderedDict
+#)
+#res6 = loads(
+#    '{"Type":6, "PeerId":"", "PKp2":{"kty":"EC", "crv":"Curve25519", "x":""}, "Np2":""}'
+#    , object_pairs_hook = OrderedDict
+#)
+
 
 # REQUEST/RESPONSE 7
 req7 = loads(
@@ -271,23 +297,24 @@ res5['Cryptosuitep'] = Cryptosuitep
 res5['PeerInfo'] = loads(PeerInfo)
 
 req6['PeerId'] = PeerId
-req6['PKs2']['x'] = PKs2_b64
+#req6['PKs2']['x'] = PKs2_b64
 req6['Ns2'] = Ns2_b64
 
 res6['PeerId'] = PeerId
-res6['PKp2']['x'] = PKp2_b64
+#res6['PKp2']['x'] = PKp2_b64
 res6['Np2'] = Np2_b64
 
 req7['PeerId'] = PeerId
-req7['MACs'] = MACs2
+req7['MACs2'] = MACs2
 
 res7['PeerId'] = PeerId
-res7['MACp'] = MACp2
+res7['MACp2'] = MACp2
 
 req8['PeerId'] = PeerId
 
 res8['PeerId'] = PeerId
 res8['NoobId'] = NoobId_b64
+
 ################################################################################
 ############################### PRINT EVERYTHING ###############################
 # Initial Exchange
