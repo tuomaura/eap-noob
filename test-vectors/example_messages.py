@@ -97,7 +97,7 @@ Kz = KDF_out[288:320]
 
 # KDF - for reconnect exchange. Uses NIST Concat KDF. This sample script does not exchange new keys in the reconnect
 # exchange and uses the Kz from the previous KDF. The script can be modified for using new keys during the reconnect
-# exchange by uncommenting the appropriate lines above and using the new Z2 instead of Kz in the KDF 
+# exchange by uncommenting the appropriate lines above and using the new Z2 instead of Kz in the KDF
 KDF2_input = b'EAP-NOOB' + base64url_decode(Np2_b64) + base64url_decode(Ns2_b64)
 KDF2_out = KDF(algorithm=SHA256(), length=288, otherinfo=KDF2_input, backend=default_backend()).derive(Kz)
 Kms2 = KDF2_out[224:256]
@@ -119,7 +119,7 @@ NoobId_b64 = base64url_encode(NoobId).decode().strip('=')
 
 ## Hoob
 Hoob_values = loads('{"Hoob":[]}', object_pairs_hook=OrderedDict)
-Hoob_values['Hoob'] = [Dir, Vers, Verp, PeerId, Cryptosuites, Dirs, loads(ServerInfo), Cryptosuitep, Dirp, Realm, loads(PeerInfo), PKs_full, Ns_b64, PKp_full, Np_b64, Noob_b64]
+Hoob_values['Hoob'] = [Dir, Vers, Verp, PeerId, Cryptosuites, Dirs, loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, Dirp, Realm, loads(PeerInfo, object_pairs_hook=OrderedDict), PKs_full, Ns_b64, PKp_full, Np_b64, Noob_b64]
 Hoob_input = Hash(SHA256(), backend=default_backend())
 Hoob_input.update(dumps(Hoob_values['Hoob'], separators=(',', ':')).encode())
 Hoob = Hoob_input.finalize()[:16]
@@ -130,25 +130,25 @@ OOB = "P=" + PeerId + "&N=" + Noob_b64 + "&H=" + Hoob_b64
 
 ## MACs
 MACs_values = loads('{"MACs":[]}', object_pairs_hook=OrderedDict)
-MACs_values['MACs'] = [2, Vers, Verp, PeerId, Cryptosuites, Dirs, loads(ServerInfo), Cryptosuitep, Dirp, Realm, loads(PeerInfo), PKs_full, Ns_b64, PKp_full, Np_b64, Noob_b64]
+MACs_values['MACs'] = [2, Vers, Verp, PeerId, Cryptosuites, Dirs, loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, Dirp, Realm, loads(PeerInfo, object_pairs_hook=OrderedDict), PKs_full, Ns_b64, PKp_full, Np_b64, Noob_b64]
 MACs_input = HMAC(Kms, SHA256(), backend=default_backend())
 MACs_input.update(dumps(MACs_values['MACs'], separators=(',', ':')).encode())
 
 # MACp
 MACp_values = loads('{"MACp":[]}', object_pairs_hook=OrderedDict)
-MACp_values['MACp'] = [1, Vers, Verp, PeerId, Cryptosuites, Dirs, loads(ServerInfo), Cryptosuitep, Dirp, Realm, loads(PeerInfo), PKs_full, Ns_b64, PKp_full, Np_b64, Noob_b64]
+MACp_values['MACp'] = [1, Vers, Verp, PeerId, Cryptosuites, Dirs, loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, Dirp, Realm, loads(PeerInfo, object_pairs_hook=OrderedDict), PKs_full, Ns_b64, PKp_full, Np_b64, Noob_b64]
 MACp_input = HMAC(Kmp, SHA256(), backend=default_backend())
 MACp_input.update(dumps(MACp_values['MACp'], separators=(',', ':')).encode())
 
 # MACs2
 MACs2_values = loads('{"MACs2":[]}', object_pairs_hook=OrderedDict)
-MACs2_values['MACs2'] = [2, Vers, Verp, PeerId, Cryptosuites, "", loads(ServerInfo), Cryptosuitep, "", Realm, loads(PeerInfo), "", Ns2_b64, "", Np2_b64, ""]
+MACs2_values['MACs2'] = [2, Vers, Verp, PeerId, Cryptosuites, "", loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, "", Realm, loads(PeerInfo, object_pairs_hook=OrderedDict), "", Ns2_b64, "", Np2_b64, ""]
 MACs2_input = HMAC(Kms2, SHA256(), backend=default_backend())
 MACs2_input.update(dumps(MACs2_values['MACs2'], separators=(',', ':')).encode())
 
 # MACp2
 MACp2_values = loads('{"MACp2":[]}', object_pairs_hook=OrderedDict)
-MACp2_values['MACp2'] = [1, Vers, Verp, PeerId, Cryptosuites, "", loads(ServerInfo), Cryptosuitep, "", Realm, loads(PeerInfo), "", Ns2_b64, "", Np2_b64, ""]
+MACp2_values['MACp2'] = [1, Vers, Verp, PeerId, Cryptosuites, "", loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, "", Realm, loads(PeerInfo, object_pairs_hook=OrderedDict), "", Ns2_b64, "", Np2_b64, ""]
 MACp2_input = HMAC(Kmp2, SHA256(), backend=default_backend())
 MACp2_input.update(dumps(MACp2_values['MACp2'], separators=(',', ':')).encode())
 # MAC - base64 encoded
