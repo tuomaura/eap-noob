@@ -66,10 +66,10 @@ PKs_b64 = base64url_encode(bytes.fromhex(PKs)).decode().strip('=')
 #PKs2_b64 = base64url_encode(bytes.fromhex(PKs2)).decode().strip('=')
 
 # Peer and server public keys - jwk formatted
-PKp_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}')
-PKs_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}')
-#PKs2_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}')
-#PKp2_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}')
+PKp_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}', object_pairs_hook=OrderedDict)
+PKs_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}', object_pairs_hook=OrderedDict)
+#PKs2_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}', object_pairs_hook=OrderedDict)
+#PKp2_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}', object_pairs_hook=OrderedDict)
 
 PKp_full['x'] = PKp_b64
 PKs_full['x'] = PKs_b64
