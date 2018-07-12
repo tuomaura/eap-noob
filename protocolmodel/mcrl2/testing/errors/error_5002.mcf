@@ -1,2 +1,2 @@
 % E5002 - Invalid server info
-[true* . ERROR_MSG(E5002)] false
+[true* . LOG_ERROR(E5002)] false

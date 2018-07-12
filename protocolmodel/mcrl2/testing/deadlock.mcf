@@ -1,2 +1,2 @@
 % A deadlock is not possible
-[!ERROR_MSG(dropped_msg)*]<true>true
+[true*]<true>true

@@ -1,2 +1,3 @@
-[!MAX_NOOBS_REACHED* . ERROR_MSG(E1006)]
-  <true* . SERV_STATE(1, s4). PEER_STATE(1, s4)> true
+forall n : Pos . val (n <= 1)
+    => [!MAX_NOOBS_REACHED* . LOG_ERROR(E1006)]
+           <true* . SERV_STATE(n, s4). PEER_STATE(n, s4)> true

@@ -28,10 +28,10 @@ sort
     ;
 
     % Error codes
-    Error_t = struct dropped_msg % Message dropped in the channel
-      % | E1001  % Invalid NAI or peer state
+    Error_t = struct
+      % | E1001  % Invalid NAI
       % | E1002  % Invalid message structure
-        | E1003  % Invalid data
+          E1003  % Invalid data
         | E1004  % Unexpected message type
         | E1005  % Unexpected peer identifier
         | E1006  % Unrecognised OOB message identifier
@@ -81,8 +81,8 @@ sort
         | res3 ? is_res3
         | req4(NoobId:Nat, MACs:MAC_t) ? is_req4
         | res4(MACp: MAC_t) ? is_res4
-        | req5(Cryptosuites:Cryptosuite_l) ? is_req5
-        | res5(Cryptosuitep:Nat) ? is_res5
+        | req5(Vers:Ver_l, Cryptosuites:Cryptosuite_l) ? is_req5
+        | res5(Verp:Nat, Cryptosuitep:Nat) ? is_res5
         | req6(PKs2:Nat, Ns2:Nat) ? is_req6
         | res6(PKp2:Nat, Np2:Nat) ? is_res6
         | req7(MACs2:MAC_t) ? is_req7
@@ -204,7 +204,10 @@ act
     % == Query server and peer state, error status during testing and verification == %
     SERV_STATE,
     PEER_STATE: PeerId_t # State_t;
-    ERROR_MSG:  Error_t;
+    LOG_ERROR:  Error_t;
+
+    % == Notify that a message was lost. For testing and verification == %
+    MESSAGE_LOST: Type_t;
 
     % == Generate random PeerId, Noob, nonces == %
     % Multiaction for any random number generation
@@ -296,11 +299,11 @@ eqn
     static_serv_data = static_server_data([1], [1], 2, info, 3, 4);
 
     % Maximum number of PeerIds, Noob values, nonce values in the model
-    max_peers  = 1;
-    max_noobs  = 2;
-    max_nonces = 4;
+    max_peers  = 1; % >=1
+    max_noobs  = 2; % >=2 if Dirp=1 or Dirp=2, >=3 if Dirp=3
+    max_nonces = 4; % >=4
 
-    % Maximum amount of failed OOB messages before going back to state 0
+    % Maximum number of failed OOB messages before going back to state 0
     max_oob_retries = 2;
 
     % Default values for database at the server
@@ -327,7 +330,7 @@ proc
     PeerToServerChannel(compromised:Bool) =
         sum PeerId:PeerId_t, State:State_t . (
             SEND_EAP_RES_ID_I(PeerId, State)
-            . (RECV_EAP_RES_ID_O(PeerId, State) + ERROR_MSG(dropped_msg))
+            . (RECV_EAP_RES_ID_O(PeerId, State) + MESSAGE_LOST(id))
             . PeerToServerChannel(compromised)
         )
         + sum PeerId:PeerId_t, data:Data_t, type:Type_t . (
@@ -335,14 +338,14 @@ proc
             % Modify values if the channel is compromised
             . (compromised) -> (
                 (type == t8) -> (
-                    % Spoof Noob
+                    % Spoof NoobId
                     RECV_EAP_RES_O(type, PeerId, res8(NoobId(data) + 20))
                     . PeerToServerChannel(false)
                 )
-                <> (RECV_EAP_RES_O(type, PeerId, data) + ERROR_MSG(dropped_msg))
+                <> (RECV_EAP_RES_O(type, PeerId, data) + MESSAGE_LOST(type))
                 . PeerToServerChannel(compromised)
             )
-            <> (RECV_EAP_RES_O(type, PeerId, data) + ERROR_MSG(dropped_msg))
+            <> (RECV_EAP_RES_O(type, PeerId, data) + MESSAGE_LOST(type))
             . PeerToServerChannel(compromised)
         )
     ;
@@ -355,21 +358,21 @@ proc
             % Modify values if the channel is compromised
             . (compromised) -> (
                 (type == t4) -> (
-                    % Spoof Noob
+                    % Spoof NoobId
                     RECV_EAP_REQ_O(type, PeerId, req4(NoobId(data) + 10, MACs(data)))
                     . ServerToPeerChannel(false)
                 )
-                <> (RECV_EAP_REQ_O(type, PeerId, data) + ERROR_MSG(dropped_msg))
+                <> (RECV_EAP_REQ_O(type, PeerId, data) + MESSAGE_LOST(type))
                 . ServerToPeerChannel(compromised)
             )
-            <> (RECV_EAP_REQ_O(type, PeerId, data) + ERROR_MSG(dropped_msg))
+            <> (RECV_EAP_REQ_O(type, PeerId, data) + MESSAGE_LOST(type))
             . ServerToPeerChannel(compromised)
         )
         + SEND_EAP_SUCC_I
-        . (RECV_EAP_SUCC_O + ERROR_MSG(dropped_msg))
+        . (RECV_EAP_SUCC_O + MESSAGE_LOST(success))
         . ServerToPeerChannel(compromised)
         + SEND_EAP_FAIL_I
-        . (RECV_EAP_FAIL_O + ERROR_MSG(dropped_msg))
+        . (RECV_EAP_FAIL_O + MESSAGE_LOST(failure))
         . ServerToPeerChannel(compromised)
     ;
 
@@ -465,6 +468,7 @@ proc
                 % Type 5 response
                 <> (is_res5(data)) -> (
                     Database(
+                        verp         = verp[PeerId->Verp(data)],
                         cryptosuitep = cryptosuitep[PeerId->Cryptosuitep(data)]
                     )
                 )
@@ -596,12 +600,12 @@ proc
                                 )
                                 % Reconnect Exchange
                                 <> (Peer_State == s3 && (Server_State == s3 || Server_State == s4)) -> (
-                                    SEND_EAP_REQ_O(t5, PeerId, req5(Cryptosuites(sd)))
+                                    SEND_EAP_REQ_O(t5, PeerId, req5(Vers(sd), Cryptosuites(sd)))
                                     . UPDATE_TYPE(PeerId, Type(t5))
                                 )
                                 % Drop old messages
                                 <> (Server_State == s4) -> (
-                                    ERROR_MSG(dropped_msg)
+                                    MESSAGE_LOST(Type)
                                 )
                                 % Check for state mismatch
                                 <> ((Server_State == s1 && (Peer_State == s3 || Peer_State == s4)) ||
@@ -616,7 +620,7 @@ proc
                             <> (Server_State == no_state) -> (
                                 % Send error E1005
                                 SEND_EAP_REQ_O(t0, PeerId, err(E1005))
-                                . ERROR_MSG(E1005)
+                                . LOG_ERROR(E1005)
                                 . Server(sd, noobs)
                             )
                         )
@@ -865,7 +869,7 @@ proc
     %   Error  : Error message
     Server_Error(Type:Type_t, PeerId:PeerId_t, Error:Error_t) =
         % Alert received error message
-        ERROR_MSG(Error)
+        LOG_ERROR(Error)
         % Send EAP-Failure and recover from error
         . SEND_EAP_FAIL_O . (
             % Error 1006: transition to state 1
@@ -1134,8 +1138,16 @@ proc
                     )
                     % Reconnect Exchange
                     <> (type == t5) -> (
-                        % No mutually supported cryptosuite
+                        % No mutually supported protocol version
                         (!(exists a,b:Nat .
+                            (a < #Vers(data) && b < #Vers(spd) && (Vers(data) . a) == (Vers(spd) . b)))) -> (
+                                SEND_EAP_RES_O(t0, PeerId_RCV, err(E3001))
+                                . RECV_EAP_FAIL_I
+                                . PEER_STATE(PeerId, s0)
+                                . Peer(Peer_State = s0, Type = no_type)
+                        )
+                        % No mutually supported cryptosuite
+                        <> (!(exists a,b:Nat .
                             (a < #Cryptosuites(data) && b < #Cryptosuites(spd) &&
                                 (Cryptosuites(data).a) == (Cryptosuites(spd).b))) -> (
                                     SEND_EAP_RES_O(type, PeerId, err(E3002))
@@ -1145,10 +1157,12 @@ proc
                             )
                         )
                         % No conflicts, send response back
-                        + sum Cryptosuite:Cryptosuite_t . (
-                            (Cryptosuite in Cryptosuites(data) && Cryptosuite in Cryptosuites(spd)) -> (
-                                SEND_EAP_RES_O(type, PeerId, res5(Cryptosuite))
-                                . Peer(Type = type, Cryptosuitep = Cryptosuite)
+                        + sum Cryptosuite:Cryptosuite_t, Version:Ver_t . (
+                            (Cryptosuite in Cryptosuites(data) && Cryptosuite in Cryptosuites(spd) &&
+                             Version in Vers(data) && Version in Vers(spd)
+                            ) -> (
+                                SEND_EAP_RES_O(type, PeerId, res5(Version, Cryptosuite))
+                                . Peer(Type = type, Vers = Vers(data), Cryptosuitep = Cryptosuite)
                             )
                         )
                     )
@@ -1262,7 +1276,7 @@ init
         MOBILITY_TIMEOUT_FAILURE,
         % USER_RESET,
         SERV_STATE, PEER_STATE,
-        ERROR_MSG,
+        LOG_ERROR,
         RNG_MA,
         QUERY_FAILED_OOBS_MA, UPDATE_FAILED_OOBS_MA,
         QUERY_STATE_MA, UPDATE_STATE_MA,

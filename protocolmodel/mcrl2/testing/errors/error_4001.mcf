@@ -1,2 +1,2 @@
 % E4001 - MAC verification failure
-[true* . ERROR_MSG(E4001)] false
+[true* . LOG_ERROR(E4001)] false
