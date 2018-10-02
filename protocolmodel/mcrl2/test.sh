@@ -55,9 +55,7 @@ test_states() {
     if [[ $VAL != 'Unreachable' ]]; then
       printf " Server: $SS \t Peer: $PS"
       printf "\t should be reachable\n"
-    fi
-  else
-    if [[ $VAL == 'Unreachable' ]]; then
+    elif [[ $VAL == 'Unreachable' ]]; then
       printf " Server: $SS \t Peer: $PS"
       printf "\t should not be reachable\n"
     fi

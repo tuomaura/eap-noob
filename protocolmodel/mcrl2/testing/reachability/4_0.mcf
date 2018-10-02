@@ -1,3 +1,10 @@
 % Unreachable
 forall n:Pos . val(n <= 1)
-    => <true* . SERV_STATE(n, s4) . PEER_STATE(n, s0)> true
+  => [true* . SERV_STATE(n,s4)
+     . !(SERV_STATE(n,s0) || SERV_STATE(n,s1) || SERV_STATE(n,s2) || SERV_STATE(n,s3) || SERV_STATE(n,s4))*
+     . PEER_STATE(n,s0)] false
+&&
+forall n:Pos . val(n <= 1)
+  => [true* . PEER_STATE(n,s0)
+     . !(PEER_STATE(n,s0) || PEER_STATE(n,s1) || PEER_STATE(n,s2) || PEER_STATE(n,s3) || PEER_STATE(n,s4))*
+     . SERV_STATE(n,s4)] false
