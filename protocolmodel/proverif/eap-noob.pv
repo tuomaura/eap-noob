@@ -1,0 +1,377 @@
+(* Channels *)
+free P2AP:channel.          (* Peer-to-AP *)
+free S2AP:channel.          (* Server-to-AP *)
+free OOB:channel [private].
+
+(* Data types *)
+type Type_t.                (* Types 0 to 8 *)
+type NAI_t.                 (* Network Access Identifier *)
+type State_t.               (* States 0 to 4 *)
+type Info_t.                (* Server or Peer information *)
+type Hoob_t.                (* Cryptographic hash hoob *)
+type ECDH_t.                (* ECDH key derivation *)
+type K_t.                   (* ECDH key type *)
+type MAC_t.                 (* Cryptographic MAC *)
+type Ver_t.                 (* Version *)
+type Ver_l.                 (* List of versions *)
+type PeerId_t.              (* Peer ID *)
+type PK_t.                  (* Public key *)
+type Cryptosuite_t.         (* Cryptosuite *)
+type Cryptosuite_l.         (* List of cryptosuites *)
+type Dir_t.                 (* Direction *)
+type N_t.                   (* Nonce *)
+type Noob_t.                (* Noob *)
+type NoobId_t.              (* Noob ID *)
+
+(* Events *)
+event HoobMismatch. event HoobMatch.
+event NoobMismatch. event NoobMatch.
+event MACpMismatch. event MACpMatch.
+event MACsMismatch. event MACsMatch.
+event MACp2Mismatch. event MACp2Match.
+event MACs2Mismatch. event MACs2Match.
+
+(* Event queries *)
+(*
+query event(HoobMismatch); event(HoobMatch);
+      event(NoobMismatch); event(NoobMatch);
+      event(MACpMismatch); event(MACpMatch);
+      event(MACsMismatch); event(MACsMatch);
+      event(MACp2Mismatch); event(MACp2Match);
+      event(MACs2Mismatch); event(MACs2Match)
+.
+*)
+
+(* Correspondence queries *)
+query event(MACpMatch) ==> (event(MACsMatch) ==> event(HoobMatch));
+      event(MACp2Match) ==> event(MACs2Match)
+.
+
+(* Secrecy queries *)
+query secret KMS;
+      secret KMP;
+      secret KMS2;
+      secret KMP2
+.
+
+(* States *)
+const s0:State_t.
+const s1:State_t.
+const s2:State_t.
+const s3:State_t.
+const s4:State_t.
+
+(* Types *)
+const t1:Type_t.
+const t2:Type_t.
+const t3:Type_t.
+const t4:Type_t.
+const t5:Type_t.
+const t6:Type_t.
+const t7:Type_t.
+const t8:Type_t.
+
+(* PeerID *)
+const noob:PeerId_t.
+
+(* Hoob *)
+fun hoob(bitstring):Hoob_t.
+
+(* Noob *)
+fun noobid(Noob_t):NoobId_t.
+
+(* ECDH *)
+const e:ECDH_t [data].
+fun ecdh(ECDH_t, PK_t):ECDH_t.
+equation forall p1:PK_t, p2:PK_t;
+    ecdh(ecdh(e,p1),p2) = ecdh(ecdh(e,p2),p1).
+
+(* Key Derivation *)
+const kms:K_t.  (* Generate Kms *)
+const kmp:K_t.  (* Generate Kmp *)
+(* Note: the last parameter determines which bytes are extracted, i.e. which key is derived *)
+fun Completion(ECDH_t,N_t,N_t,Noob_t,K_t): K_t.
+fun RekeyingECDH(ECDH_t,N_t,N_t,K_t): K_t.
+
+(* HMAC *)
+fun hmac(K_t,bitstring):MAC_t.
+
+(* ----------------------------------- *)
+(*            PROCESSES                *)
+(* ----------------------------------- *)
+
+(* Access Point *)
+let AP() =
+    (* -- Initial Exchange -- *)
+    new EAPRequestIdentity:Type_t;
+    out(P2AP, EAPRequestIdentity);
+    in(P2AP, NAI:NAI_t);
+    out(S2AP, NAI);
+    (* Request 1 *)
+    in(S2AP, (=t1,Vers:Ver_l,PeerId:PeerId_t,Cryptosuites:Cryptosuite_l,Dirs:Dir_t,ServerInfo:Info_t));
+    out(P2AP, (t1,Vers,PeerId,Cryptosuites,Dirs,ServerInfo));
+    (* Response 1 *)
+    in(P2AP, (=t1,Verp:Ver_t,PeerId:PeerId_t,Cryptosuitep:Cryptosuite_t,Dirp:Dir_t,PeerInfo:Info_t));
+    out(S2AP, (t1,Verp,PeerId,Cryptosuitep,Dirp,PeerInfo));
+    (* Request 2 *)
+    in(S2AP, (=t2,PeerId:PeerId_t,PKs:PK_t,Ns:N_t));
+    out(P2AP, (t2,PeerId,PKs,Ns));
+    (* Response 2 *)
+    in(P2AP, (=t2,PeerId:PeerId_t,PKp:PK_t,Np:N_t));
+    out(S2AP, (t2,PeerId,PKp,Np));
+    (* EAP-Failure *)
+    in(S2AP, EAPFailure:Type_t);
+    out(P2AP, EAPFailure);
+
+    (* -- Waiting Exchange -- *)
+    out(P2AP, EAPRequestIdentity);
+    in(P2AP, NAI:NAI_t);
+    out(S2AP, NAI);
+    (* Request 3 *)
+    in(S2AP, (=t3,PeerId:PeerId_t));
+    out(P2AP, (t3,PeerId));
+    (* Response 3 *)
+    in(P2AP, (=t3,PeerId:PeerId_t));
+    out(S2AP, (t3,PeerId));
+    (* EAP-Failure *)
+    in(S2AP, EAPFailure:Type_t);
+    out(S2AP, EAPFailure);
+
+    (* -- Completion Exchange -- *)
+    out(P2AP, EAPRequestIdentity);
+    in(P2AP, NAI:NAI_t);
+    out(S2AP, NAI);
+    (* Request 8 *)
+    in(S2AP, (=t8,PeerId:PeerId_t));
+    out(P2AP, (t8,PeerId));
+    (* Response 8 *)
+    in(P2AP, (=t8,PeerId:PeerId_t,NoobId:NoobId_t));
+    out(S2AP, (t8,PeerId,NoobId));
+    (* Request 4 *)
+    in(S2AP, (=t4,PeerId:PeerId_t,NoobId:NoobId_t,MACs:MAC_t));
+    out(P2AP, (t4,PeerId,NoobId,MACs));
+    (* Response 4 *)
+    in(P2AP, (=t4,PeerId:PeerId_t,MACp:MAC_t));
+    out(S2AP, (t4,PeerId,MACp));
+    (* EAP-Success *)
+    in(S2AP, EAPSuccess:Type_t);
+    out(P2AP, EAPSuccess);
+
+    (* -- Reconnect Exchange -- *)
+    out(P2AP, EAPRequestIdentity);
+    in(P2AP, NAI:NAI_t);
+    out(S2AP, NAI);
+    (* Request 5 *)
+    in(S2AP, (=t5,Vers:Ver_l,PeerId:PeerId_t,Cryptosuits:Cryptosuite_l));
+    out(P2AP, (t5,Vers,PeerId,Cryptosuites));
+    (* Response 5 *)
+    in(P2AP, (=t5,Verp:Ver_t,PeerId:PeerId_t,Cryptosuitep:Cryptosuite_t));
+    out(S2AP, (t5,Verp,PeerId,Cryptosuitep));
+    (* Request 6 *)
+    in(S2AP, (=t6,PeerId:PeerId_t,PKs2:PK_t,Ns2:N_t));
+    out(P2AP, (t6,PeerId,PKs2,Ns2));
+    (* Response 6 *)
+    in(P2AP, (=t6,PeerId:PeerId_t,PKp2:PK_t,Np2:N_t));
+    out(S2AP, (t6,PeerId,PKp2,Np2));
+    (* Request 7 *)
+    in(S2AP, (=t7,PeerId:PeerId_t,MACs2:MAC_t));
+    out(P2AP, (t7,PeerId,MACs2));
+    (* Response 7 *)
+    in(P2AP, (=t7,PeerId:PeerId_t,MACp:MAC_t));
+    out(S2AP, (t7,PeerId,MACp));
+    (* EAP-Success *)
+    in(S2AP, EAPSuccess:Type_t);
+    out(P2AP, EAPSuccess)
+.
+
+(* Peer *)
+let Peer() =
+    (* -- Initial Exchange -- *)
+    in(P2AP, EAPRequestIdentity:Type_t);
+    let NAI = (s0,noob) in
+        out(P2AP, NAI);
+    (* Request 1 *)
+    in(P2AP, (=t1,Vers:Ver_l,PeerId:PeerId_t,Cryptosuites:Cryptosuite_l,Dirs:Dir_t,ServerInfo:Info_t));
+    new Verp:Ver_t;
+    new Cryptosuitep:Cryptosuite_t;
+    new Dirp:Dir_t;
+    new PeerInfo:Info_t;
+    (* Response 1 *)
+    out(P2AP, (t1,Verp,PeerId,Cryptosuitep,Dirp,PeerInfo));
+    (* Request 2 *)
+    in(P2AP, (=t2,=PeerId,PKs:PK_t,Ns:N_t));
+    new PKp:PK_t;
+    new Np:N_t;
+    (* Response 2 *)
+    out(P2AP, (t2,PeerId,PKp,Np));
+    (* EAP-Failure *)
+    in(P2AP, EAPFailure:Type_t);
+
+    (* -- Waiting Exchange -- *)
+    in(P2AP, EAPRequestIdentity:Type_t);
+    let NAI = (s1,PeerId) in
+        out(P2AP, NAI);
+    (* Request 3 *)
+    in(P2AP, (=t3,=PeerId));
+    (* Response 3 *)
+    out(P2AP, (t3,PeerId));
+    (* EAP-Failure *)
+    in(P2AP, EAPFailure:Type_t);
+
+    (* -- OOB -- *)
+    new Noob:Noob_t;
+    (*let Hoob = hoob((Dirp,Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,Cryptosuitep,Dirp,PeerInfo,PKs,Ns,PKp,Np,Noob))
+        in out(OOB, (PeerId,Noob,Hoob));*)
+    in(OOB, (=PeerId,ServerNoob:Noob_t,ServerHoob:Hoob_t));
+    let Hoob = hoob((Dirp,Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,Cryptosuitep,Dirp,PeerInfo,PKs,Ns,PKp,Np,
+           ServerNoob)) in
+        if Hoob <> ServerHoob then event HoobMismatch; 0 else event HoobMatch;
+
+    (* -- Completion Exchange -- *)
+    in(P2AP, EAPRequestIdentity:Type_t);
+    let NAI = (s2,noob) in
+        out(P2AP, NAI);
+    (* Request 8 *)
+    in(P2AP, (=t8,=PeerId));
+    (* Response 8 *)
+    let NoobId = noobid(ServerNoob) in
+        out(P2AP, (t8,PeerId,NoobId));
+    (* Request 4 *)
+    in(P2AP, (=t4,=PeerId,NoobId:NoobId_t,MACs:MAC_t));
+    let Z = ecdh(ecdh(e,PKp),PKs) in
+        let Kms = Completion(Z,Np,Ns,ServerNoob,kms) in
+            let MAC = hmac(Kms, (Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,Cryptosuitep,Dirp,PeerInfo,PKs,Ns,
+                    PKp,Np,ServerNoob)) in
+                        if MAC <> MACs then event MACsMismatch; 0 else event MACsMatch;
+    (* Response 4 *)
+    let Z = ecdh(ecdh(e,PKp),PKs) in
+        let Kmp = Completion(Z,Np,Ns,ServerNoob,kmp) in
+            let MACp = hmac(Kmp, (Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,Cryptosuitep,Dirp,PeerInfo,PKs,Ns,
+                    PKp,Np,ServerNoob)) in
+                out(P2AP, (t4,PeerId,MACp));
+    let KMP = Kmp in
+    (* EAP-Success *)
+    in(P2AP, EAPSuccess:Type_t);
+
+    (* -- Reconnect Exchange -- *)
+    in(P2AP, EAPRequestIdentity:Type_t);
+    let NAI = (s3,PeerId) in
+        out(P2AP, NAI);
+    (* Request 5 *)
+    in(P2AP, (=t5,Vers:Ver_l,=PeerId,Cryptosuites:Cryptosuite_l));
+    (* Response 5 *)
+    out(P2AP, (t5,Verp,PeerId,Cryptosuitep));
+    (* Request 6 *)
+    in(P2AP, (=t6,=PeerId,PKs2:PK_t,Ns2:N_t));
+    new PKp2:PK_t;
+    new Np2:N_t;
+    (* Response 6 *)
+    out(P2AP, (t6,PeerId,PKp2,Np2));
+    (* Request 7 *)
+    in(P2AP, (=t7,=PeerId,MACs2:MAC_t));
+    let Z = ecdh(ecdh(e,PKp2),PKs2) in
+        let Kms2 = RekeyingECDH(Z,Np2,Ns2,Kms) in
+            let MAC2 = hmac(Kms2, (Vers,Verp,PeerId,Cryptosuites,Cryptosuitep,PKs2,Ns2,PKp2,Np2)) in
+                if MAC2 <> MACs2 then event MACs2Mismatch; 0 else event MACs2Match;
+    (* Response 7 *)
+    let Z = ecdh(ecdh(e,PKp2),PKs2) in
+        let Kmp2 = RekeyingECDH(Z,Np2,Ns2,Kmp) in
+            let MACp2 = hmac(Kmp2, (Vers,Verp,PeerId,Cryptosuites,Cryptosuitep,PKs2,Ns2,PKp2,Np2)) in
+                out(P2AP, (t7,PeerId,MACp2));
+    let KMP2 = Kmp2 in
+    (* EAP-Success *)
+    in(P2AP, EAPSuccess:Type_t)
+.
+
+(* Server *)
+let Server() =
+    (* -- Initial Exchange -- *)
+    in(S2AP, NAI:NAI_t);
+    new Vers:Ver_l;
+    new PeerId:PeerId_t;
+    new Cryptosuites:Cryptosuite_l;
+    new Dirs:Dir_t;
+    new ServerInfo:Info_t;
+    (* Request 1 *)
+    out(S2AP, (t1,Vers,PeerId,Cryptosuites,Dirs,ServerInfo));
+    (* Response 1 *)
+    in(S2AP, (=t1,Verp:Ver_t,=PeerId,Cryptosuitep:Cryptosuite_t,Dirp:Dir_t,PeerInfo:Info_t));
+    new PKs:PK_t;
+    new Ns:N_t;
+    (* Request 2 *)
+    out(S2AP, (t2,PeerId,PKs,Ns));
+    in(S2AP, (=t2,=PeerId,PKp:PK_t,Np:N_t));
+    (* EAP-Failure *)
+    new EAPFailure:Type_t;
+    out(S2AP, EAPFailure);
+
+    (* -- Waiting Exchange -- *)
+    in(S2AP,NAI:NAI_t);
+    (* Request 3 *)
+    out(S2AP, (t3,PeerId));
+    (* Response 3 *)
+    in(S2AP, (=t3,=PeerId));
+    (* EAP-Failure *)
+    out(S2AP, EAPFailure);
+
+    (* -- OOB -- *)
+    new Noob:Noob_t;
+    let Hoob = hoob((Dirp,Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,Cryptosuitep,Dirp,PeerInfo,PKs,Ns,PKp,Np,Noob))
+        in out(OOB, (PeerId,Noob,Hoob));
+    (*in(OOB, (=PeerId,PeerNoob:Noob_t,PeerHoob:Hoob_t))*)
+
+    (* -- Completion Exchange -- *)
+    in(S2AP, NAI:NAI_t);
+    (* Request 8 *)
+    out(S2AP, (t8,PeerId));
+    (* Response 8 *)
+    in(S2AP, (=t8,=PeerId,NoobId:NoobId_t));
+    if noobid(Noob) <> NoobId then event NoobMismatch; 0 else event NoobMatch;
+    (* Request 4 *)
+    let NoobId = noobid(Noob) in
+        let Z = ecdh(ecdh(e,PKp),PKs) in
+            let Kms = Completion(Z,Np,Ns,Noob,kms) in
+                let MACs = hmac(Kms, (Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,Cryptosuitep,Dirp,PeerInfo,PKs,
+                        Ns,PKp,Np,Noob)) in
+                    out(S2AP, (t4,PeerId,NoobId,MACs));
+    let KMS = Kms in
+    (* Response 4 *)
+    in(S2AP, (=t4,=PeerId,MACp:MAC_t));
+    let Z = ecdh(ecdh(e,PKp),PKs) in
+        let Kmp = Completion(Z,Np,Ns,Noob,kmp) in
+            let MAC = hmac(Kmp, (Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,Cryptosuitep,Dirp,PeerInfo,PKs,
+                    Ns,PKp,Np,Noob)) in
+                if MAC <> MACp then event MACpMismatch; 0 else event MACpMatch;
+    (* EAP-Success *)
+    new EAPSuccess:Type_t;
+    out(S2AP, EAPSuccess);
+
+    (* -- Reconnect Exchange -- *)
+    in(S2AP, NAI:NAI_t);
+    (* Request 5 *)
+    out(S2AP, (t5,Vers,PeerId,Cryptosuites));
+    (* Response 5 *)
+    in(S2AP, (=t5,Verp:Ver_t,=PeerId,Cryptosuitep:Cryptosuite_t));
+    new PKs2:PK_t;
+    new Ns2:N_t;
+    (* Request 6 *)
+    out(S2AP, (t6,PeerId,PKs2,Ns2));
+    (* Response 6 *)
+    in(S2AP, (=t6,=PeerId,PKp2:PK_t,Np2:N_t));
+    (* Request 7 *)
+    let Z = ecdh(ecdh(e,PKp2),PKs2) in
+        let Kms2 = RekeyingECDH(Z,Np2,Ns2,Kms) in
+            let MACs2 = hmac(Kms2, (Vers,Verp,PeerId,Cryptosuites,Cryptosuitep,PKs2,Ns2,PKp2,Np2)) in
+                out(S2AP, (t7,PeerId,MACs2));
+    let KMS2 = Kms2 in
+    (* Response 7 *)
+    in(S2AP, (=t7,=PeerId,MACp2:MAC_t));
+    let Z = ecdh(ecdh(e,PKp2),PKs2) in
+        let Kmp2 = RekeyingECDH(Z,Np2,Ns2,Kmp) in
+            let MAC2 = hmac(Kmp2, (Vers,Verp,PeerId,Cryptosuites,Cryptosuitep,PKs2,Ns2,PKp2,Np2)) in
+                if MAC2 <> MACp2 then event MACp2Mismatch; 0 else event MACp2Match;
+    (* EAP-Success *)
+    out(S2AP, EAPSuccess)
+.
+
+process Peer() | Server() | AP()
