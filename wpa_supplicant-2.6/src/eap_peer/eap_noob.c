@@ -2118,9 +2118,19 @@ static struct wpabuf * eap_noob_process(struct eap_sm * sm, void * priv, struct 
         ret->ignore = TRUE;
         return NULL;
     }
+ /**
+ * https://tools.ietf.org/html/rfc4137 Not dropping packets if header is valid. 
+ * Consider using this for Error messages received when not expected. 
+**/   
     ret->ignore = FALSE;
-    ret->methodState = METHOD_MAY_CONT;
+
+    ret->methodState = METHOD_CONT;
     ret->decision = DECISION_FAIL;
+
+  /**
+ * https://tools.ietf.org/html/rfc3748 EAP-NOOB does not use 
+ * or handle EAP Notificiation type messages.  
+**/      
     ret->allowNotifications = FALSE;
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Received Request = %s", pos);
@@ -2174,8 +2184,10 @@ static struct wpabuf * eap_noob_process(struct eap_sm * sm, void * priv, struct 
             break;
         case EAP_NOOB_TYPE_4:
             resp = eap_noob_req_type_four(sm,req_obj ,data, id);
-            if(data->server_attr->err_code == NO_ERROR)
+            if(data->server_attr->err_code == NO_ERROR) {
+                ret->methodState = METHOD_MAY_CONT;
                 ret->decision = DECISION_COND_SUCC;
+            }
             break;
         case EAP_NOOB_TYPE_5:
             resp = eap_noob_req_type_five(sm, req_obj, data, id);
@@ -2185,8 +2197,10 @@ static struct wpabuf * eap_noob_process(struct eap_sm * sm, void * priv, struct 
             break;
         case EAP_NOOB_TYPE_7:
             resp = eap_noob_req_type_seven(sm, req_obj, data, id);
-            if(data->server_attr->err_code == NO_ERROR)
+            if(data->server_attr->err_code == NO_ERROR) {
+                ret->methodState = METHOD_MAY_CONT;
                 ret->decision = DECISION_COND_SUCC;
+            }
             break;
         case EAP_NOOB_HINT:
             resp = eap_noob_req_type_eight(sm, req_obj, data, id);
