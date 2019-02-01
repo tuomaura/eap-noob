@@ -53,7 +53,7 @@ Dependencies
 
 Following packages have to be installed before compiling the EAP-NOOB code:
 
-1. libssl-dev (minimum version 1.1.0e for elliptic curve X25519). 
+1. libssl-dev (minimum version 1.1.1a for elliptic curve X25519). 
 
 2. libsqlite3-dev (sqlite3). 
 
