@@ -102,8 +102,10 @@ def get_hoob(PeerId, Noob, path, Dir):
     hoob_array = json.loads(out[2], object_pairs_hook=OrderedDict);
     hoob_array[0] = int(Dir);
     hoob_array.append(Noob);
-    hoob_array[12] = Ns_b64;
-    hoob_array[14] = Np_b64;
+    #Keying mode is 0 in hoob calculation
+    hoob_array[11] = int(0);
+    hoob_array[13] = Ns_b64;
+    hoob_array[15] = Np_b64;
     hoob_str = json.dumps(hoob_array,separators=(',',':')).encode();
     print_log(hoob_str.decode('utf-8'));
     hoob = hashlib.sha256(hoob_str).digest();
