@@ -127,9 +127,9 @@ def prepare(iface):
     print_log("Starting wpa_supplicant");
     runbash('rm -f '+config_file+' touch '+config_file+' ; rm -f '+db_name+' ; rm -f '+oob_file);
     conf_file = open(config_file,'w')
-    conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=360\n\n")
+    conf_file.write("ctrl_interface=/var/run/wpa_supplicant \n update_config=1\ndot11RSNAConfigPMKLifetime=6660\n\n")
     conf_file.close();
-    cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant -d"
+    cmd = "./wpa_supplicant -i "+iface+" -c wpa_supplicant.conf -O /var/run/wpa_supplicant -ddd"
     subprocess.Popen(cmd,shell=True, stdout=1, stdin=None)
 
 def reconfigure_peer():
@@ -233,8 +233,10 @@ def get_hoob(PeerId, Noob, Dir):
     hoob_array = json.loads(out[2], object_pairs_hook=OrderedDict);
     hoob_array[0] = int(Dir);
     hoob_array.append(Noob);
-    hoob_array[12] = Ns_b64;
-    hoob_array[14] = Np_b64;
+    #Keying mode is 0 in hoo calculation
+    hoob_array[11] = int(0);
+    hoob_array[13] = Ns_b64;
+    hoob_array[15] = Np_b64;
  
     hoob_str = json.dumps(hoob_array,separators=(',',':')).encode();
     print_log(hoob_str.decode('utf-8'));
