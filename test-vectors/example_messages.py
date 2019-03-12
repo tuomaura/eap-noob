@@ -45,7 +45,11 @@ SKs = '77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a'
 
 # Info
 ServerInfo = '{"Name":"Example","Url":"https://noob.example.com/sendOOB"}'
-PeerInfo = '{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"Noob1","BSSID":"6c:19:8f:83:c2:80"}'
+PeerInfo = '{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"Noob1",\
+    "BSSID":"6c:19:8f:83:c2:80"}'
+
+# KeyingMode
+KeyingMode = 2
 
 # SleepTime
 SleepTime = 60
@@ -66,10 +70,14 @@ PKs_b64 = base64url_encode(bytes.fromhex(PKs)).decode().strip('=')
 #PKs2_b64 = base64url_encode(bytes.fromhex(PKs2)).decode().strip('=')
 
 # Peer and server public keys - jwk formatted
-PKp_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}', object_pairs_hook=OrderedDict)
-PKs_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}', object_pairs_hook=OrderedDict)
-#PKs2_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}', object_pairs_hook=OrderedDict)
-#PKp2_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}', object_pairs_hook=OrderedDict)
+PKp_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}',
+    object_pairs_hook=OrderedDict)
+PKs_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}',
+    object_pairs_hook=OrderedDict)
+# PKs2_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}', \
+#     object_pairs_hook=OrderedDict)
+# PKp2_full = loads('{"kty":"EC", "crv":"Curve25519", "x":""}', \
+#     object_pairs_hook=OrderedDict)
 
 PKp_full['x'] = PKp_b64
 PKs_full['x'] = PKs_b64
@@ -89,17 +97,22 @@ assert(Z == scalarmult(SK_server.encode(), PK_peer.encode()))
 #assert(Z2 == scalarmult(SK2_server.encode(), PK2_peer.encode()))
 
 ## KDF for completion exchange. Uses NIST Concat KDF.
-KDF_input = b'EAP-NOOB' + base64url_decode(Np_b64) + base64url_decode(Ns_b64) + base64url_decode(Noob_b64)
-KDF_out = KDF(algorithm=SHA256(), length=320, otherinfo=KDF_input, backend=default_backend()).derive(Z)
+KDF_input = b'EAP-NOOB' + base64url_decode(Np_b64) + base64url_decode(Ns_b64) +\
+    base64url_decode(Noob_b64)
+KDF_out = KDF(algorithm=SHA256(), length=320, otherinfo=KDF_input,
+    backend=default_backend()).derive(Z)
 Kms = KDF_out[224:256]
 Kmp = KDF_out[256:288]
 Kz = KDF_out[288:320]
 
-# KDF - for reconnect exchange. Uses NIST Concat KDF. This sample script does not exchange new keys in the reconnect
-# exchange and uses the Kz from the previous KDF. The script can be modified for using new keys during the reconnect
-# exchange by uncommenting the appropriate lines above and using the new Z2 instead of Kz in the KDF
+# KDF - for reconnect exchange. Uses NIST Concat KDF. This sample script does
+# not exchange new keys in the reconnect exchange and uses the Kz from the
+# previous KDF. The script can be modified for using new keys during the
+#reconnect exchange by uncommenting the appropriate lines above and using the
+# new Z2 instead of Kz in the KDF
 KDF2_input = b'EAP-NOOB' + base64url_decode(Np2_b64) + base64url_decode(Ns2_b64)
-KDF2_out = KDF(algorithm=SHA256(), length=288, otherinfo=KDF2_input, backend=default_backend()).derive(Kz)
+KDF2_out = KDF(algorithm=SHA256(), length=288, otherinfo=KDF2_input,
+    backend=default_backend()).derive(Kz)
 Kms2 = KDF2_out[224:256]
 Kmp2 = KDF2_out[256:288]
 
@@ -119,7 +132,10 @@ NoobId_b64 = base64url_encode(NoobId).decode().strip('=')
 
 ## Hoob
 Hoob_values = loads('{"Hoob":[]}', object_pairs_hook=OrderedDict)
-Hoob_values['Hoob'] = [Dir, Vers, Verp, PeerId, Cryptosuites, Dirs, loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, Dirp, Realm, loads(PeerInfo, object_pairs_hook=OrderedDict), PKs_full, Ns_b64, PKp_full, Np_b64, Noob_b64]
+Hoob_values['Hoob'] = [Dir, Vers, Verp, PeerId, Cryptosuites, Dirs,
+    loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, Dirp, Realm,
+        loads(PeerInfo, object_pairs_hook=OrderedDict), 0, PKs_full, Ns_b64,
+            PKp_full, Np_b64, Noob_b64]
 Hoob_input = Hash(SHA256(), backend=default_backend())
 Hoob_input.update(dumps(Hoob_values['Hoob'], separators=(',', ':')).encode())
 Hoob = Hoob_input.finalize()[:16]
@@ -130,27 +146,40 @@ OOB = "P=" + PeerId + "&N=" + Noob_b64 + "&H=" + Hoob_b64
 
 ## MACs
 MACs_values = loads('{"MACs":[]}', object_pairs_hook=OrderedDict)
-MACs_values['MACs'] = [2, Vers, Verp, PeerId, Cryptosuites, Dirs, loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, Dirp, Realm, loads(PeerInfo, object_pairs_hook=OrderedDict), PKs_full, Ns_b64, PKp_full, Np_b64, Noob_b64]
+MACs_values['MACs'] = [2, Vers, Verp, PeerId, Cryptosuites, Dirs,
+    loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, Dirp, Realm,
+        loads(PeerInfo, object_pairs_hook=OrderedDict), 0, PKs_full, Ns_b64,
+            PKp_full, Np_b64, Noob_b64]
 MACs_input = HMAC(Kms, SHA256(), backend=default_backend())
 MACs_input.update(dumps(MACs_values['MACs'], separators=(',', ':')).encode())
 
 # MACp
 MACp_values = loads('{"MACp":[]}', object_pairs_hook=OrderedDict)
-MACp_values['MACp'] = [1, Vers, Verp, PeerId, Cryptosuites, Dirs, loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, Dirp, Realm, loads(PeerInfo, object_pairs_hook=OrderedDict), PKs_full, Ns_b64, PKp_full, Np_b64, Noob_b64]
+MACp_values['MACp'] = [1, Vers, Verp, PeerId, Cryptosuites, Dirs,
+    loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, Dirp, Realm,
+        loads(PeerInfo, object_pairs_hook=OrderedDict), 0, PKs_full, Ns_b64,
+            PKp_full, Np_b64, Noob_b64]
 MACp_input = HMAC(Kmp, SHA256(), backend=default_backend())
 MACp_input.update(dumps(MACp_values['MACp'], separators=(',', ':')).encode())
 
 # MACs2
 MACs2_values = loads('{"MACs2":[]}', object_pairs_hook=OrderedDict)
-MACs2_values['MACs2'] = [2, Vers, Verp, PeerId, Cryptosuites, "", loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, "", Realm, loads(PeerInfo, object_pairs_hook=OrderedDict), "", Ns2_b64, "", Np2_b64, ""]
+MACs2_values['MACs2'] = [2, Vers, Verp, PeerId, Cryptosuites, "",
+    loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, "", Realm,
+        loads(PeerInfo, object_pairs_hook=OrderedDict), KeyingMode, "", Ns2_b64,
+            "", Np2_b64, ""]
 MACs2_input = HMAC(Kms2, SHA256(), backend=default_backend())
 MACs2_input.update(dumps(MACs2_values['MACs2'], separators=(',', ':')).encode())
 
 # MACp2
 MACp2_values = loads('{"MACp2":[]}', object_pairs_hook=OrderedDict)
-MACp2_values['MACp2'] = [1, Vers, Verp, PeerId, Cryptosuites, "", loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, "", Realm, loads(PeerInfo, object_pairs_hook=OrderedDict), "", Ns2_b64, "", Np2_b64, ""]
+MACp2_values['MACp2'] = [1, Vers, Verp, PeerId, Cryptosuites, "",
+    loads(ServerInfo, object_pairs_hook=OrderedDict), Cryptosuitep, "", Realm,
+        loads(PeerInfo, object_pairs_hook=OrderedDict), KeyingMode, "", Ns2_b64,
+            "", Np2_b64, ""]
 MACp2_input = HMAC(Kmp2, SHA256(), backend=default_backend())
 MACp2_input.update(dumps(MACp2_values['MACp2'], separators=(',', ':')).encode())
+
 # MAC - base64 encoded
 MACs = base64url_encode(MACs_input.finalize()[:32]).decode().strip('=')
 MACp = base64url_encode(MACp_input.finalize()[:32]).decode().strip('=')
@@ -161,21 +190,25 @@ MACp2 = base64url_encode(MACp2_input.finalize()[:32]).decode().strip('=')
 ############################## CREATE JSON ARRAYS ##############################
 # REQUEST/RESPONSE 1
 req1 = loads(
-    '{"Type":1, "Vers":"", "PeerId":"", "Realm":"", "Cryptosuites":"", "Dirs":"", "ServerInfo":""}'
+    '{"Type":1, "Vers":"", "PeerId":"", "Realm":"", "Cryptosuites":"",\
+        "Dirs":"", "ServerInfo":""}'
     , object_pairs_hook = OrderedDict
 )
 res1 = loads(
-    '{"Type":1, "Verp":"", "PeerId":"", "Cryptosuitep":"", "Dirp":"", "PeerInfo":""}'
+    '{"Type":1, "Verp":"", "PeerId":"", "Cryptosuitep":"", "Dirp":"",\
+        "PeerInfo":""}'
     , object_pairs_hook = OrderedDict
 )
 
 # REQUEST/RESPONSE 2
 req2 = loads(
-    '{"Type":2, "PeerId":"", "PKs":{"kty":"EC", "crv":"Curve25519", "x":""}, "Ns":"", "SleepTime":""}'
+    '{"Type":2, "PeerId":"", "PKs":{"kty":"EC", "crv":"Curve25519", "x":""},\
+        "Ns":"", "SleepTime":""}'
     , object_pairs_hook = OrderedDict
 )
 res2 = loads(
-    '{"Type":2, "PeerId":"", "PKp":{"kty":"EC", "crv":"Curve25519", "x":""}, "Np":""}'
+    '{"Type":2, "PeerId":"", "PKp":{"kty":"EC", "crv":"Curve25519", "x":""},\
+        "Np":""}'
     , object_pairs_hook = OrderedDict
 )
 
@@ -201,7 +234,8 @@ res4 = loads(
 
 # REQUEST/RESPONSE 5
 req5 = loads(
-    '{"Type":5, "Vers":"", "PeerId":"", "Cryptosuites":"", "Realm":"", "ServerInfo":""}'
+    '{"Type":5, "Vers":"", "PeerId":"", "Cryptosuites":"", "Realm":"",\
+        "ServerInfo":""}'
     , object_pairs_hook = OrderedDict
 )
 res5 = loads(
@@ -211,7 +245,7 @@ res5 = loads(
 
 # REQUEST/RESPONSE 6 no new ECDH keys exchanged
 req6 = loads(
-    '{"Type":6, "PeerId":"", "Ns2":""}'
+    '{"Type":6, "PeerId":"", "KeyingMode":"", "Ns2":""}'
     , object_pairs_hook = OrderedDict
 )
 res6 = loads(
@@ -221,14 +255,15 @@ res6 = loads(
 
 # REQUEST/RESPONSE 6 new ECDH keys exchanged
 #req6 = loads(
-#    '{"Type":6, "PeerId":"", "PKs2":{"kty":"EC", "crv":"Curve25519", "x":""}, "Ns2":""}'
+#    '{"Type":6, "PeerId":"", "KeyingMode":"",\
+#        "PKs2":{"kty":"EC", "crv":"Curve25519", "x":""}, "Ns2":""}'
 #    , object_pairs_hook = OrderedDict
 #)
 #res6 = loads(
-#    '{"Type":6, "PeerId":"", "PKp2":{"kty":"EC", "crv":"Curve25519", "x":""}, "Np2":""}'
+#    '{"Type":6, "PeerId":"", "PKp2":{"kty":"EC", "crv":"Curve25519", "x":""},\
+#       "Np2":""}'
 #    , object_pairs_hook = OrderedDict
 #)
-
 
 # REQUEST/RESPONSE 7
 req7 = loads(
@@ -297,6 +332,7 @@ res5['Cryptosuitep'] = Cryptosuitep
 res5['PeerInfo'] = loads(PeerInfo)
 
 req6['PeerId'] = PeerId
+req6['KeyingMode'] = KeyingMode
 #req6['PKs2']['x'] = PKs2_b64
 req6['Ns2'] = Ns2_b64
 
