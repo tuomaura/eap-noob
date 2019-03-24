@@ -108,7 +108,9 @@ Ubuntu Compilation
 
 10) Run the command sudo ldconfig to update symlinks and rebuild the library cache.
 
-11) sudo apt-get install -y pkg-config libssl-dev libsqlite3-dev libjansson-dev libnl-3-dev libnl-genl-3-dev
+11) sudo apt-get install -y npm pkg-config libssl-dev libsqlite3-dev libjansson-dev libnl-3-dev libnl-genl-3-dev
+
+12) sudo apt remove libssl-dev
 
 
 Configuration
