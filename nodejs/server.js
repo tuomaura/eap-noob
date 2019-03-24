@@ -72,7 +72,7 @@ var server = ws.createServer(property, function (conn) {
     });
 
     var deviceID;
-  
+
     var serverDB = new sqlite3.Database(conn_str);
     serverDB.get('select UserName, PeerID from peers_connected where PeerID = ? AND serv_state = 4', connectionID, function(err, row) {
 
@@ -91,7 +91,7 @@ var server = ws.createServer(property, function (conn) {
                         	if (data1 != undefined) {
                         		console.log("inserted: " + data1.deviceId);
                         		connMap[data1.deviceId] = conn;
-                        	}	
+                        	}
                         	else {
                                 	console.log('ERROR: ' + err);
                         	}
@@ -111,7 +111,11 @@ require('./config/passport')(passport); // pass passport for configuration
 // set up our express application
 app.use(morgan('dev')); // log every request to the console
 app.use(cookieParser()); // read cookies (needed for auth)
-app.use(bodyParser()); // get information from html forms
+// get information from html forms
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
+app.use(bodyParser.json());
 
 app.set('view engine', 'ejs'); // set up ejs for templating
 
@@ -134,10 +138,10 @@ require('./app/routes.js')(app, passport); // load our routes and pass in our ap
         db.run('DROP TABLE IF EXISTS devicesSocket');
         //db.run('DROP TABLE IF EXISTS logs');
         //db.run('DROP TABLE IF EXISTS users');
-  	//db.run('UPDATE OR IGNORE peers_connected set DevUpdate = 0');	
-  	db.run('CREATE TABLE  IF NOT EXISTS devicesSocket ( deviceId INTEGER PRIMARY KEY AUTOINCREMENT, peerId TEXT, userName TEXT, UNIQUE(peerId));');	
-  	db.run('CREATE TABLE  IF NOT EXISTS logs ( id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT, srcMAC TEXT, src TEXT, dst TEXT, UNIQUE(srcMAC,dst));');	
-  	db.run('CREATE TABLE  IF NOT EXISTS roles ( role_id INTEGER PRIMARY KEY, roleDesc TEXT);');	
+  	//db.run('UPDATE OR IGNORE peers_connected set DevUpdate = 0');
+  	db.run('CREATE TABLE  IF NOT EXISTS devicesSocket ( deviceId INTEGER PRIMARY KEY AUTOINCREMENT, peerId TEXT, userName TEXT, UNIQUE(peerId));');
+  	db.run('CREATE TABLE  IF NOT EXISTS logs ( id INTEGER PRIMARY KEY AUTOINCREMENT, time TEXT, srcMAC TEXT, src TEXT, dst TEXT, UNIQUE(srcMAC,dst));');
+  	db.run('CREATE TABLE  IF NOT EXISTS roles ( role_id INTEGER PRIMARY KEY, roleDesc TEXT);');
 	db.run('INSERT INTO roles VALUES (1,"Student")');
 	db.run('INSERT INTO roles VALUES (2, "Professor")');
 	db.run('INSERT INTO roles VALUES (3, "Admin")');
@@ -151,7 +155,7 @@ require('./app/routes.js')(app, passport); // load our routes and pass in our ap
   	db.run('CREATE TABLE  IF NOT EXISTS roleBasedAC ( id INTEGER PRIMARY KEY AUTOINCREMENT, calledSID TEXT, fqdn TEXT, FOREIGN KEY (fqdn) REFERENCES fqdnACLevel(fqdn));');
 	db.run('INSERT INTO roleBasedAC(calledSID,fqdn) VALUES ("6C-19-8F-83-C2-90:Noob2","iot.aalto.fi")');
 	db.run('INSERT INTO roleBasedAC(calledSID,fqdn) VALUES ("6C-19-8F-83-C2-80:Noob1","guest.aalto.fi")');
-	db.run('CREATE TABLE IF NOT EXISTS radius (called_st_id TEXT, calling_st_id  TEXT, NAS_id TEXT, user_name TEXT PRIMARY KEY);');	
+	db.run('CREATE TABLE IF NOT EXISTS radius (called_st_id TEXT, calling_st_id  TEXT, NAS_id TEXT, user_name TEXT PRIMARY KEY);');
   	db.run('CREATE TABLE  IF NOT EXISTS users ( id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, role INTEGER DEFAULT 1, isAdmin BOOLEAN DEFAULT FALSE,  FOREIGN KEY(role) REFERENCES roles(role_id) );');
   	db.run('CREATE TABLE  IF NOT EXISTS devices (PeerID TEXT, serv_state INTEGER, PeerInfo TEXT, Noob TEXT, Hoob TEXT, Hint TEXT,errorCode INTEGER ,UserName TEXT, PRIMARY KEY (PeerID, UserName));');
     db.run('CREATE TABLE IF NOT EXISTS UserDevices (Username TEXT,  PeerId TEXT);');
