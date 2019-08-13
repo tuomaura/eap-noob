@@ -1027,37 +1027,6 @@ static int eap_noob_gen_KDF(struct eap_noob_server_context * data, int state)
     return SUCCESS;
 }
 
-
-static void eap_noob_get_sid(struct eap_sm * sm, struct eap_noob_server_context * data)
-{
-    char *query = NULL;
-    if ((NULL == sm->rad_attr) || (NULL == sm->rad_attr->calledSID) ||
-        (NULL == sm->rad_attr->callingSID) || (NULL == sm->rad_attr->nasId)) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
-        return;
-    }
-
-    if(NULL == (query = (char *)malloc(500))) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Error allocating memory in %s", __func__);
-        return;
-    }
-
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s, Values Received: %s,%s", __func__,
-               sm->rad_attr->calledSID, sm->rad_attr->callingSID);
-
-    os_snprintf(query, 500, "INSERT INTO radius (user_name, called_st_id, calling_st_id, NAS_id) VALUES (?, ?, ?, ?)");
-    if (FAILURE == eap_noob_exec_query(data, query, NULL, 8, TEXT, data->peer_attr->PeerId, TEXT, sm->rad_attr->calledSID,
-            TEXT, sm->rad_attr->callingSID, TEXT, sm->rad_attr->nasId)) {
-        wpa_printf(MSG_ERROR, "EAP-NOOB: DB value insertion failed");
-    }
-
-    EAP_NOOB_FREE(sm->rad_attr->callingSID);
-    EAP_NOOB_FREE(sm->rad_attr->calledSID);
-    EAP_NOOB_FREE(sm->rad_attr->nasId);
-    EAP_NOOB_FREE(sm->rad_attr);
-    EAP_NOOB_FREE(query);
-}
-
 static void eap_noob_get_sid(struct eap_sm * sm, struct eap_noob_server_context * data)
 {
     char *query = NULL;
