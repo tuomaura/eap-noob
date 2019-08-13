@@ -41,7 +41,6 @@
 #define KMP_LEN                 32
 #define MAC_LEN                 32
 #define MAX_X25519_LEN          48
-#define P256_LEN                32
 #define HASH_LEN                16
 #define METHOD_ID_LEN		    32
 
