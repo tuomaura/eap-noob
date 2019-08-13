@@ -1062,8 +1062,10 @@ static int eap_noob_derive_session_secret(struct eap_noob_server_context * data,
 {
     EVP_PKEY_CTX * ctx = NULL;
     EVP_PKEY * peerkey = NULL;
+    unsigned char * peer_pub_key_x = NULL;
+    unsigned char * peer_pub_key_y = NULL;
     unsigned char * peer_pub_key = NULL;
-    size_t skeylen = 0, len = 0;
+    size_t skeylen = 0, len_x = 0, len_y = 0;
     int ret = SUCCESS;
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering function %s", __func__);
@@ -1071,17 +1073,98 @@ static int eap_noob_derive_session_secret(struct eap_noob_server_context * data,
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Server context is NULL");
         return FAILURE;
     }
-    
+
     EAP_NOOB_FREE(data->peer_attr->ecdh_exchange_data->shared_key);
-    len = eap_noob_Base64Decode(data->peer_attr->ecdh_exchange_data->x_peer_b64, &peer_pub_key);
-    if (len == 0) {
+    len_x = eap_noob_Base64Decode(data->peer_attr->ecdh_exchange_data->x_peer_b64, &peer_pub_key_x);
+    len_y = eap_noob_Base64Decode(data->peer_attr->ecdh_exchange_data->y_peer_b64, &peer_pub_key_y);
+
+    if (len_x == 0 || len_y == 0) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to decode public key of peer");
         ret = FAILURE; goto EXIT;
     }
 
-    peerkey = EVP_PKEY_new_raw_public_key(EVP_PKEY_X25519, NULL, peer_pub_key, len);
+
+    unsigned char err_msg[256];
+    BIO * bio_out = BIO_new_fp(stdout, BIO_NOCLOSE);
+
+    BIGNUM *peer_x = BN_new();
+    BIGNUM *peer_y = BN_new();
+
+    if (NULL == BN_lebin2bn(peer_pub_key_x, len_x, peer_x) ||
+		NULL == BN_lebin2bn(peer_pub_key_y, len_y, peer_y)) {
+        wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to create X and Y BN peer");
+        ERR_error_string(ERR_get_error(), err_msg);
+        printf("err[%s]\n", err_msg);
+    }
+    int peer_x_len = BN_num_bytes(peer_x);
+
+    EVP_PKEY_CTX *pctx = NULL;
+    EVP_PKEY *params = NULL;
+    if(!(pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL))) {
+        ERR_error_string(ERR_get_error(), err_msg);
+        printf("err[%s]\n", err_msg);
+    }
+    if(!EVP_PKEY_paramgen_init(pctx)) {
+        ERR_error_string(ERR_get_error(), err_msg);
+        printf("err[%s]\n", err_msg);
+    }
+    /* Use the NID_X9_62_prime256v1 named curve */
+    if(!EVP_PKEY_CTX_set_ec_paramgen_curve_nid(pctx, NID_X9_62_prime256v1)) {
+        ERR_error_string(ERR_get_error(), err_msg);
+        printf("err[%s]\n", err_msg);
+    }
+    /* Generate parameters */
+    if (NULL == EVP_PKEY_paramgen(pctx, &params)) {
+        ERR_error_string(ERR_get_error(), err_msg);
+        printf("err[%s]\n", err_msg);
+    }
+
+    EC_GROUP *ec_group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
+
+    EVP_PKEY_CTX *kctx = NULL;
+    EVP_PKEY * pkey = NULL;
+    /* Create the context for the key generation */
+    if(NULL == (kctx = EVP_PKEY_CTX_new(params, NULL))) {
+        ERR_error_string(ERR_get_error(), err_msg);
+        printf("err[%s]\n", err_msg);
+    }
+
+    EC_KEY *key = NULL;
+    if(NULL == (key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1))){
+        ERR_error_string(ERR_get_error(), err_msg);
+        printf("err[%s]\n", err_msg);
+    }
+
+    if (NULL == EC_KEY_set_public_key_affine_coordinates(key, peer_x, peer_y)){
+        ERR_error_string(ERR_get_error(), err_msg);
+        printf("err[%s]\n", err_msg);
+    }
+
+    peerkey=EVP_PKEY_new();
+    if (!EVP_PKEY_assign_EC_KEY(peerkey,key)){
+        ERR_error_string(ERR_get_error(), err_msg);
+        printf("err[%s]\n", err_msg);
+    }
+
+    BIO * outbio = BIO_new_fp(stdout, BIO_NOCLOSE);
+    peerkey=EVP_PKEY_new();
+    if (!EVP_PKEY_assign_EC_KEY(peerkey,key))
+        BIO_printf(outbio, "Error assigning ECC key to EVP_PKEY structure.");
+
+    key = EVP_PKEY_get1_EC_KEY(peerkey);
+    const EC_GROUP *ecgrp = EC_KEY_get0_group(key);
+
+    /* ---------------------------------------------------------- *
+         * Here we print the public key data in PEM format.   *
+     * ---------------------------------------------------------- */
+    if(!PEM_write_bio_PUBKEY(outbio, peerkey))
+        BIO_printf(outbio, "Error writing public key data in PEM format");
+
+
     if(peerkey == NULL) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to initialize public key of peer");
+        ERR_error_string(ERR_get_error(), err_msg);
+        printf("err[%s]\n", err_msg);
         ret = FAILURE; goto EXIT;
     }
 
@@ -1127,7 +1210,8 @@ EXIT:
     if (ctx)
         EVP_PKEY_CTX_free(ctx);
 
-    EAP_NOOB_FREE(peer_pub_key);
+    EAP_NOOB_FREE(peer_pub_key_x);
+    EAP_NOOB_FREE(peer_pub_key_y);
 
     if (ret != SUCCESS)
         EAP_NOOB_FREE(data->peer_attr->ecdh_exchange_data->shared_key);
@@ -1137,75 +1221,96 @@ EXIT:
 
 static int eap_noob_get_key(struct eap_noob_server_context * data)
 {
-    EVP_PKEY_CTX * pctx = NULL;
-    BIO * mem_pub = BIO_new(BIO_s_mem());
-    unsigned char * pub_key_char = NULL;
-    size_t pub_key_len = 0;
-    int ret = SUCCESS;
-
-/*
-    Uncomment the next 6 lines of code for using the test vectors of Curve25519 in RFC 7748.
-    Peer = Bob
-    Server = Alice
-*/
-
-
-    char * priv_key_test_vector = "MC4CAQAwBQYDK2VuBCIEIHcHbQpzGKV9PBbBclGyZkXfTC+H68CZKrF3+6UduSwq";
-    BIO* b641 = BIO_new(BIO_f_base64());
-    BIO* mem1 = BIO_new(BIO_s_mem());   
-    BIO_set_flags(b641,BIO_FLAGS_BASE64_NO_NL);
-    BIO_puts(mem1,priv_key_test_vector);
-    mem1 = BIO_push(b641,mem1);
+   EVP_PKEY_CTX * pctx = NULL, * kctx = NULL, * ctx = NULL;
+   EC_KEY * raw_key = NULL;
+   EVP_PKEY * pkey = NULL, * params = NULL;
+   unsigned char pub_x_uchar[P256_LEN], pub_y_uchar[P256_LEN];
+   int ret = SUCCESS;
+   int xlen = 0, ylen = 0;
 
     wpa_printf(MSG_DEBUG, "EAP-NOOB: entering %s", __func__);
 
-    /* Initialize context to generate keys - Curve25519 */
-    if (NULL == (pctx = EVP_PKEY_CTX_new_id(NID_X25519, NULL))) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Fail to create context for parameter generation.");
+    /* Create the context for parameter generation */
+    if (NULL == (pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL))) {
+        wpa_printf(MSG_DEBUG,"Openssl failure in key gen\n");
         ret = FAILURE; goto EXIT;
     }
 
-    EVP_PKEY_keygen_init(pctx);
-
-    /* Generate X25519 key pair */
-   //EVP_PKEY_keygen(pctx, &data->peer_attr->ecdh_exchange_data->dh_key);
-
-/*
-    If you are using the RFC 7748 test vector, you do not need to generate a key pair. Instead you use the
-    private key from the RFC. For using the test vector, comment out the line above and 
-    uncomment the following line code
-*/
-    d2i_PrivateKey_bio(mem1,&data->peer_attr->ecdh_exchange_data->dh_key);
-
-    PEM_write_PrivateKey(stdout, data->peer_attr->ecdh_exchange_data->dh_key,
-                         NULL, NULL, 0, NULL, NULL);
-    PEM_write_PUBKEY(stdout, data->peer_attr->ecdh_exchange_data->dh_key);
-
-    /* Get public key */
-    if (1 != i2d_PUBKEY_bio(mem_pub, data->peer_attr->ecdh_exchange_data->dh_key)) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Fail to copy public key to bio.");
+    /* Initialise the parameter generation */
+    if(1 != EVP_PKEY_paramgen_init(pctx)) {
+        wpa_printf(MSG_DEBUG,"Openssl failure in key gen\n");
         ret = FAILURE; goto EXIT;
     }
 
-    pub_key_char = os_zalloc(MAX_X25519_LEN);
-    pub_key_len = BIO_read(mem_pub, pub_key_char, MAX_X25519_LEN);
+    /* Set the curve to secp256k1 */
+    if (1 != EVP_PKEY_CTX_set_ec_paramgen_curve_nid(pctx,NID_X9_62_prime256v1)) {
+        wpa_printf(MSG_DEBUG,"Openssl failure in key gen\n");
+        ret = FAILURE; goto EXIT;
+    }
 
-/*
- * This code removes the openssl internal ASN encoding and only keeps the 32 bytes of curve25519 
- * public key which is then encoded in the JWK format and sent to the other party. This code may
- * need to be updated when openssl changes its internal format for public-key encoded in PEM.
-*/
-    unsigned char * pub_key_char_asn_removed = pub_key_char + (pub_key_len-32);
-    pub_key_len = 32;
+    /* Create the parameter object params */
+    if (!EVP_PKEY_paramgen(pctx, &params)) {
+        wpa_printf(MSG_DEBUG,"Openssl failure in key gen\n");
+        ret = FAILURE; goto EXIT;
+    }
 
-    EAP_NOOB_FREE(data->peer_attr->ecdh_exchange_data->x_b64);
-    eap_noob_Base64Encode(pub_key_char_asn_removed, pub_key_len, &data->peer_attr->ecdh_exchange_data->x_b64);
+    /* Create the context for the key generation */
+    if (NULL ==  (kctx = EVP_PKEY_CTX_new(params, NULL))) {
+        wpa_printf(MSG_DEBUG,"Openssl failure in key gen\n");
+        ret = FAILURE; goto EXIT;
+    }
+
+    /* Generate the key */
+    if(1 != EVP_PKEY_keygen_init(kctx)) {
+        wpa_printf(MSG_DEBUG,"Openssl failure in key gen\n");
+        ret = FAILURE; goto EXIT;
+    }
+
+    if (1 != EVP_PKEY_keygen(kctx, &pkey)) {
+        wpa_printf(MSG_DEBUG,"Openssl failure in key gen\n");
+        ret = FAILURE; goto EXIT;
+    }
+
+    if (NULL == (raw_key=EVP_PKEY_get1_EC_KEY(pkey))) {
+        wpa_printf(MSG_DEBUG,"Openssl failure in key gen\n");
+        ret = FAILURE; goto EXIT;
+    }
+
+    const EC_POINT * raw_point=EC_KEY_get0_public_key(raw_key);
+    if (NULL == raw_point) {
+        wpa_printf(MSG_DEBUG,"Openssl failure in key gen\n");
+        ret = FAILURE; goto EXIT;
+    }
+
+    EC_GROUP *ec_group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
+    BIGNUM *x = BN_new();
+    BIGNUM *y = BN_new();
+    if (EC_POINT_get_affine_coordinates_GFp(ec_group, raw_point, x, y, NULL)) {
+        xlen=BN_bn2bin(x,pub_x_uchar);
+        ylen=BN_bn2bin(y,pub_y_uchar);
+    }
+
+    EAP_NOOB_FREE(data->peer_attr->ecdh_exchange_data->dh_key);
+    data->peer_attr->ecdh_exchange_data->dh_key = pkey;
+
+    if(xlen == P256_LEN && ylen == P256_LEN){
+        EAP_NOOB_FREE(data->peer_attr->ecdh_exchange_data->x_b64);
+        EAP_NOOB_FREE(data->peer_attr->ecdh_exchange_data->y_b64);
+        eap_noob_Base64Encode(pub_x_uchar, xlen, &data->peer_attr->ecdh_exchange_data->x_b64);
+        eap_noob_Base64Encode(pub_y_uchar, ylen, &data->peer_attr->ecdh_exchange_data->y_b64);
+    }
 
 EXIT:
     if (pctx)
         EVP_PKEY_CTX_free(pctx);
-    EAP_NOOB_FREE(pub_key_char);
-    BIO_free_all(mem_pub);
+    if(ctx)
+        EVP_PKEY_CTX_free(ctx);
+    // if(pkey)
+        // EVP_PKEY_free(pkey); //TODO: Save value in data->peer_attr->ecdh_exchange_data->dh_key
+    if(kctx)
+        EVP_PKEY_CTX_free(kctx);
+    if(params)
+        EVP_PKEY_free(params);
     return ret;
 }
 
@@ -1615,25 +1720,26 @@ EXIT:
  *  @y_64 : y co-ordinate in base64url format
  *  Returns : FAILURE/SUCCESS
 **/
-int eap_noob_build_JWK(json_t ** jwk, const char * x_b64)
+int eap_noob_build_JWK(json_t ** jwk, const char * x_b64, const char * y_b64)
 {
     wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
 
     if (NULL != ((*jwk) = json_object())) {
         json_object_set_new((*jwk), KEY_TYPE, json_string("EC"));
-        json_object_set_new((*jwk), CURVE, json_string("Curve25519"));
+        json_object_set_new((*jwk), CURVE, json_string("P-256"));
     }
     else {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Error in JWK");
         return FAILURE;
     }
 
-    if (NULL == x_b64) {
+    if (NULL == x_b64 || NULL == y_b64) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: CO-ORDINATES are NULL!!");
         return FAILURE;
 
     }
     json_object_set_new((*jwk), X_COORDINATE, json_string(x_b64));
+    json_object_set_new((*jwk), Y_COORDINATE, json_string(y_b64));
     char * dump_str = json_dumps((*jwk), JSON_COMPACT|JSON_PRESERVE_ORDER);
     if (dump_str) {
         wpa_printf(MSG_DEBUG, "JWK Key %s", dump_str); os_free(dump_str);
@@ -1678,7 +1784,7 @@ static struct wpabuf * eap_noob_req_type_two(struct eap_noob_server_context *dat
     }
 
     if (FAILURE == eap_noob_build_JWK(&data->peer_attr->ecdh_exchange_data->jwk_serv,
-                   data->peer_attr->ecdh_exchange_data->x_b64)) {
+                   data->peer_attr->ecdh_exchange_data->x_b64, data->peer_attr->ecdh_exchange_data->y_b64)) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to generate JWK"); goto EXIT;
     }
     data->peer_attr->sleeptime = eap_noob_get_sleeptime(data);
@@ -2758,8 +2864,6 @@ static int eap_noob_server_ctxt_init(struct eap_noob_server_context * data, stru
 
     /* Setup DB. DB file name for the server */
     data->db_name = (char *) os_strdup(DB_NAME);
-    /* TODO remove DB Table name */
-    data->db_table_name = (char *) os_strdup(PEER_TABLE);
 
     if (server_conf.read_conf == 0 && FAILURE == eap_noob_read_config(data)) {
         wpa_printf(MSG_DEBUG, "EAP-NOOB: Failed to initialize context");
@@ -2873,7 +2977,7 @@ static void eap_noob_free_ctx(struct eap_noob_server_context * data)
             wpa_printf(MSG_DEBUG,"EAP-NOOB: SQL error : %s\n", sql_error);
     }
 
-    EAP_NOOB_FREE(data->db_name); EAP_NOOB_FREE(data->db_table_name);
+    EAP_NOOB_FREE(data->db_name); 
     os_free(data); data = NULL;
 }
 

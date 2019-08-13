@@ -41,6 +41,7 @@
 #define KMP_LEN                 32
 #define MAC_LEN                 32
 #define MAX_X25519_LEN          48
+#define P256_LEN                32
 #define HASH_LEN                16
 #define METHOD_ID_LEN		    32
 
@@ -133,7 +134,6 @@
 #define CONF_PARAMS             (DIRP_RCVD|CRYPTOSUITEP_RCVD|VERSION_RCVD|SERVER_NAME_RCVD|SERVER_URL_RCVD|WE_COUNT_RCVD|REALM_RCVD|ENCODE_RCVD)
 #define DB_NAME                 "/etc/peer_connection_db"
 #define DEVICE_TABLE            "devices"
-#define PEER_TABLE              "peers_connected"
 
 #define CREATE_TABLES_EPHEMERALSTATE                \
     "CREATE TABLE IF NOT EXISTS EphemeralState(     \
@@ -333,7 +333,6 @@ struct eap_noob_server_context {
     struct eap_noob_peer_data * peer_attr;
     struct eap_noob_server_data * server_attr;
     char * db_name;
-    char * db_table_name;
     sqlite3 * server_db;
 };
 
