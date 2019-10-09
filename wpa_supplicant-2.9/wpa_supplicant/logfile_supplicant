@@ -1,0 +1,265 @@
+Starting wpa_supplicant
+Caught signal 2
+Starting wpa_supplicant
+Caught signal 2
+Starting wpa_supplicant
+Network scan OK
+Reconfigure wpa_supplicant
+Peer to server direction
+Caught signal 2
+Starting wpa_supplicant
+Network scan OK
+Reconfigure wpa_supplicant
+Peer to server direction
+Caught signal 2
+Starting wpa_supplicant
+Network scan OK
+Reconfigure wpa_supplicant
+Peer to server direction
+Caught signal 2
+Starting wpa_supplicant
+Network scan OK
+Reconfigure wpa_supplicant
+Peer to server direction
+Caught signal 2
+Starting wpa_supplicant
+Network scan OK
+Reconfigure wpa_supplicant
+Peer to server direction
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = oQHIEsmJmhtenuzg72AlmA
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = lRsteL8oDI3xGLf1GFbsQA
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = Kdv4JD_wOianF2m0zPogaQ
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = uloejBFra_4asCWEUFq6eg
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = _eW8qsxuQLcPQJfkhhI7Zw
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = mn4bzm2KyOLNUU4P5txZnA
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = SoxmTPm4oCcXNg5v6W6sfg
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = cXxeciFbxwdBxK_0n0oTTw
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = O2fNte1qSoNlKmTRcTY-bw
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = QgrfnrTJBB3AGqkyNjGWnQ
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = KjWWdsnm7-VG32Cf2xZraw
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = Te0OAhk5zTlOpmmdjAqllA
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 2Mupu6Mup-4sgmCTHwexNw
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = DK9JiguWj0RhCLKHxpEeig
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 67C6GcpFQUc_N2c79snUoQ
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 4Dr4oxM_vGFpf0Yzm6bwNQ
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 8QE6YoDFKtKH47-GDy2fFA
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = -ubVrRnfx9e0PtqxcZBXPQ
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 9LdJdkGxMAPnzje2OCyjpg
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 98NiI6PqbTBRI7rRWIKGag
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = E6SZGmGrQYMUD4Pb7Jr26w
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = hfAPj5ly45UjipXR_hL3Lw
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = BGOy1nJOP8VRi_BZGp2ZqA
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = uCXiQz1UBGygxJhWmIs0pA
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = fRljSYQ6Pzu_bYXc2TKnPA
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = jbVxGRX_cq4klphisMrRRw
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 7I2vyqmw10ctUuBUnpzraQ
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = -zAw-JA48EAB8kH-goNssA
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = sZrUqambAEqx17HLrXnM0Q
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 4B7-ixM-cz9HJvrLMLAR8A
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = xQLdNwUzieinBMyB4zA54w
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 5E7BvoQER5KTY9lZqcujNw
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = zKvIBqDNndFzlcx5RdKM_g
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = A7Maw0GmcUh2WDYYX_Ooog
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 1WZjFe5lBdmlRkVaeFXNYA
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = HgYCBSOfed0sXoNkxbWtyA
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = qFxzl31TselpNYKLNptl3Q
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = r3v2CeM_Almh3h9lcTH1zg
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = TO_VsmD3wlTULuNCU3gKoA
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = l19wHjrW5k7uTIInQzMFUQ
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = KJl-w_4kl8Y9fjLODDG47w
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = -LwfNOYyc0x3lzEa-DY25Q
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = xhck481_jnUBhUlFFayt1Q
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 96wwXRyTvyDjOGiGLNKfQg
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = lWAxdGXpkRdK-qQT1RD3gw
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 1cLle06J7_ZzCNMdAtVdDQ
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = aOOjLyRo7_Z5O0F69ixbFQ
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 0MblH-tZ_ZGXYvXK7wr2Kw
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = uZf0nu-BEOZEHATMoBPNtQ
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 5V_A-8MGeghXu84y7BsDIw
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = TMXr5qehVl1fhSBsMGLhLg
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = FY1g-lDexarlm8rGq-eVyg
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = dIntpsXqDgW8s1VIE0JvKg
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = r9WeCkFbPXJLYlpeMps53Q
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = 5O5xQIeTG2dbPRAQCtsSow
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = fcpuQ6TTXDI-wPiN_r0qnQ
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = ilyzx_izxylrkkZ_t7IwLg
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = JHuijVbRWSMo8ZCjAUbblA
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+[1,[1],1,"6XMivi4OildAkVa5yCCHdD",[1],3,{"Name":"Example","Url":"https://193.166.25.85:8080/sendOOB"},1,1,"noob.example.com",{"Make":"Acme","Type":"None","Serial":"DU-9999","SSID":"NOOBLABS","BSSID":"6c:19:8f:83:c2:80"},0,"YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","YhBV0YLa-2hcGBrF8auzmGIG1XzYtunmi7WoTUlRdsI","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E","o-jbqfQkMTgg_VyVsfc8s2ZckLomfFvQ8B9hX7SSm6E"]
+Noob = G3ydS4pyq5BK2aIQl4lcVg
+Hoob = brkxQXuWI4JkAcGjyv9rMw
+
+EAP AUTH SUCCESSFUL

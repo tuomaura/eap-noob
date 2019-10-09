@@ -1,0 +1,12 @@
+--- eap_common/eap_defs.h	2016-10-02 21:51:11.000000000 +0300
++++ ../../eap-noob/wpa_supplicant-2.6/src/eap_common/eap_defs.h	2019-10-01 13:00:14.532250134 +0300
+@@ -92,7 +92,8 @@
+ 	EAP_TYPE_GPSK = 51 /* RFC 5433 */,
+ 	EAP_TYPE_PWD = 52 /* RFC 5931 */,
+ 	EAP_TYPE_EKE = 53 /* RFC 6124 */,
+-	EAP_TYPE_EXPANDED = 254 /* RFC 3748 */
++	EAP_TYPE_EXPANDED = 254 /* RFC 3748 */,
++	EAP_TYPE_NOOB = 90 /*draft EAP-NOOB*/
+ } EapType;
+ 
+ 
