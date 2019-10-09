@@ -1,0 +1,200 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+<script type="text/javascript" src="qrcode.js"></script>
+<style>
+table{
+    border: 1px solid black;	
+}
+td{
+    border: 1px solid black;
+    width: 400px;
+    height: 400px;
+    text-align: left;
+   
+}
+img{
+    
+    margin: auto;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2 style="text-align:center;margin-top: 2cm">Wait while we search for the right networks</h2>
+
+<div style="text-align:-moz-center">    
+<table id="myTable">
+  
+</table>
+</div>
+
+<script>
+function displayScreen()
+{
+    var Table = document.getElementById("myTable");
+    Table.innerHTML = "";
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    var colNum = Math.floor(w/500);
+    var rowNum = Math.floor(h/500);
+    if(colNum == 2) {colNum=1;}	
+    var tdID = 'idnum';
+    var servID ='servid';
+    var sID = 'sID';
+    var sURL = 'sURL';	
+    
+    for(var i = 0; i < rowNum; i++){
+	var table = document.getElementById("myTable");
+     	var row = table.insertRow(0);
+	for(var j = 0; j < colNum; j++){ 
+     		var cell1 = row.insertCell(j);
+     		//cell1.innerHTML = "NEW CELL2";
+		cell1.id = tdID + ((i*colNum)+j);
+		var txt = "";
+		txt += "<p id=" + servID + ((i*colNum)+j) +">" + "</p>";
+		txt += "<p id="+ sURL + ((i*colNum)+j) +"> " + "</p>";
+		txt += "<p id="+ sID + ((i*colNum)+j) +"> " + "</p>";
+		cell1.innerHTML = txt;
+	}
+    }
+    //console.log(rowNum +" "+ colNum);
+}
+
+function nthOccurance(string, char, nth) {
+    return string.split(char,nth).join(char).length;
+}
+
+function readTextFile(file)
+{
+    displayScreen();
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", file, false);
+    rawFile.onreadystatechange = function ()
+    {
+        if(rawFile.readyState === 4)
+        {
+            if(rawFile.status === 200 || rawFile.status == 0)
+            {
+		var w = window.innerWidth;
+    		var h = window.innerHeight;
+                var allText = rawFile.responseText;
+		var max_ntd = Math.floor(w/500) * Math.floor(h/500);
+    	
+		var tdID = 'idnum'; 
+		var servID ='servid';
+    		var sID = 'sID';
+		var sURL = 'sURL';
+		var lines = allText.split('\n');
+		var ntd = lines.length - 1;
+		if(max_ntd >= ntd){
+		//fileDisplayArea.innerText = lines[1]; 
+			for(var line = 0; line < ntd; line++){
+      				var array = lines[line].split(',');
+				//var iDiv = document.createElement('div');
+				//iDiv.id = divID + line;
+				//document.getElementsByTagName('body')[0].appendChild(iDiv);
+				var qrcode = new QRCode(document.getElementById(tdID + line), {
+					width : 400,
+					height : 400
+				});
+				qrcode.makeCode(array[2]);
+				var p1 = document.getElementById(servID + line);
+				var p2 = document.getElementById(sURL + line);
+				var p3 = document.getElementById(sID + line);
+				p1.innerHTML = "SSID: <span style='color:red'> " + array[0]+"</span>";
+				var url=array[2].toString();	
+				p2.innerHTML = "Server: <span style='color:red'>" + url.substring(0,nthOccurance(url,'/',3))+"</span>";
+				p3.innerHTML = "Server Name: <span style='color:red'>" +  array[1]+"</span>";
+
+				//var fileDisplayArea = document.getElementById(divID + line);
+				//fileDisplayArea.innerText = lines[line]; 
+				//for(var i = 0; i < 4; i++)
+				//console.log(array[i]);
+				//fileDisplayArea.innerText = array[4]; 
+				//<pre id="fileDisplayArea"><pre>
+	    		}
+			setTimeout(readTextFile,6000,file);
+		}else{
+			
+			for(var line = 0; line < max_ntd; line++){
+      				var array = lines[line].split(',');
+				var qrcode = new QRCode(document.getElementById(tdID + line), {
+					width : 400,
+					height : 400
+				});
+				qrcode.makeCode(array[2]);
+				var p1 = document.getElementById(servID + line);
+				var p2 = document.getElementById(sURL + line);
+				var p3 = document.getElementById(sID + line);
+				p1.innerHTML = "SSID: <span style='color:red'>" + array[0]+"</span>";
+				var url=array[2].toString();	
+				p2.innerHTML = "Server: <span style='color:red'>" + url.substring(0,nthOccurance(url,'/',3))+"</span>";
+				p3.innerHTML = "Server Name: <span style='color:red'>" +  array[1]+"</span>";
+			}
+			
+			setTimeout(intrFunc, 6000, (ntd-max_ntd));
+
+			
+			function intrFunc(left)
+			{
+				//alert("here" + left);
+				if(left == 0){
+					//alert("here");
+					setTimeout(readTextFile,6000,file);
+					//displayScreen();
+					return;
+				}
+				else{	
+					//alert("here1");
+					var lines = allText.split('\n');
+					var shown = ntd - left;
+					for(var line = 0; line < max_ntd && left > 0; line++){
+				      		var array = lines[line + shown].split(',');
+						var cell = document.getElementById(tdID + line);
+						//var child = cell.length;
+						console.log("here" + cell.childNodes.length);
+						var last = cell.lastChild;
+						cell.removeChild(last);
+						last = cell.lastChild;
+						cell.removeChild(last);
+						var qrcode = new QRCode(cell, {
+							width : 200,
+							height : 200
+						});
+						qrcode.makeCode(array[2]);
+						var p1 = document.getElementById(servID + line);
+						var p2 = document.getElementById(sURL + line);
+						var p3 = document.getElementById(sID + line);
+						p1.innerHTML = "SSID: <span style='color:red'>" + array[0]+"</span>";
+						var url=array[2].toString();	
+						p2.innerHTML = "Server: <span style='color:red'>" + url.substring(0,nthOccurance(url,'/',3))+"</span>";
+						p3.innerHTML = "Server Name: <span style='color:red'>" +  array[1]+"</span>";
+						left = left - 1;
+					}
+					//alert("here" + left);
+					setTimeout(intrFunc, 6000, left);
+				}
+			}
+
+		
+		}
+
+		
+                
+            }
+        }
+    }
+    rawFile.send(null);
+}
+
+setTimeout(readTextFile,500,"file.txt");
+//readTextFile("file:///.cache/mozilla/firefox/nlht49ro.default");
+</script>
+
+</body>
+</html>
+
