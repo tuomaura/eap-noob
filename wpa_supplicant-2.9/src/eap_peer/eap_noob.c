@@ -40,6 +40,7 @@
 #include <openssl/pem.h>
 #include <signal.h>
 
+#include <base64.h>
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
@@ -55,17 +56,7 @@
 
 static struct eap_noob_globle_conf eap_noob_globle_conf = {0};
 
-/*void * os_memdup(const void *src, size_t len)
-{
-    void *r = os_malloc(len);
-    if (!r)
-        return NULL;
-    os_memcpy(r, src, len);
-    return r;
-}*/
-
-
-/**
+/*
  * eap_noob_Base64Decode : Decodes a base64url string.
  * @b64message : input base64url string
  * @buffer : output
@@ -73,60 +64,28 @@ static struct eap_noob_globle_conf eap_noob_globle_conf = {0};
 **/
 static int eap_noob_Base64Decode(const char * b64message, unsigned char ** buffer)
 {
-    BIO * bio = NULL, * b64 = NULL;
-    int decodeLen = 0, len = 0;
-    char * temp = NULL;
-    int i;
-
-    if (NULL == b64message || NULL == buffer) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
-        return 0;
-    }
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering %s", __func__);
-
-    len = os_strlen(b64message);
-
-    /* Convert base64url to base64 encoding. */
-    int b64pad = 4*((len+3)/4)-len;
-    temp = os_zalloc(len + b64pad);
+    fprintf(stderr, "ENTER B64DECODE FUN\n");
+    size_t len = os_strlen(b64message);
+    size_t b64pad = 4*((len + 3)/4) - len;
+    unsigned char *temp = os_zalloc(len + b64pad + 1);
+    if (temp == NULL) 
+	    return -1;
     os_memcpy(temp, b64message, len);
-    if (b64pad == 3) {
-            wpa_printf(MSG_DEBUG, "EAP-NOOB Input to %s is incorrect", __func__);
-            return 0;
+    for(int i = 0; i < len; i++) {
+	    if (temp[i] == '-')
+		    temp[i] = '+';
+            else if (temp[i] == '_')
+		    temp[i] = '/';
     }
-    for (i=0; i < len; i++) {
-        if (temp[i] == '-')
-            temp[i] = '+';
-        else if (temp[i] == '_')
-            temp[i] = '/';
-    }
-    for (i=0; i<b64pad; i++)
-        temp[len+i] = '=';
-
-    decodeLen = (len * 3)/4;
-    *buffer = (unsigned char*)os_zalloc(decodeLen);
-
-    bio = BIO_new_mem_buf(temp, len+b64pad);
-    b64 = BIO_new(BIO_f_base64());
-    bio = BIO_push(b64, bio);
-
-    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-    len = BIO_read(bio, *buffer, os_strlen(b64message));
-
-    wpa_printf(MSG_DEBUG, "EAP NOOB: Dumping BIO errors, if any");
-    ERR_print_errors_fp(stdout);
-
-    /* Length should equal decodeLen, else something goes horribly wrong */
-    if (len != decodeLen) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB Unexpected error decoding message. Decoded len (%d),"
-                   " expected (%d), input b64message len (%d)", len, decodeLen, (int)os_strlen(b64message));
-        decodeLen = 0;
-        os_free(*buffer);
-        *buffer = NULL;
-    }
-    os_free(temp);
-    BIO_free_all(bio);
-
+    for(int i = 0; i < b64pad; i++) 
+	    temp[len + i] = '=';
+    size_t decodeLen;
+    unsigned char *tempX;
+    tempX = base64_decode(temp, len + b64pad, &decodeLen);
+    if (tempX == NULL)
+	    return -1;
+    *buffer = os_zalloc(decodeLen + 1);
+    memcpy(*buffer, tempX, decodeLen);
     return decodeLen;
 }
 
@@ -140,44 +99,28 @@ static int eap_noob_Base64Decode(const char * b64message, unsigned char ** buffe
  **/
 int eap_noob_Base64Encode(const unsigned char * buffer, size_t length, char ** b64text)
 {
-    BIO * bio = NULL, * b64 = NULL;
-    BUF_MEM * bufferPtr = NULL;
-    int i = 0;
-
-    if (NULL == buffer || NULL == b64text) {
-        wpa_printf(MSG_DEBUG, "EAP-NOOB: Input to %s is null", __func__);
-        return 0;
-    }
-    wpa_printf(MSG_DEBUG, "EAP-NOOB: Entering function %s", __func__);
-
-    b64 = BIO_new(BIO_f_base64());
-    bio = BIO_new(BIO_s_mem());
-    bio = BIO_push(b64, bio);
-
-    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-    BIO_write(bio, buffer, length);
-    BIO_flush(bio);
-    BIO_get_mem_ptr(bio, &bufferPtr);
-    BIO_set_close(bio, BIO_NOCLOSE);
-
-    int outlen = bufferPtr->length;
-    *b64text = (char *) os_zalloc(outlen + 1);
-    os_memcpy(*b64text, bufferPtr->data, outlen);
-    (*b64text)[outlen] = '\0';
-
-    /* Convert base64 to base64url encoding. */
-    while (outlen > 0 && (*b64text)[outlen - 1]=='=') {
-        (*b64text)[outlen - 1] = '\0';
-        outlen--;
-    }
-    for (i = 0; i < outlen; i++) {
-        if ((*b64text)[i] == '+')
-            (*b64text)[i] = '-';
-        else if ((*b64text)[i] == '/')
-            (*b64text)[i] = '_';
+    size_t len = 0;
+    unsigned char *tmp;
+    tmp = base64_encode(buffer, length, &len);
+    if (tmp == NULL)
+	    return -1;
+    for(int i = 0; i < len; i++) {
+	    if (tmp[i] == '+') 
+		    tmp[i] = '-';
+	    else if (tmp[i] == '/') 
+		    tmp[i] = '_';
+	    else if (tmp[i] == '=') {
+		    tmp[i] = '\0';
+		    len = i;
+		    break;
+	    }
     }
 
-    BIO_free_all(bio);
+    *b64text = os_zalloc(len);
+    if (*b64text == NULL)
+	    return -1;
+    os_memcpy(*b64text, tmp, len);
+
     return SUCCESS;
 }
 
