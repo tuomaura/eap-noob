@@ -23,7 +23,7 @@
     "passport-twitter": "~1.0.2",
     "python-shell": "~0.4.0",
     "sqlite3": "~3.1.4",
-    "ws": "~1.1.1"
+    "ws": "~7.2.0"
   },
   "scripts": {
     "start": "node server.js"
