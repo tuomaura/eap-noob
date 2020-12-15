@@ -1,0 +1,48 @@
+(* User intent
+ * ===========
+ * If a peer and a server finish the protocol with a common key, a user must
+ * have initiated the pairing process.
+ *)
+query P:channel, S:channel, K:K_t, U:UID_t;
+    event (PeerRegistrationComplete(P, K))
+    && event (ServerRegistrationComplete(S, K))
+        ==> event (IntendToPair(U, P, S))
+.
+
+(* Secrecy of Kz
+ * =============
+ * The attacker does not know Kz.
+ *)
+ query attacker (kz).
+
+(* Reachability
+ * ============
+ * A Completion Exchange can be completed.
+ *)
+query P:channel, S:channel, K:K_t;
+    event (PeerRegistrationComplete(P, K))
+    && event (ServerRegistrationComplete(S, K))
+.
+
+(* Reachability
+ * ============
+ * A Reconnect Exchange can be completed.
+ *)
+query P:channel, S:channel, K:K_t;
+    event (PeerReconnectComplete(P, K))
+    && event (ServerReconnectComplete(S, K))
+.
+
+process
+    new UID1:UID_t;    (* User identifier *)
+    new U2P1:channel;  (* User-to-Peer OOB channel *)
+    new U2P2:channel;  (* User-to-Peer OOB channel *)
+    new U2S1:channel;  (* User-to-Server OOB channel *)
+    new U2S2:channel;  (* User-to-Server OOB channel *)
+
+    (  !Peer(U2P1)
+     | !Peer(U2P2)
+     | !Server(U2S1)
+     | !Server(U2S2)
+     | !User(UID1,U2P1,U2S1)
+    )

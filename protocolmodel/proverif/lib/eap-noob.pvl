@@ -1,0 +1,430 @@
+(* ----------------------------------------------------
+ * Nimble out-of-band authentication for EAP (EAP-NOOB)
+ *             draft-ietf-emu-eap-noob-03
+ * ----------------------------------------------------
+ * OOB direction: 1 (peer-to-server)
+ *)
+
+(* ===== CHANNELS ===== *)
+free c:channel.      (* In-band channel *)
+
+(* ===== DATA TYPES ===== *)
+type Type_t.         (* Message types: 0 to 9 *)
+type State_t.        (* Peer and Server states: 0 to 4 *)
+type PeerId_t.       (* PeerId *)
+type Cryptosuite_t.  (* Cryptosuite *)
+type Cryptosuite_l.  (* List of cryptosuites *)
+type Ver_t.          (* Version *)
+type Ver_l.          (* List of versions *)
+type Info_t.         (* Server/Peer/User information *)
+type Dir_t.          (* Direction *)
+type K_t.            (* Key *)
+type N_t.            (* Nonce *)
+type KeyingMode_t.   (* Keying mode *)
+
+type Hash_t.         (* Cryptographic hash *)
+type Noob_t.         (* Noob *)
+type MAC_t.          (* Cryptographic MAC *)
+type KDF_t.          (* Key derivation output *)
+
+type UID_t.          (* User identifier *)
+
+(* == DH types == *)
+type e.              (* Exponent *)
+type G.              (* Generator *)
+
+(* ===== CONSTANTS ===== *)
+(* States *)
+const s0:State_t.    (* Unregistered (ephemeral) *)
+const s1:State_t.    (* Waiting for OOB (ephemeral) *)
+const s2:State_t.    (* OOB Received (ephemeral) *)
+const s3:State_t.    (* Reconnecting (persistent) *)
+const s4:State_t.    (* Registered (persistent) *)
+
+(* Types *)
+const t1:Type_t.
+const t2:Type_t.
+const t3:Type_t.
+const t4:Type_t.
+const t5:Type_t.
+const t6:Type_t.
+const t7:Type_t.
+const t8:Type_t.
+const t9:Type_t.
+
+(* Message constants *)
+const NAI:bitstring.            (* noob@eap-noob.arpa *)
+const OOB_ACCEPTED:Info_t.      (* OOB message accepted *)
+const REGISTRATION_DONE:Info_t. (* Registration done *)
+const EAP_Success:Type_t.       (* EAP Success *)
+const EAP_Failure:Type_t.       (* EAP Failure *)
+const NoobId':bitstring.        (* "NoobId" *)
+
+(* ECDHE Generator *)
+const g:G [data].
+
+(* KDF output *)
+const kz:bitstring [private].
+const kms:bitstring [private].
+const kmp:bitstring [private].
+
+(* ===== EVENTS ===== *)
+(* Peer completes registration with key K *)
+event PeerRegistrationComplete(channel,K_t).
+(* Peer completes reconnect with key K *)
+event PeerReconnectComplete(channel,K_t).
+(* Server completes registration with key K *)
+event ServerRegistrationComplete(channel,K_t).
+(* Server completes reconnect with key K *)
+event ServerReconnectComplete(channel,K_t).
+(* User intends to pair peer with server *)
+event IntendToPair(UID_t,channel,channel).
+
+(* ===== FUNCTIONS ===== *)
+(* Generate a public key from a private key *)
+fun pk(K_t):K_t.
+
+(* Hash function *)
+fun H(bitstring):Hash_t.
+
+(* HMAC *)
+fun hmac(K_t,bitstring):MAC_t.
+
+(* Elliptic-curve Diffie-Hellman *)
+fun ecdhe(G, K_t): G.
+equation forall x:K_t, y:K_t;
+    ecdhe(ecdhe(g,x),y) = ecdhe(ecdhe(g,y),x)
+.
+
+(* Key derivation *)
+fun Completion(G,N_t,N_t,Noob_t):KDF_t.
+fun RekeyingECDHE(G,N_t,N_t):KDF_t.
+
+(* Extract Kms, Kmp or Kz from KDF *)
+fun extract(KDF_t, bitstring):K_t.
+
+(* ===== PROCESSES ===== *)
+let User(UID:UID_t, U2P:channel, U2S:channel) =
+    (* Intend to pair peer and server *)
+    event IntendToPair(UID, U2P, U2S);
+    (* Relay OOB *)
+    in(U2P, (PeerId:PeerId_t,Noob:Noob_t,Hoob:Hash_t));
+    out(U2S, (PeerId,Noob,Hoob));
+    (* Server accepts the OOB message *)
+    in(U2S, =OOB_ACCEPTED);
+    (* Registration done *)
+    in(U2S, =REGISTRATION_DONE)
+.
+
+let Server(U2S:channel) =
+    (* Server private key *)
+    new SKs:K_t;
+
+    (* === Initial Exchange === *)
+    (* EAP-Response/Identity *)
+    in(c, (=NAI));
+    (* EAP-Request/EAP-NOOB (type 1) *)
+    out(c, (t1));
+    (* EAP-Response/EAP-NOOB (type 1) *)
+    in(c, (=t1,=s0));
+
+    (* Generate values *)
+    new Vers:Ver_l;
+    new PeerId:PeerId_t;
+    new Cryptosuites:Cryptosuite_l;
+    new Dirs:Dir_t;
+    new ServerInfo:Info_t;
+
+    (* EAP-Request/EAP-NOOB (type 2) *)
+    out(c, (t2,Vers,PeerId,Cryptosuites,Dirs,ServerInfo));
+    (* EAP-Response/EAP-NOOB (type 2) *)
+    in(c, (=t2,Verp:Ver_t,=PeerId,Cryptosuitep:Cryptosuite_t,Dirp:Dir_t,
+       PeerInfo:Info_t));
+
+    (* Generate nonce *)
+    new Ns:N_t;
+    (* Server public key *)
+    let PKs = pk(SKs) in
+
+    (* EAP-Request/EAP-NOOB (type 3) *)
+    out(c, (t3,PeerId,PKs,Ns));
+    (* EAP-Response/EAP-NOOB (type 3) *)
+    in(c, (=t3,=PeerId,PKp:K_t,Np:N_t));
+
+    (* EAP-Failure *)
+    out(c, EAP_Failure);
+
+    (* === Waiting Exchange === *)
+    (* EAP-Response/Identity *)
+    in(c, (=NAI));
+    (* EAP-Request/EAP-NOOB (type 1) *)
+    out(c, (t1));
+    (* EAP-Response/EAP-NOOB (type 1) *)
+    in(c, (=t1,=PeerId,=s1));
+
+    (* EAP-Request/EAP-NOOB (type 4) *)
+    out(c, (t4,PeerId));
+    (* EAP-Response/EAP-NOOB (type 4) *)
+    in(c, (=t4,=PeerId));
+
+    (* EAP-Failure *)
+    out(c, EAP_Failure);
+
+    (* === OOB Step === *)
+    in(U2S, (=PeerId,Noob:Noob_t,Hoob:Hash_t));
+    if Hoob = H((Dirp,Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,
+        Cryptosuitep,Dirp,PeerInfo,PKs,Ns,PKp,Np,Noob)) then
+    (* Inform user that OOB message is accepted *)
+    out(U2S, OOB_ACCEPTED);
+
+    (* === Completion Exchange === *)
+    (* EAP-Response/Identity *)
+    in(c, (=NAI));
+    (* EAP-Request/EAP-NOOB (type 1) *)
+    out(c, (t1));
+    (* EAP-Response/EAP-NOOB (type 1) *)
+    in(c, (=t1,=PeerId,=s1));
+
+    (* Generate NoobId *)
+    let NoobId = H((NoobId',Noob)) in
+
+    (* EAP-Request/EAP-NOOB (type 5) *)
+    out(c, (t5,PeerId));
+    (* EAP-Response/EAP-NOOB (type 5) *)
+    in(c, (=t5,=PeerId,=NoobId));
+
+    (* Calculate MACs and MACp *)
+    let Z = ecdhe(ecdhe(g,PKp),PKs) in
+    let KDF = Completion(Z,Np,Ns,Noob) in
+        let Kms = extract(KDF, kms) in
+        let Kmp = extract(KDF, kmp) in
+        let Kz = extract(KDF, kz) in
+    let MACs = hmac(Kms, (Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,
+        Cryptosuitep,Dirp,PeerInfo,PKs,Ns,PKp,Np,Noob)) in
+    let MACp = hmac(Kmp, (Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,
+        Cryptosuitep,Dirp,PeerInfo,PKs,Ns,PKp,Np,Noob)) in
+
+    (* EAP-Request/EAP-NOOB (type 6) *)
+    out(c, (t6,PeerId,NoobId,MACs));
+    (* EAP-Response/EAP-NOOB (type 6) *)
+    in(c, (=t6,=PeerId,=MACp));
+
+    (* EAP-Success *)
+    out(c, EAP_Success);
+
+    (* Inform user that the Completion Exchange is done *)
+    out(U2S, REGISTRATION_DONE);
+    (* Key-derivation successful *)
+    event ServerRegistrationComplete(U2S, Kz);
+
+    (* === Reconnect Exchange === *)
+    (* Server private key *)
+    new SKs2:K_t;
+
+    (* EAP-Response/Identity *)
+    in(c, (=NAI));
+    (* EAP-Request/EAP-NOOB (type 1) *)
+    out(c, (t1));
+    (* EAP-Response/EAP-NOOB (type 1) *)
+    in(c, (=t1,=PeerId,=s3));
+
+    (* EAP-Request/EAP-NOOB (type 7) *)
+    out(c, (t7,Vers,PeerId,Cryptosuites));
+    (* EAP-Response/EAP-NOOB (type 7) *)
+    in(c, (=t7,Verp':Ver_t,=PeerId,Cryptosuitep':Cryptosuite_t));
+
+    (* Generate values *)
+    new Ns2:N_t;
+    new KeyingMode:KeyingMode_t;
+
+    (* Server public key *)
+    let PKs2 = pk(SKs2) in
+
+    (* EAP-Request/EAP-NOOB (type 8) *)
+    out(c, (t8,PeerId,KeyingMode,PKs2,Ns2));
+    (* EAP-Response/EAP-NOOB (type 8) *)
+    in(c, (=t8,=PeerId,PKp2:K_t,Np2:N_t));
+
+    (* Calculate MACs2 and MACp2 *)
+    let Z' = ecdhe(ecdhe(g,PKp2),PKs2) in
+    let KDF' = RekeyingECDHE(Z',Np2,Ns2) in
+        let Kms2 = extract(KDF', kms) in
+        let Kmp2 = extract(KDF', kmp) in
+        let Kz2 = extract(KDF', kz) in
+    let MACs2 = hmac(Kms2, (Vers,Verp',PeerId,Cryptosuites,ServerInfo,
+        Cryptosuitep',PeerInfo,KeyingMode,PKs2,Ns2,PKp2,Np2)) in
+    let MACp2 = hmac(Kmp2, (Vers,Verp',PeerId,Cryptosuites,ServerInfo,
+        Cryptosuitep',PeerInfo,KeyingMode,PKs2,Ns2,PKp2,Np2)) in
+
+    (* EAP-Request/EAP-NOOB (type 9) *)
+    out(c, (t9,PeerId,MACs2));
+    (* EAP-Response/EAP-NOOB (type 9) *)
+    in(c, (=t9,=PeerId,=MACp2));
+
+    (* EAP-Success *)
+    out(c, EAP_Success);
+
+    (* Reconnect successful *)
+    event ServerReconnectComplete(U2S, Kz2);
+    0
+.
+
+let Peer(U2P:channel) =
+    (* Peer private key *)
+    new SKp:K_t;
+
+    (* === Initial Exchange === *)
+    (* EAP-Response/Identity *)
+    out(c, (NAI));
+    (* EAP-Request/EAP-NOOB (type 1) *)
+    in(c, (=t1));
+    (* EAP-Response/EAP-NOOB (type 1) *)
+    out(c, (t1,s0));
+
+    (* EAP-Request/EAP-NOOB (type 2) *)
+    in(c, (=t2,Vers:Ver_l,PeerId:PeerId_t,Cryptosuites:Cryptosuite_l,Dirs:Dir_t,
+      ServerInfo:Info_t));
+
+    (* Generate PeerInfo *)
+    new PeerInfo:Info_t;
+    (* Selected version from Vers *)
+    new Verp:Ver_l;
+    (* Selected cryptosuite from Cryptosuites *)
+    new Cryptosuitep:Cryptosuite_t;
+    (* Selected OOB direction *)
+    new Dirp:Dir_t;
+
+    (* EAP-Response/EAP-NOOB (type 2) *)
+    out(c, (t2,Verp,PeerId,Cryptosuitep,Dirp,PeerInfo));
+
+    (* EAP-Request/EAP-NOOB (type 3) *)
+    in(c, (=t3,=PeerId,PKs:K_t,Ns:N_t));
+
+    (* Generate nonce *)
+    new Np:N_t;
+    (* Peer public key *)
+    let PKp = pk(SKp) in
+
+    (* EAP-Response/EAP-NOOB (type 3) *)
+    out(c, (t3,PeerId,PKp,Np));
+
+    (* EAP-Failure *)
+    in(c, =EAP_Failure);
+
+    (* === Waiting Exchange === *)
+    (* EAP-Response/Identity *)
+    out(c, (NAI));
+    (* EAP-Request/EAP-NOOB (type 1) *)
+    in(c, (=t1));
+    (* EAP-Response/EAP-NOOB (type 1) *)
+    out(c, (t1,PeerId,s1));
+
+    (* EAP-Request/EAP-NOOB (type 4) *)
+    in(c, (=t4,=PeerId));
+    (* EAP-Response/EAP-NOOB (type 4) *)
+    out(c, (t4,PeerId));
+
+    (* EAP-Failure *)
+    in(c, =EAP_Failure);
+
+    (* === OOB Step === *)
+    new Noob:Noob_t; (* Generate 16-byte secret nonce *)
+    let Hoob = H((Dirp,Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,
+        Cryptosuitep,Dirp,PeerInfo,PKs,Ns,PKp,Np,Noob)) in
+    (* Send Hoob to user over OOB *)
+    out(U2P, (PeerId,Noob,Hoob));
+
+    (* === Completion Exchange === *)
+    (* EAP-Response/Identity *)
+    out(c, (NAI));
+    (* EAP-Request/EAP-NOOB (type 1) *)
+    in(c, (=t1));
+    (* EAP-Response/EAP-NOOB (type 1) *)
+    out(c, (t1,PeerId,s1));
+
+    (* Generate NoobId *)
+    let NoobId = H((NoobId',Noob)) in
+
+    (* EAP-Request/EAP-NOOB (type 5) *)
+    in(c, (=t5,=PeerId));
+    (* EAP-Response/EAP-NOOB (type 5) *)
+    out(c, (t5,PeerId,NoobId));
+
+    (* Calculate MACs and MACp *)
+    let Z' = ecdhe(ecdhe(g,PKp),PKs) in
+    let KDF' = Completion(Z',Np,Ns,Noob) in
+        let Kms = extract(KDF', kms) in
+        let Kmp = extract(KDF', kmp) in
+        let Kz = extract(KDF', kz) in
+    let MACp = hmac(Kmp, (Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,
+        Cryptosuitep,Dirp,PeerInfo,PKs,Ns,PKp,Np,Noob)) in
+    let MACs = hmac(Kms, (Vers,Verp,PeerId,Cryptosuites,Dirs,ServerInfo,
+        Cryptosuitep,Dirp,PeerInfo,PKs,Ns,PKp,Np,Noob)) in
+
+    (* EAP-Request/EAP-NOOB (type 6) *)
+    in(c, (=t6,=PeerId,=NoobId,=MACs));
+    (* EAP-Response/EAP-NOOB (type 6) *)
+    out(c, (t6,PeerId,MACp));
+
+    (* EAP-Success *)
+    in(c, =EAP_Success);
+
+    (* Key-derivation successful *)
+    event PeerRegistrationComplete(U2P, Kz);
+
+    (* === Reconnect Exchange === *)
+    (* Peer private key *)
+    new SKp2:K_t;
+
+    (* EAP-Response/Identity *)
+    out(c, (NAI));
+    (* EAP-Request/EAP-NOOB (type 1) *)
+    in(c, (=t1));
+    (* EAP-Response/EAP-NOOB (type 1) *)
+    out(c, (t1,PeerId,s3));
+
+    (* EAP-Request/EAP-NOOB (type 7) *)
+    in(c, (=t7,Vers':Ver_l,=PeerId,Cryptosuites':Cryptosuite_l));
+
+    (* Selected version from Vers *)
+    new Verp':Ver_l;
+    (* Selected cryptosuite from Cryptosuites *)
+    new Cryptosuitep':Cryptosuite_t;
+
+    (* EAP-Response/EAP-NOOB (type 7) *)
+    out(c, (t7,Verp',PeerId,Cryptosuitep'));
+
+    (* EAP-Request/EAP-NOOB (type 8) *)
+    in(c, (=t8,=PeerId,KeyingMode:KeyingMode_t,PKs2:K_t,Ns2:N_t));
+
+    (* Generate nonce *)
+    new Np2:N_t;
+    (* Peer public key *)
+    let PKp2 = pk(SKp2) in
+
+    (* EAP-Response/EAP-NOOB (type 8) *)
+    out(c, (t8,PeerId,PKp2,Np2));
+
+    (* Calculate MACs2 and MACp2 *)
+    let Z = ecdhe(ecdhe(g,PKp2),PKs2) in
+    let KDF = RekeyingECDHE(Z,Np2,Ns2) in
+        let Kms2 = extract(KDF, kms) in
+        let Kmp2 = extract(KDF, kmp) in
+        let Kz2 = extract(KDF, kz) in
+    let MACs2 = hmac(Kms2, (Vers',Verp',PeerId,Cryptosuites',ServerInfo,
+        Cryptosuitep',PeerInfo,KeyingMode,PKs2,Ns2,PKp2,Np2)) in
+    let MACp2 = hmac(Kmp2, (Vers',Verp',PeerId,Cryptosuites',ServerInfo,
+        Cryptosuitep',PeerInfo,KeyingMode,PKs2,Ns2,PKp2,Np2)) in
+
+    (* EAP-Request/EAP-NOOB (type 9) *)
+    in(c, (=t9,=PeerId,=MACs2));
+    (* EAP-Response/EAP-NOOB (type 9) *)
+    out(c, (t9,PeerId,MACp2));
+
+    (* EAP-Success *)
+    in(c, =EAP_Success);
+
+    (* Reconnect successful *)
+    event PeerReconnectComplete(U2P, Kz2);
+    0
+.
