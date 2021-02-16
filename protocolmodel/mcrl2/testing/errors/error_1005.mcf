@@ -1,2 +1,0 @@
-% E1005 - Unexpected peer identifier
-[true* . LOG_ERROR(E1005)] false

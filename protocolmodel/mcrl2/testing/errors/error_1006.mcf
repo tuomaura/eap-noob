@@ -1,2 +1,0 @@
-% E1006 - Unrecognized OOB message identifier
-[true* . LOG_ERROR(E1006)] false

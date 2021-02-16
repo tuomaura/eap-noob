@@ -1,2 +1,0 @@
-% E2002 - State mismatch, user action required
-[true* . LOG_ERROR(E2002)] false

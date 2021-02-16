@@ -1,2 +1,0 @@
-% E1003 - Invalid data
-[true* . LOG_ERROR(E1003)] false

@@ -1,2 +1,0 @@
-% E3002 - No mutually supported cryptosuite
-[true* . LOG_ERROR(E3002)] false

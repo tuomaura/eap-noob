@@ -1,2 +1,0 @@
-% E5004 - Invalid peer info
-[true* . LOG_ERROR(E5004)] false

@@ -1,2 +1,0 @@
-% E3003 - No mutually supported OOB direction
-[true* . LOG_ERROR(E3003)] false

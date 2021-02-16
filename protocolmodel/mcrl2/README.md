@@ -1,65 +1,44 @@
 # mCRL2 model of EAP-NOOB
 
-This model is based on the latest draft of the [EAP-NOOB](https://datatracker.ietf.org/doc/draft-aura-eap-noob/) protocol and was implemented using the [mCRL2](https://www.mcrl2.org/web/user_manual/index.html) specification language.
-
-## Getting Started
-
-These instructions describe how to compile and test the model.
+A model of the Nimble out-of-band authentication for EAP (EAP-NOOB). Based on version 03 of the [draft](https://datatracker.ietf.org/doc/draft-ietf-emu-eap-noob/).
 
 ### Dependencies
 
-The following packages have to be installed before compiling the mCRL2 model:
+- mCRL2 toolkit (release version 202006.0). Available from [the publisher](https://www.mcrl2.org/web/user_manual/download.html).
+- Python 3 (for preprocessing & testing)
 
-1. mCRL2 toolkit (available from [the publisher](https://www.mcrl2.org/web/user_manual/download.html#download)) (release version 201409.0)
+### Preprocessing and testing
 
-### Compiling
+The test cases can be modified in [test.py](test.py) and executed with the Makefile:
 
-Compiling the LPS/LTS files using make:
-
-```
-$ make (build)
-```
-
-Minimising the LTS (optional):
-
-```
-$ make conv
-```
-
-Deleting old files (\*.trc, \*.lps, \*.lts):
-
-```
-$ make clean
-```
-
-## Running the tests
-
-The tests are located in [testing/](./testing/) and are executed by the script [test.sh](test.sh).
-
-Running tests:
-
-```
+```bash
 $ make test
 ```
 
-## Visualising and simulating the model
+### Visualizing and simulating the model
 
-The model can be visualised and simulated using the mCRL2 toolkit.
+2D visualization:
 
-2D visualisation (not recommended):
-
-```
-$ make graph
+```bash
+$ make 2D
 ```
 
-3D visualisation:
+3D visualization:
 
-```
-$ make view
+```bash
+$ make 3D
 ```
 
 Simulation:
 
-```
+```bash
 $ make sim
+```
+
+### Error tracing
+
+When an error state is reached, it can be traced:
+
+```bash
+$ make trace
 ```
