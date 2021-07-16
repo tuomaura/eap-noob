@@ -30,6 +30,9 @@ pfs = args.pfs
 crv1 = "X25519" if cs1 == 1 else "P-256"
 crv2 = "X25519" if cs2 == 1 else "P-256"
 
+kty1 = "OKP" if cs1 == 1 else "EC"
+kty2 = "OKP" if cs2 == 1 else "EC"
+
 if cs1 == 1:
     print ("Using Curve25519 for Initial Exchange")
 elif cs1 == 2:
@@ -161,10 +164,15 @@ elif cs1 != cs2:
 SleepTime = 60
 
 ## Peer and server public keys (jwk formatted)
-PKp = loads('{"kty":"EC"}', object_pairs_hook=OrderedDict)
-PKs = loads('{"kty":"EC"}', object_pairs_hook=OrderedDict)
-PKp2 = loads('{"kty":"EC"}', object_pairs_hook=OrderedDict)
-PKs2 = loads('{"kty":"EC"}', object_pairs_hook=OrderedDict)
+PKp = loads('{"kty":"","crv":"","x":""}', object_pairs_hook=OrderedDict)
+PKs = loads('{"kty":"","crv":"","x":""}', object_pairs_hook=OrderedDict)
+PKp2 = loads('{"kty":"","crv":"","x":""}', object_pairs_hook=OrderedDict)
+PKs2 = loads('{"kty":"","crv":"","x":""}', object_pairs_hook=OrderedDict)
+
+PKp['kty'] = kty1
+PKs['kty'] = kty1
+PKp2['kty'] = kty2
+PKs2['kty'] = kty2
 
 PKp['crv'] = crv1
 PKs['crv'] = crv1
@@ -212,18 +220,19 @@ Z2 = Kz if KeyingMode == 1 else Z2
 KDF2_input = b'EAP-NOOB' + base64url_decode(Np2_b64) + base64url_decode(Ns2_b64)
 if KeyingMode == 1:
     KDF2_out = KDF(algorithm=SHA256(), length=288, otherinfo=KDF2_input,
-    backend=default_backend()).derive(Z2)
-if KeyingMode == 2: 
+        backend=default_backend()).derive(Z2)
+if KeyingMode == 2:
     KDF2_input += Kz
     KDF2_out = KDF(algorithm=SHA256(), length=288, otherinfo=KDF2_input,
-    backend=default_backend()).derive(Z2)
-if KeyingMode == 3:  
+        backend=default_backend()).derive(Z2)
+if KeyingMode == 3:
     KDF2_input += Kz
     KDF2_out = KDF(algorithm=SHA256(), length=320, otherinfo=KDF2_input,
-    backend=default_backend()).derive(Z2)
+        backend=default_backend()).derive(Z2)
 
 Kms2 = KDF2_out[224:256]
 Kmp2 = KDF2_out[256:288]
+Kz2 = KDF2_out[288:320] if KeyingMode == 3 else ''
 
 ## Remove trailing '=' from base64 encoded values
 Np_b64 = Np_b64.strip('=')
@@ -319,12 +328,12 @@ res2 = loads(
 
 # REQUEST/RESPONSE 3
 req3 = loads(
-    '{"Type":3, "PeerId":"", "PKs":{"kty":"EC"},\
+    '{"Type":3, "PeerId":"", "PKs":{},\
         "Ns":"", "SleepTime":""}'
     , object_pairs_hook = OrderedDict
 )
 res3 = loads(
-    '{"Type":3, "PeerId":"", "PKp":{"kty":"EC"},\
+    '{"Type":3, "PeerId":"", "PKp":{},\
         "Np":""}'
     , object_pairs_hook = OrderedDict
 )
@@ -374,15 +383,14 @@ req8 = loads( # no new ECDH keys exchanged
    '{"Type":8, "PeerId":"", "KeyingMode":"", "Ns2":""}'
     , object_pairs_hook = OrderedDict
 ) if KeyingMode == 1 else loads( # new ECDH keys exchanged
-   '{"Type":8, "PeerId":"", "KeyingMode":"",\
-       "PKs2":{"kty":"EC", "crv":""}, "Ns2":""}'
-   , object_pairs_hook = OrderedDict
+   '{"Type":8, "PeerId":"", "KeyingMode":"","PKs2":{}, "Ns2":""}'
+    , object_pairs_hook = OrderedDict
 )
 res8 = loads( # no new ECDH keys exchanged
    '{"Type":8, "PeerId":"", "Np2":""}'
     , object_pairs_hook = OrderedDict
 ) if KeyingMode == 1 else loads( # new ECDH keys exchanged
-   '{"Type":8, "PeerId":"", "PKp2":{"kty":"EC"},"Np2":""}'
+   '{"Type":8, "PeerId":"", "PKp2":{},"Np2":""}'
    , object_pairs_hook = OrderedDict
 )
 
@@ -414,18 +422,12 @@ res2['PeerInfo'] = loads(PeerInfo)
 
 req3['PeerId'] = PeerId
 req3['Ns'] = Ns_b64
-req3['PKs']['crv'] = crv1
-req3['PKs']['x'] = PKs_b64_x
-if cs1 == 2:
-    req3['PKs']['y'] = PKs_b64_y
+req3['PKs'] = PKs
 req3['SleepTime'] = SleepTime
 
 res3['PeerId'] = PeerId
 res3['Np'] = Np_b64
-res3['PKp']['crv'] = crv1
-res3['PKp']['x'] = PKp_b64_x
-if cs1 == 2:
-    res3['PKp']['y'] = PKp_b64_y
+res3['PKp'] = PKp
 
 req4['PeerId'] = PeerId
 req4['SleepTime'] = SleepTime
@@ -454,20 +456,12 @@ res7['Cryptosuitep'] = cs2
 
 req8['PeerId'] = PeerId
 req8['KeyingMode'] = KeyingMode
-if KeyingMode != 1: # new ECDH keys exchanged
-    req8['PKs2']['crv'] = crv2
-    req8['PKs2']['x'] = PKs2_b64_x
-    if cs2 == 2:
-        req8['PKs2']['y'] = PKs2_b64_y
+req8['PKs2'] = PKs2
 req8['Ns2'] = Ns2_b64
 
 res8['PeerId'] = PeerId
-if KeyingMode != 1: # new ECDH keys exchanged
-    res8['PKp2']['crv'] = crv2
-    res8['PKp2']['x'] = PKp2_b64_x
-    if cs2 == 2:
-        res8['PKp2']['y'] = PKp2_b64_y
 res8['Np2'] = Np2_b64
+res8['PKp2'] = PKp2
 
 req9['PeerId'] = PeerId
 req9['MACs2'] = MACs2
@@ -577,7 +571,7 @@ print ("   " + dumps(res6, separators = (',', ':')))
 print ("")
 
 # Reconnect Exchange
-print ("====== Reconnect Exchange ======")
+print ("====== Reconnect Exchange (KeyingMode = {}) ======".format(KeyingMode))
 print ("")
 
 print ("Identity response:")
@@ -618,3 +612,38 @@ print ("")
 print ("EAP response (type 9):")
 print ("   " + dumps(res9, separators = (',', ':')))
 print ("")
+
+print ("====== Inputs for HOOB, MACs, MACp, MACs2, and MACp2 ======")
+print ("")
+
+print ("HOOB input:")
+print ("   " + dumps(Hoob_values['Hoob'], separators = (',', ':')))
+print ("")
+
+print ("MACs input:")
+print ("   " + dumps(MACs_values['MACs'], separators = (',', ':')))
+print ("")
+
+print ("MACp input:")
+print ("   " + dumps(MACp_values['MACp'], separators = (',', ':')))
+print ("")
+
+print ("MACs2 input:")
+print ("   " + dumps(MACs2_values['MACs2'], separators = (',', ':')))
+print ("")
+
+print ("MACp2 input:")
+print ("   " + dumps(MACp2_values['MACp2'], separators = (',', ':')))
+print ("")
+
+if KeyingMode == 3:
+    print ("====== Keys ======")
+    print ("")
+
+    print ("Old Kz:")
+    print ("   " + Kz.hex())
+    print ("")
+
+    print ("New Kz:")
+    print ("   " + Kz2.hex())
+    print ("")
